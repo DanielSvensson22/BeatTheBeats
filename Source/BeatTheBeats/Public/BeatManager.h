@@ -27,6 +27,9 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintPure)
+	FORCEINLINE float GetCurrentTimeSinceLastBeat() const { return CurrentTimeSinceLastBeat; }
+
+	UFUNCTION(BlueprintPure)
 	FORCEINLINE float TimeBetweenBeats() const { return 60 / BPM; }
 
 	UFUNCTION(BlueprintPure)
