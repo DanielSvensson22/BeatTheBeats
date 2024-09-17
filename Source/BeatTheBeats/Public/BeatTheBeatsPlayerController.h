@@ -25,10 +25,11 @@ public:
 	
 protected:
 
-	/** MappingContext */
+	/**
+	* MappingContext 
+	*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputMappingContext* DefaultMappingContext;
-
 
 	virtual void BeginPlay() override;
 
