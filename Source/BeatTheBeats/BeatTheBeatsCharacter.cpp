@@ -10,6 +10,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "ComboManagerComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -52,6 +53,8 @@ ABeatTheBeatsCharacter::ABeatTheBeatsCharacter()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+
+	ComboManager = CreateDefaultSubobject<UComboManagerComponent>(TEXT("Combo Manager"));
 }
 
 void ABeatTheBeatsCharacter::BeginPlay()
@@ -65,14 +68,6 @@ void ABeatTheBeatsCharacter::BeginPlay()
 
 void ABeatTheBeatsCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
-	// Add Input Mapping Context
-	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
-	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-		{
-			Subsystem->AddMappingContext(DefaultMappingContext, 0);
-		}
-	}
 	
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
@@ -86,6 +81,10 @@ void ABeatTheBeatsCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABeatTheBeatsCharacter::Look);
+
+		// Attacking
+		EnhancedInputComponent->BindAction(LightAttackAction, ETriggerEvent::Started, this, &ABeatTheBeatsCharacter::AddLightAttack);
+		EnhancedInputComponent->BindAction(HeavyAttackAction, ETriggerEvent::Started, this, &ABeatTheBeatsCharacter::AddHeavyAttack);
 	}
 	else
 	{
@@ -127,4 +126,18 @@ void ABeatTheBeatsCharacter::Look(const FInputActionValue& Value)
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
+}
+
+void ABeatTheBeatsCharacter::AddLightAttack()
+{
+	//To Do: Calculate damage based on performance...
+	ComboManager->AddAttack(Attacks::LightAttack, 1);
+	UE_LOG(LogTemplateCharacter, Display, TEXT("Added Light Attack to queue."));
+}
+
+void ABeatTheBeatsCharacter::AddHeavyAttack()
+{
+	//To Do: Calculate damage based on performance...
+	ComboManager->AddAttack(Attacks::HeavyAttack, 1);
+	UE_LOG(LogTemplateCharacter, Display, TEXT("Added Heavy Attack to queue."));
 }

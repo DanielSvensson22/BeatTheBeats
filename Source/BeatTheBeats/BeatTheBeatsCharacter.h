@@ -9,9 +9,9 @@
 
 class USpringArmComponent;
 class UCameraComponent;
-class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
+class UComboManagerComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -27,10 +27,6 @@ class ABeatTheBeatsCharacter : public ACharacter
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
-	
-	/** MappingContext */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputMappingContext* DefaultMappingContext;
 
 	/** Jump Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -44,6 +40,17 @@ class ABeatTheBeatsCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
 
+	/** Light Attack Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* LightAttackAction;
+
+	/** Heavy Attack Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* HeavyAttackAction;
+
+	UPROPERTY(VisibleAnywhere)
+	UComboManagerComponent* ComboManager;
+
 public:
 	ABeatTheBeatsCharacter();
 	
@@ -56,6 +63,8 @@ protected:
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 			
+	void AddLightAttack();
+	void AddHeavyAttack();
 
 protected:
 	// APawn interface

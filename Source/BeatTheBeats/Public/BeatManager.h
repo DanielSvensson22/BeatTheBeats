@@ -33,6 +33,9 @@ public:
 	FORCEINLINE float TimeBetweenBeats() const { return 60 / BPM; }
 
 	UFUNCTION(BlueprintPure)
+	FORCEINLINE float GetTimeUntilNextBeat() const { return TimeBetweenBeats() - CurrentTimeSinceLastBeat; }
+
+	UFUNCTION(BlueprintPure)
 	FORCEINLINE float AfterBeatGrace() const { return TimeBetweenBeats() / AfterBeatGraceDivider; }
 
 	UFUNCTION(BlueprintPure)
@@ -52,7 +55,7 @@ public:
 
 	template<typename Type>
 	void BindFuncToOnBeat(Type* type, void (Type::* Func)(float)) {
-		OnBeat.Add(type, Func);
+		OnBeat.AddUObject(type, Func);
 	}
 
 private:
