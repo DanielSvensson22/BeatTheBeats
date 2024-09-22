@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
+#include "Combo.h"
 #include "PlayerCharacter.generated.h"
 
 class UInputAction;
@@ -40,20 +41,30 @@ protected:
 	TObjectPtr<UInputAction> LookAction;
 
 	UPROPERTY(EditAnywhere, Category = "Input")
-	TObjectPtr<UInputAction> LightAttackAction;
+	TObjectPtr<UInputAction> NeautralAttackAction;
 
 	UPROPERTY(EditAnywhere, Category = "Input")
-	TObjectPtr<UInputAction> HeavyAttackAction;
+	TObjectPtr<UInputAction> Type1AttackAction;
+
+	UPROPERTY(EditAnywhere, Category = "Input")
+	TObjectPtr<UInputAction> Type2AttackAction;
+
+	UPROPERTY(EditAnywhere, Category = "Input")
+	TObjectPtr<UInputAction> Type3AttackAction;
 
 	/**
 	* Callbacks for input
 	*/
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
-	void AddLightAttack();
-	void AddHeavyAttack();
+	void AddNeutralAttack();
+	void AddType1Attack();
+	void AddType2Attack();
+	void AddType3Attack();
 
 private:
+	void AttackCallback(Attacks AttackType, float MotionValue, float AnimLength, int Combo, int ComboStep);
+
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USpringArmComponent> CameraBoom;
 

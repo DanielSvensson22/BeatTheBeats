@@ -14,6 +14,7 @@ void ABeatTheBeatsPlayerController::BeginPlay()
 
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
 	{
+		Subsystem->AddMappingContext(ModifierMappingContext, 100);
 		Subsystem->AddMappingContext(DefaultMappingContext, 0);
 	}
 

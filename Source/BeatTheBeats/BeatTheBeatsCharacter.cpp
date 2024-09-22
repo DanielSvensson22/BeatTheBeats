@@ -131,13 +131,13 @@ void ABeatTheBeatsCharacter::Look(const FInputActionValue& Value)
 void ABeatTheBeatsCharacter::AddLightAttack()
 {
 	//To Do: Calculate damage based on performance...
-	ComboManager->AddAttack(Attacks::LightAttack, 1);
+	ComboManager->AddAttack(Attacks::Attack_Neutral, 1);
 	UE_LOG(LogTemplateCharacter, Display, TEXT("Added Light Attack to queue."));
 }
 
 void ABeatTheBeatsCharacter::AddHeavyAttack()
 {
 	//To Do: Calculate damage based on performance...
-	ComboManager->AddAttack(Attacks::HeavyAttack, 1);
+	ComboManager->AddAttack(Attacks::Attack_Neutral, 1);
 	UE_LOG(LogTemplateCharacter, Display, TEXT("Added Heavy Attack to queue."));
 }

@@ -9,9 +9,13 @@
 
 UENUM(BlueprintType)
 enum class Attacks : uint8 {
-	LightAttack = 0,
-	HeavyAttack = 1,
-	Attacks_MAX UMETA(Hidden)
+	Attack_Neutral = 0,
+	Attack_Type1 = 1,
+	Attack_Type2 = 2,
+	Attack_Type3 = 3,
+	Attack_Pause = 4,
+
+	Attack_NONE UMETA(Hidden)
 };
 
 /**
@@ -49,15 +53,27 @@ public:
 
 	FORCEINLINE int ResetCombo() { CurrentAttack = -1; return -1; }
 
-	FORCEINLINE float GetAnimLength(int currentAttack) const { return Animations[currentAttack]->GetPlayLength(); }
-	FORCEINLINE float GetCurrentAnimLength() const { return Animations[CurrentAttack]->GetPlayLength(); }
+	FORCEINLINE float GetAnimLength(int currentAttack) const { 
+		if (Animations[currentAttack] == nullptr) {
+			return -1;
+		}
+
+		return Animations[currentAttack]->GetPlayLength(); }
+
+	FORCEINLINE float GetCurrentAnimLength() const { 
+		if (Animations[CurrentAttack] == nullptr) {
+			return -1;
+		}
+
+		return Animations[CurrentAttack]->GetPlayLength(); 
+	}
 
 	FORCEINLINE float GetMotionValue(int currentAttack) const { return MotionValues[currentAttack]; }
 	FORCEINLINE float GetCurrentMotionValue() const { return MotionValues[CurrentAttack]; }
 
 	FORCEINLINE Attacks GetAttackType(int index) const {
 		if (index >= ComboAttacks.Num()) {
-			return Attacks::Attacks_MAX;
+			return Attacks::Attack_NONE;
 		}
 
 		return ComboAttacks[index];

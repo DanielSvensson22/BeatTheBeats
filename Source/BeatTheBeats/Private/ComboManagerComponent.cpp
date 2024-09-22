@@ -7,6 +7,7 @@
 #include "Combo.h"
 #include <tuple>
 #include <queue>
+#include "Character/PlayerCharacter.h"
 
 // Sets default values for this component's properties
 UComboManagerComponent::UComboManagerComponent()
@@ -34,6 +35,14 @@ void UComboManagerComponent::BeginPlay()
 	else {
 		BeatManager->BindFuncToOnBeat(this, &UComboManagerComponent::ProcessNextAttack);
 	}
+
+	if (Combos.Num() != ComboObtainedStatus.Num()) {
+		UE_LOG(LogTemp, Error, TEXT("Combo count not equal to combo obtained status count!"));
+	}
+
+	if (ComboConnectionsList.Num() != Combos.Num()) {
+		UE_LOG(LogTemp, Error, TEXT("Not every combo has a combo connections list!"));
+	}
 }
 
 
@@ -45,10 +54,10 @@ void UComboManagerComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	// ...
 }
 
-void UComboManagerComponent::AddAttack(Attacks AttackType, float Damage)
+void UComboManagerComponent::AddAttack(Attacks AttackType, float Damage, bool PlayerAddedThisBeat)
 {
 	if (StoredAttacks.size() < 2) {
-		StoredAttacks.emplace(AttackType, Damage, true);
+		StoredAttacks.emplace(AttackType, Damage, PlayerAddedThisBeat);
 	}
 }
 
@@ -72,43 +81,11 @@ void UComboManagerComponent::ProcessNextAttack(float CurrentTimeSinceLastBeat)
 
 			bool nextAttackMatchesInput = Combos[CurrentCombo].AttackMatchesNextAttack(AttackType, CurrentComboStep + 1);
 			
-			int OriginalCombo = CurrentCombo;
-			bool ComboHasNotLooped = true;
-			while (!nextAttackMatchesInput) {
-				CurrentCombo++;
-
-				if (CurrentCombo >= Combos.Num()) {
-					CurrentCombo = 0;
-					ComboHasNotLooped = false;
-				}
-
-				if (ComboHasNotLooped && CurrentCombo > 0 && CurrentComboStep > 0) {
-					if (Combos[OriginalCombo].GetAttackType(CurrentComboStep - 1) != Combos[CurrentCombo].GetAttackType(CurrentComboStep - 1)) {
-						continue;
-					}
-				}
-
-				nextAttackMatchesInput = Combos[CurrentCombo].AttackMatchesNextAttack(AttackType, CurrentComboStep + 1);
+			if (!nextAttackMatchesInput) {
+				CurrentCombo = GetNextCombo(AttackType);
 			}
 			
-			CurrentComboStep = Combos[CurrentCombo].NextAttack(CurrentComboStep);
-			//To Do: Add functionality for dealing damage...
-			FString attackName;
-
-			switch (AttackType) {
-			case Attacks::LightAttack:
-				attackName = "Light Attack";
-				break;
-
-			case Attacks::HeavyAttack:
-				attackName = "Heavy Attack";
-				break;
-
-			default:
-				UE_LOG(LogTemp, Error, TEXT("Attack type not implemented!"));
-			}
-
-			UE_LOG(LogTemp, Warning, TEXT("Landed %s on Combo step %i in Combo %i"), *attackName, CurrentComboStep, CurrentCombo);
+			PerformAttack(AttackType);
 		}
 	}
 	else {
@@ -116,6 +93,36 @@ void UComboManagerComponent::ProcessNextAttack(float CurrentTimeSinceLastBeat)
 			combo.ResetCombo();
 			CurrentCombo = 0;
 			CurrentComboStep = -1;
+		}
+	}
+}
+
+void UComboManagerComponent::BindAttackCallbackFunc(APlayerCharacter* playerCharacter, AttackCallback callbackFunc)
+{
+	player = playerCharacter;
+	callback = callbackFunc;
+}
+
+void UComboManagerComponent::PerformAttack(Attacks AttackType)
+{
+	CurrentComboStep = Combos[CurrentCombo].NextAttack(CurrentComboStep);
+
+	if (player) {
+		(player->*callback)(AttackType, Combos[CurrentCombo].GetMotionValue(CurrentComboStep),
+			Combos[CurrentCombo].GetAnimLength(CurrentComboStep), CurrentCombo, CurrentComboStep);
+	}
+
+	if (StoredAttacks.size() == 0) {
+		if (Combos[CurrentCombo].AttackMatchesNextAttack(Attacks::Attack_Pause, CurrentComboStep + 1)) {
+			AddAttack(Attacks::Attack_Pause, 0, false);
+		}
+		else {
+			int potentialCombo = GetNextCombo(Attacks::Attack_Pause, false);
+
+			if (potentialCombo > 0) {
+				CurrentCombo = potentialCombo;
+				AddAttack(Attacks::Attack_Pause, 0, false);
+			}
 		}
 	}
 }

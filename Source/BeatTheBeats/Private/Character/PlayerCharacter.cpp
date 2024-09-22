@@ -33,6 +33,7 @@ APlayerCharacter::APlayerCharacter()
 	ViewCamera->SetupAttachment(CameraBoom);
 
 	ComboManager = CreateDefaultSubobject<UComboManagerComponent>(TEXT("Combo Manager"));
+	ComboManager->BindAttackCallbackFunc(this, &APlayerCharacter::AttackCallback);
 }
 
 void APlayerCharacter::BeginPlay()
@@ -55,8 +56,10 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	{
 		EnhancedInputComponent->BindAction(MovementAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Move);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Look);
-		EnhancedInputComponent->BindAction(LightAttackAction, ETriggerEvent::Started, this, &APlayerCharacter::AddLightAttack);
-		EnhancedInputComponent->BindAction(HeavyAttackAction, ETriggerEvent::Started, this, &APlayerCharacter::AddHeavyAttack);
+		EnhancedInputComponent->BindAction(NeautralAttackAction, ETriggerEvent::Started, this, &APlayerCharacter::AddNeutralAttack);
+		EnhancedInputComponent->BindAction(Type1AttackAction, ETriggerEvent::Started, this, &APlayerCharacter::AddType1Attack);
+		EnhancedInputComponent->BindAction(Type2AttackAction, ETriggerEvent::Started, this, &APlayerCharacter::AddType2Attack);
+		EnhancedInputComponent->BindAction(Type3AttackAction, ETriggerEvent::Started, this, &APlayerCharacter::AddType3Attack);
 	}
 }
 
@@ -88,17 +91,63 @@ void APlayerCharacter::Look(const FInputActionValue& Value)
 	}
 }
 
-void APlayerCharacter::AddLightAttack()
+void APlayerCharacter::AddNeutralAttack()
 {
 	//To Do: Calculate damage based on performance...
-	ComboManager->AddAttack(Attacks::LightAttack, 1);
-	UE_LOG(LogTemp, Display, TEXT("Added Light Attack to queue."));
+	ComboManager->AddAttack(Attacks::Attack_Neutral, 1);
+	UE_LOG(LogTemp, Display, TEXT("Added Neutral Attack to queue."));
 }
 
-void APlayerCharacter::AddHeavyAttack()
+void APlayerCharacter::AddType1Attack()
 {
 	//To Do: Calculate damage based on performance...
-	ComboManager->AddAttack(Attacks::HeavyAttack, 1);
-	UE_LOG(LogTemp, Display, TEXT("Added Heavy Attack to queue."));
+	ComboManager->AddAttack(Attacks::Attack_Type1, 1);
+	UE_LOG(LogTemp, Display, TEXT("Added Type 1 Attack to queue."));
 }
 
+void APlayerCharacter::AddType2Attack()
+{
+	//To Do: Calculate damage based on performance...
+	ComboManager->AddAttack(Attacks::Attack_Type2, 1);
+	UE_LOG(LogTemp, Display, TEXT("Added Type 2 Attack to queue."));
+}
+
+void APlayerCharacter::AddType3Attack()
+{
+	//To Do: Calculate damage based on performance...
+	ComboManager->AddAttack(Attacks::Attack_Type3, 1);
+	UE_LOG(LogTemp, Display, TEXT("Added Type 3 Attack to queue."));
+}
+
+void APlayerCharacter::AttackCallback(Attacks AttackType, float MotionValue, float AnimLength, int Combo, int ComboStep)
+{
+	//To Do: Add damage functionality...
+	FString attackName;
+
+	switch (AttackType) {
+	case Attacks::Attack_Neutral:
+		attackName = "Landed Neutral Attack";
+		break;
+
+	case Attacks::Attack_Type1:
+		attackName = "Landed Type 1 Attack";
+		break;
+
+	case Attacks::Attack_Type2:
+		attackName = "Landed Type 2 Attack";
+		break;
+
+	case Attacks::Attack_Type3:
+		attackName = "Landed Type 3 Attack";
+		break;
+
+	case Attacks::Attack_Pause:
+		attackName = "Paused";
+		break;
+
+	default:
+		UE_LOG(LogTemp, Error, TEXT("Attack type not implemented!"));
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("%s on Combo step %i in Combo %i"), *attackName, ComboStep, Combo);
+}

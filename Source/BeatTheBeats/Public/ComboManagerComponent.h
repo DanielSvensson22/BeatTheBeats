@@ -7,8 +7,11 @@
 #include "Combo.h"
 #include <tuple>
 #include <queue>
+#include "ComboConnection.h"
+#include "ComboConnectionArray.h"
 #include "ComboManagerComponent.generated.h"
 
+class APlayerCharacter;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class BEATTHEBEATS_API UComboManagerComponent : public UActorComponent
@@ -24,12 +27,84 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
+	typedef void (APlayerCharacter::* AttackCallback)(Attacks, float, float, int, int);
+
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	void AddAttack(Attacks AttackType, float Damage);
+	void AddAttack(Attacks AttackType, float Damage, bool PlayerAddedThisBeat = true);
 
 	void ProcessNextAttack(float CurrentTimeSinceLastBeat);
+
+	void BindAttackCallbackFunc(APlayerCharacter* playerCharacter, AttackCallback callbackFunc);
+
+private:
+
+	FORCEINLINE int GetNextCombo(Attacks AttackType, bool ResetComboStep = true) {
+		int NextCombo = -1;
+
+		for (int i = 0; i < ComboConnectionsList[CurrentCombo].Connections.Num(); i++) {
+			FComboConnection& cc = ComboConnectionsList[CurrentCombo].Connections[i];
+
+			if (ComboObtainedStatus[cc.GetToCombo()] == true) {
+				if (cc.GetFromComboStep() == CurrentComboStep) {
+					if (cc.GetAttackWhichConnects() == AttackType) {
+						NextCombo = cc.GetToCombo();
+					}
+				}
+			}
+		}
+
+		if (NextCombo > -1) {
+			return NextCombo;
+		}
+
+		switch (AttackType) {
+		case Attacks::Attack_Neutral:
+			if (ResetComboStep) {
+				CurrentComboStep = -1;
+			}
+			
+			return BaseNeutralCombo;
+			break;
+
+		case Attacks::Attack_Type1:
+			if (ResetComboStep) {
+				CurrentComboStep = -1;
+			}
+
+			return BaseAttack1Combo;
+			break;
+
+		case Attacks::Attack_Type2:
+			if (ResetComboStep) {
+				CurrentComboStep = -1;
+			}
+
+			return BaseAttack2Combo;
+			break;
+
+		case Attacks::Attack_Type3:
+			if (ResetComboStep) {
+				CurrentComboStep = -1;
+			}
+
+			return BaseAttack3Combo;
+			break;
+
+		default:
+			if (ResetComboStep) {
+				CurrentComboStep = -1;
+			}
+
+			return 0;
+			break;
+		}
+
+		//return 0;
+	}
+
+	void PerformAttack(Attacks AttackType);
 
 private:
 
@@ -37,6 +112,24 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	TArray<FCombo> Combos;
+
+	UPROPERTY(EditDefaultsOnly)
+	TArray<bool> ComboObtainedStatus;
+
+	UPROPERTY(EditDefaultsOnly)
+	TArray<FComboConnectionArray> ComboConnectionsList;
+
+	UPROPERTY(EditDefaultsOnly)
+	int BaseNeutralCombo;
+
+	UPROPERTY(EditDefaultsOnly)
+	int BaseAttack1Combo;
+
+	UPROPERTY(EditDefaultsOnly)
+	int BaseAttack2Combo;
+
+	UPROPERTY(EditDefaultsOnly)
+	int BaseAttack3Combo;
 
 	std::queue<StoredAttack> StoredAttacks;
 
@@ -48,4 +141,7 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<ABeatManager> BeatManagerClass;
+
+	APlayerCharacter* player;
+	AttackCallback callback;
 };
