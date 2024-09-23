@@ -94,5 +94,5 @@ private:
 	float TargetLockTraceRadius;
 
 	UPROPERTY(EditAnywhere, Category = "Target Lock")
-	float MaxDistanceBetweenLockedTarget; // Max distance between target and player before auto disable
+	float TargetLockMaxMoveDistance; // Max distance between target and player before auto disable
 };

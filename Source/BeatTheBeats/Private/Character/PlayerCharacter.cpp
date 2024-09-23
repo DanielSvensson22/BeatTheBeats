@@ -39,7 +39,7 @@ APlayerCharacter::APlayerCharacter()
 
 	TargetLockTraceRange = 1000.f;
 	TargetLockTraceRadius = 150.f;
-	MaxDistanceBetweenLockedTarget = 1500.f;
+	TargetLockMaxMoveDistance = 1500.f;
 }
 
 void APlayerCharacter::BeginPlay()
@@ -144,7 +144,7 @@ void APlayerCharacter::SetTargetLockCamera()
 
 		GetController()->SetControlRotation(UKismetMathLibrary::FindLookAtRotation(GetActorLocation() + LockOffset, TargetLockHitTarget->GetActorLocation()));
 
-		if (Distance > 1500.f)
+		if (Distance > TargetLockMaxMoveDistance)
 		{
 			TargetLockHitTarget = nullptr;
 			bIsLockingTarget = false;
