@@ -41,6 +41,9 @@ protected:
 	TObjectPtr<UInputAction> LookAction;
 
 	UPROPERTY(EditAnywhere, Category = "Input")
+	TObjectPtr<UInputAction> TargetLockAction;
+
+	UPROPERTY(EditAnywhere, Category = "Input")
 	TObjectPtr<UInputAction> NeautralAttackAction;
 
 	UPROPERTY(EditAnywhere, Category = "Input")
@@ -57,6 +60,7 @@ protected:
 	*/
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
+	void TargetLock();
 	void AddNeutralAttack();
 	void AddType1Attack();
 	void AddType2Attack();
@@ -64,11 +68,31 @@ protected:
 
 private:
 	void AttackCallback(Attacks AttackType, float MotionValue, float AnimLength, int Combo, int ComboStep);
+	void SetTargetLockCamera();
 
+	// Camera Components
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USpringArmComponent> CameraBoom;
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UCameraComponent> ViewCamera;
 
+	// Target Lock Components
+	UPROPERTY(VisibleAnywhere, Category = "Target Lock")
+	bool bIsLockingTarget = false;
+
+	UPROPERTY(VisibleAnywhere, Category = "Target Lock")
+	TObjectPtr<AActor> TargetLockHitTarget;
+
+	UPROPERTY(EditAnywhere, Category = "Target Lock")
+	float LockOffsetModifier;
+
+	UPROPERTY(EditAnywhere, Category = "Target Lock")
+	float TargetLockTraceRange;
+
+	UPROPERTY(EditAnywhere, Category = "Target Lock")
+	float TargetLockTraceRadius;
+
+	UPROPERTY(EditAnywhere, Category = "Target Lock")
+	float MaxDistanceBetweenLockedTarget; // Max distance between target and player before auto disable
 };

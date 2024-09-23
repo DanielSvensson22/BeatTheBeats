@@ -6,6 +6,8 @@
 #include "GameFramework\CharacterMovementComponent.h"
 #include "Camera/CameraComponent.h"
 #include "ComboManagerComponent.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 #include "Components/InputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -34,6 +36,10 @@ APlayerCharacter::APlayerCharacter()
 
 	ComboManager = CreateDefaultSubobject<UComboManagerComponent>(TEXT("Combo Manager"));
 	ComboManager->BindAttackCallbackFunc(this, &APlayerCharacter::AttackCallback);
+
+	TargetLockTraceRange = 1000.f;
+	TargetLockTraceRadius = 150.f;
+	MaxDistanceBetweenLockedTarget = 1500.f;
 }
 
 void APlayerCharacter::BeginPlay()
@@ -46,6 +52,8 @@ void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	SetTargetLockCamera();
+
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -56,6 +64,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	{
 		EnhancedInputComponent->BindAction(MovementAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Move);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Look);
+		EnhancedInputComponent->BindAction(TargetLockAction, ETriggerEvent::Started, this, &APlayerCharacter::TargetLock);
 		EnhancedInputComponent->BindAction(NeautralAttackAction, ETriggerEvent::Started, this, &APlayerCharacter::AddNeutralAttack);
 		EnhancedInputComponent->BindAction(Type1AttackAction, ETriggerEvent::Started, this, &APlayerCharacter::AddType1Attack);
 		EnhancedInputComponent->BindAction(Type2AttackAction, ETriggerEvent::Started, this, &APlayerCharacter::AddType2Attack);
@@ -84,10 +93,63 @@ void APlayerCharacter::Look(const FInputActionValue& Value)
 {
 	const FVector2D LookAxisVector = Value.Get<FVector2D>();
 
-	if (Controller != nullptr)
+	if (Controller != nullptr && bIsLockingTarget == false)
 	{
 		AddControllerPitchInput(LookAxisVector.Y);
 		AddControllerYawInput(LookAxisVector.X);
+	}
+}
+
+void APlayerCharacter::TargetLock()
+{
+	if (bIsLockingTarget)
+	{
+		bIsLockingTarget = false;
+		TargetLockHitTarget = nullptr;
+		bUseControllerRotationYaw = false;
+	}
+	else
+	{
+		const FVector Start = GetActorLocation();
+		const FRotator CameraRotation = ViewCamera->GetComponentRotation();
+		const FVector End = Start + UKismetMathLibrary::GetForwardVector(CameraRotation) * TargetLockTraceRange;
+
+		TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypesArray; // object types to trace
+		ObjectTypesArray.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn));
+
+		TArray<AActor*> IgnoreActors; // leave blank if not needed
+
+		// IgnoreActors.Add(); // Add actors to ingore here if needed
+
+		FHitResult SphereHit; // hit result
+
+		UKismetSystemLibrary::SphereTraceSingleForObjects(this, Start, End, TargetLockTraceRadius, ObjectTypesArray, false, IgnoreActors, EDrawDebugTrace::ForDuration, SphereHit, true);
+
+		TargetLockHitTarget = SphereHit.GetActor();
+
+		if (TargetLockHitTarget != nullptr)
+		{
+			bIsLockingTarget = true;
+			bUseControllerRotationYaw = true; // Character look at locked target
+		}
+	}
+}
+
+void APlayerCharacter::SetTargetLockCamera()
+{
+	if (TargetLockHitTarget != nullptr)
+	{
+		float Distance = GetDistanceTo(TargetLockHitTarget);
+		FVector LockOffset = TargetLockHitTarget->GetActorUpVector() * Distance * LockOffsetModifier;
+
+		GetController()->SetControlRotation(UKismetMathLibrary::FindLookAtRotation(GetActorLocation() + LockOffset, TargetLockHitTarget->GetActorLocation()));
+
+		if (Distance > 1500.f)
+		{
+			TargetLockHitTarget = nullptr;
+			bIsLockingTarget = false;
+			bUseControllerRotationYaw = false;
+		}
 	}
 }
 
