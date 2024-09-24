@@ -8,10 +8,14 @@
 #include "ComboManagerComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/GameplayStatics.h"
+#include "TimerManager.h"
 
 #include "Components/InputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
+#include "Enemy/EnemyBase.h"
+#include "BeatManager.h"
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -46,6 +50,14 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	BeatManager = Cast<ABeatManager>(UGameplayStatics::GetActorOfClass(this, BeatManagerClass));
+
+	if (BeatManager == nullptr) {
+		UE_LOG(LogTemp, Error, TEXT("No Beat Manager was found in the scene!"));
+	}
+	else {
+		BeatManager->BindFuncToOnBeat(this, &APlayerCharacter::OnBeat);
+	}
 }
 
 void APlayerCharacter::Tick(float DeltaTime)
@@ -70,6 +82,17 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(Type2AttackAction, ETriggerEvent::Started, this, &APlayerCharacter::AddType2Attack);
 		EnhancedInputComponent->BindAction(Type3AttackAction, ETriggerEvent::Started, this, &APlayerCharacter::AddType3Attack);
 	}
+}
+
+float APlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	AEnemyBase* enemy = Cast<AEnemyBase>(DamageCauser);
+
+	if (enemy) {
+		IncomingAttacks.Emplace(enemy, enemy->GetEnemyType(), DamageAmount);
+	}
+
+	return DamageAmount;
 }
 
 void APlayerCharacter::Move(const FInputActionValue& Value)
@@ -212,4 +235,43 @@ void APlayerCharacter::AttackCallback(Attacks AttackType, float MotionValue, flo
 	}
 
 	UE_LOG(LogTemp, Warning, TEXT("%s on Combo step %i in Combo %i"), *attackName, ComboStep, Combo);
+}
+
+void APlayerCharacter::OnBeat(float CurrentTimeSinceLastBeat)
+{
+	FTimerHandle handle;
+
+	GetWorldTimerManager().SetTimer(handle, this, &APlayerCharacter::ProcessIncomingAttacks, 0.01f, false);
+}
+
+void APlayerCharacter::ProcessIncomingAttacks()
+{
+	for (auto& [Enemy, EnemyType, Damage] : IncomingAttacks) {
+		FString type;
+
+		switch (EnemyType) {
+		case Attacks::Attack_Neutral:
+			type = "Neutral";
+			break;
+
+		case Attacks::Attack_Type1:
+			type = "Type 1";
+			break;
+
+		case Attacks::Attack_Type2:
+			type = "Type 2";
+			break;
+
+		case Attacks::Attack_Type3:
+			type = "Type 3";
+			break;
+
+		default:
+			UE_LOG(LogTemp, Error, TEXT("Attack type not implemented!"));
+		}
+
+		UE_LOG(LogTemp, Warning, TEXT("Ouch! Enemy of type %s hit for %f damage!"), *type, Damage);
+	}
+
+	IncomingAttacks.Empty();
 }

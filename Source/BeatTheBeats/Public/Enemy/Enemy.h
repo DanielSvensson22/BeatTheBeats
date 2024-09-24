@@ -4,10 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Enemy/EnemyBase.h"
 #include "Enemy.generated.h"
 
+class UParticleSystem;
+
 UCLASS()
-class BEATTHEBEATS_API AEnemy : public ACharacter
+class BEATTHEBEATS_API AEnemy : public AEnemyBase
 {
 	GENERATED_BODY()
 
@@ -19,11 +22,22 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	virtual void OnBeat(float CurrentTimeSinceLastBeat) override;
+
+	virtual void Attack() override;
+
+	virtual void DoDamage() override;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+private:
+
+	UPROPERTY(EditDefaultsOnly)
+	UParticleSystem* HitEffect;
 
 };

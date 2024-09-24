@@ -6,12 +6,15 @@
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
 #include "Combo.h"
+#include <tuple>
 #include "PlayerCharacter.generated.h"
 
 class UInputAction;
 class USpringArmComponent;
 class UCameraComponent;
 class UComboManagerComponent;
+class AEnemyBase;
+class ABeatManager;
 
 UCLASS()
 class BEATTHEBEATS_API APlayerCharacter : public ACharacter
@@ -24,6 +27,8 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
 protected:
 	virtual void BeginPlay() override;
@@ -70,6 +75,14 @@ private:
 	void AttackCallback(Attacks AttackType, float MotionValue, float AnimLength, int Combo, int ComboStep);
 	void SetTargetLockCamera();
 
+	void OnBeat(float CurrentTimeSinceLastBeat);
+
+	void ProcessIncomingAttacks();
+
+private:
+
+	typedef std::tuple<AEnemyBase*, Attacks, float> IncomingAttack;
+
 	// Camera Components
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USpringArmComponent> CameraBoom;
@@ -95,4 +108,11 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Target Lock")
 	float TargetLockMaxMoveDistance; // Max distance between target and player before auto disable
+
+	TArray<IncomingAttack> IncomingAttacks;
+
+	class ABeatManager* BeatManager;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<ABeatManager> BeatManagerClass;
 };

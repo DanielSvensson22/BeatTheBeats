@@ -92,6 +92,8 @@ public:
 		return false;
 	}
 
+	FORCEINLINE int AttackCount() { return ComboAttacks.Num(); }
+
 private:
 
 	UPROPERTY(EditDefaultsOnly)
