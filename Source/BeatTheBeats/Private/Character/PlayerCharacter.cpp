@@ -28,6 +28,7 @@ APlayerCharacter::APlayerCharacter()
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 600.f, 0.f);
 
+	ECameraState::ECS_FreeCamera;
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(GetRootComponent());
 	CameraBoom->AddRelativeLocation(FVector(0.f, 0.f, 50.f));
@@ -38,12 +39,12 @@ APlayerCharacter::APlayerCharacter()
 	ViewCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("ViewCamera"));
 	ViewCamera->SetupAttachment(CameraBoom);
 
-	ComboManager = CreateDefaultSubobject<UComboManagerComponent>(TEXT("Combo Manager"));
-	ComboManager->BindAttackCallbackFunc(this, &APlayerCharacter::AttackCallback);
-
 	TargetLockTraceRange = 1000.f;
 	TargetLockTraceRadius = 150.f;
 	TargetLockMaxMoveDistance = 1500.f;
+
+	ComboManager = CreateDefaultSubobject<UComboManagerComponent>(TEXT("Combo Manager"));
+	ComboManager->BindAttackCallbackFunc(this, &APlayerCharacter::AttackCallback);
 }
 
 void APlayerCharacter::BeginPlay()
@@ -127,6 +128,7 @@ void APlayerCharacter::TargetLock()
 {
 	if (bIsLockingTarget)
 	{
+		ECameraState::ECS_FreeCamera;
 		bIsLockingTarget = false;
 		TargetLockHitTarget = nullptr;
 		bUseControllerRotationYaw = false;
@@ -144,7 +146,7 @@ void APlayerCharacter::TargetLock()
 
 		// IgnoreActors.Add(); // Add actors to ingore here if needed
 
-		FHitResult SphereHit; // hit result
+		FHitResult SphereHit;
 
 		UKismetSystemLibrary::SphereTraceSingleForObjects(this, Start, End, TargetLockTraceRadius, ObjectTypesArray, false, IgnoreActors, EDrawDebugTrace::ForDuration, SphereHit, true);
 
@@ -152,6 +154,7 @@ void APlayerCharacter::TargetLock()
 
 		if (TargetLockHitTarget != nullptr)
 		{
+			ECameraState::ECS_LockCamera;
 			bIsLockingTarget = true;
 			bUseControllerRotationYaw = true; // Character look at locked target
 		}
@@ -169,8 +172,9 @@ void APlayerCharacter::SetTargetLockCamera()
 
 		if (Distance > TargetLockMaxMoveDistance)
 		{
-			TargetLockHitTarget = nullptr;
+			ECameraState::ECS_FreeCamera;
 			bIsLockingTarget = false;
+			TargetLockHitTarget = nullptr;
 			bUseControllerRotationYaw = false;
 		}
 	}

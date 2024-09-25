@@ -7,6 +7,7 @@
 #include "InputActionValue.h"
 #include "Combo.h"
 #include <tuple>
+#include "PlayerCameraType.h"
 #include "PlayerCharacter.generated.h"
 
 class UInputAction;
@@ -84,6 +85,8 @@ private:
 	typedef std::tuple<AEnemyBase*, Attacks, float> IncomingAttack;
 
 	// Camera Components
+	ECameraState CameraState = ECameraState::ECS_FreeCamera;
+
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USpringArmComponent> CameraBoom;
 
@@ -92,10 +95,10 @@ private:
 
 	// Target Lock Components
 	UPROPERTY(VisibleAnywhere, Category = "Target Lock")
-	bool bIsLockingTarget = false;
+	TObjectPtr<AActor> TargetLockHitTarget;
 
 	UPROPERTY(VisibleAnywhere, Category = "Target Lock")
-	TObjectPtr<AActor> TargetLockHitTarget;
+	bool bIsLockingTarget = false;
 
 	UPROPERTY(EditAnywhere, Category = "Target Lock")
 	float LockOffsetModifier;
@@ -115,4 +118,7 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<ABeatManager> BeatManagerClass;
+
+public:
+	FORCEINLINE ECameraState GetCameraState() const { return CameraState; }
 };
