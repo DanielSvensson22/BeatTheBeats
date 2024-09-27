@@ -81,7 +81,6 @@ private:
 	void ProcessIncomingAttacks();
 
 private:
-
 	typedef std::tuple<AEnemyBase*, Attacks, float> IncomingAttack;
 
 	// Camera Components
@@ -121,4 +120,6 @@ private:
 
 public:
 	FORCEINLINE ECameraState GetCameraState() const { return CameraState; }
+	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+	FORCEINLINE bool GetIsLockingTarget() const { return bIsLockingTarget; }
 };

@@ -129,6 +129,7 @@ void APlayerCharacter::TargetLock()
 	if (bIsLockingTarget)
 	{
 		ECameraState::ECS_FreeCamera;
+		GetCharacterMovement()->bOrientRotationToMovement = true;
 		bIsLockingTarget = false;
 		TargetLockHitTarget = nullptr;
 		bUseControllerRotationYaw = false;
@@ -155,6 +156,7 @@ void APlayerCharacter::TargetLock()
 		if (TargetLockHitTarget != nullptr)
 		{
 			ECameraState::ECS_LockCamera;
+			GetCharacterMovement()->bOrientRotationToMovement = false;
 			bIsLockingTarget = true;
 			bUseControllerRotationYaw = true; // Character look at locked target
 		}
@@ -173,6 +175,7 @@ void APlayerCharacter::SetTargetLockCamera()
 		if (Distance > TargetLockMaxMoveDistance)
 		{
 			ECameraState::ECS_FreeCamera;
+			GetCharacterMovement()->bOrientRotationToMovement = true;
 			bIsLockingTarget = false;
 			TargetLockHitTarget = nullptr;
 			bUseControllerRotationYaw = false;

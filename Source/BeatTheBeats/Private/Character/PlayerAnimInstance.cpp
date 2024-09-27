@@ -5,6 +5,8 @@
 #include "Character/PlayerCharacter.h"
 #include "GameFramework\CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "KismetAnimationLibrary.h"
+
 
 void UPlayerAnimInstance::NativeInitializeAnimation()
 {
@@ -24,6 +26,12 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaTime)
 
 	if (PlayerCharacterMovement != nullptr)
 	{
+		if (PlayerCharacter->GetCameraBoom() != nullptr)
+		{
+			bIsTargetLocking = PlayerCharacter->GetIsLockingTarget();
+		}
+
 		GroundSpeed = UKismetMathLibrary::VSizeXY(PlayerCharacterMovement->Velocity);
+		Direction = CalculateDirection(PlayerCharacterMovement->Velocity, PlayerCharacter->GetActorRotation());
 	}
 }
