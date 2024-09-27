@@ -10,7 +10,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
-#include "ComboManagerComponent.h"
+#include "Combos/ComboManagerComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 

@@ -5,7 +5,7 @@
 #include "GameFramework\SpringArmComponent.h"
 #include "GameFramework\CharacterMovementComponent.h"
 #include "Camera/CameraComponent.h"
-#include "ComboManagerComponent.h"
+#include "Combos/ComboManagerComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
@@ -15,7 +15,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
 #include "Enemy/EnemyBase.h"
-#include "BeatManager.h"
+#include "Beats/BeatManager.h"
 
 APlayerCharacter::APlayerCharacter()
 {

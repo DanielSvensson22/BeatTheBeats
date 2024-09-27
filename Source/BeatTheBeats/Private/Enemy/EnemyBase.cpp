@@ -3,15 +3,21 @@
 
 #include "Enemy/EnemyBase.h"
 #include "Kismet/GameplayStatics.h"
-#include "BeatManager.h"
+#include "Beats/BeatManager.h"
 #include "Enemy/EnemyQueue.h"
+#include "Components/CapsuleComponent.h"
 
 // Sets default values
 AEnemyBase::AEnemyBase()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
+	GetMesh()->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	GetMesh()->SetGenerateOverlapEvents(true);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 }
 
 // Called when the game starts or when spawned

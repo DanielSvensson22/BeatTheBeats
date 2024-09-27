@@ -1,10 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "ComboManagerComponent.h"
-#include "BeatManager.h"
+#include "Combos/ComboManagerComponent.h"
+#include "Beats/BeatManager.h"
 #include "Kismet/GameplayStatics.h"
-#include "Combo.h"
+#include "Combos/Combo.h"
 #include <tuple>
 #include <queue>
 #include "Character/PlayerCharacter.h"

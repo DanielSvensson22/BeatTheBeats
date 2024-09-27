@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "BeatManager.h"
+#include "Beats/BeatManager.h"
 
 // Sets default values
 ABeatManager::ABeatManager()

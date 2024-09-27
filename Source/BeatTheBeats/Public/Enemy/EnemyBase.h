@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "../Combo.h"
+#include "../Combos/Combo.h"
 #include "EnemyBase.generated.h"
 
 class ABeatManager;

@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
-#include "Combo.h"
+#include "Combos/Combo.h"
 #include <tuple>
 #include "PlayerCameraType.h"
 #include "PlayerCharacter.generated.h"

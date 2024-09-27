@@ -1,36 +1,36 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Enemy/Enemy.h"
-#include "Components/SkeletalMeshComponent.h"
+#include "Enemy/MeleeEnemy.h"
+
 #include "Components/CapsuleComponent.h"
 #include "Engine/DamageEvents.h"
 #include "Kismet/GameplayStatics.h"
 
-AEnemy::AEnemy() : Super()
+AMeleeEnemy::AMeleeEnemy() : Super()
 {
-	
+
 }
 
-void AEnemy::BeginPlay()
+void AMeleeEnemy::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 }
 
-void AEnemy::Tick(float DeltaTime)
+void AMeleeEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
 }
 
-void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void AMeleeEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 }
 
-void AEnemy::OnBeat(float CurrentTimeSinceLastBeat)
+void AMeleeEnemy::OnBeat(float CurrentTimeSinceLastBeat)
 {
 	Super::OnBeat(CurrentTimeSinceLastBeat);
 
@@ -39,14 +39,14 @@ void AEnemy::OnBeat(float CurrentTimeSinceLastBeat)
 	}
 }
 
-void AEnemy::Attack()
+void AMeleeEnemy::Attack()
 {
 	Super::Attack();
 
 	DoDamage();
 }
 
-void AEnemy::DoDamage()
+void AMeleeEnemy::DoDamage()
 {
 	if (CurrentAttack == StandardCombo.AttackCount() - 1) {
 		FVector start;

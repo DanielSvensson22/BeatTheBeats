@@ -1,12 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "BeatTheBeatsPlayerController.h"
+#include "Character/BeatTheBeatsPlayerController.h"
 #include "EnhancedInputSubsystems.h"
 #include "Engine/LocalPlayer.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
-#include "BeatManager.h"
+#include "Beats/BeatManager.h"
 
 void ABeatTheBeatsPlayerController::BeginPlay()
 {

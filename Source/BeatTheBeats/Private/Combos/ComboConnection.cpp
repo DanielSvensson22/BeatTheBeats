@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "ComboConnection.h"
+#include "Combos/ComboConnection.h"
 
 FComboConnection::FComboConnection()
 {
