@@ -9,7 +9,18 @@
 
 AMeleeEnemy::AMeleeEnemy() : Super()
 {
+	AttackPoint = CreateDefaultSubobject<USceneComponent>(TEXT("Attack point"));
+	AttackPoint->SetupAttachment(RootComponent);
+}
 
+bool AMeleeEnemy::GetCanAttack()
+{
+	LastDistanceToPlayer = FVector::Dist(AttackPoint->GetComponentLocation(), UGameplayStatics::GetPlayerPawn(this, 0)->GetActorLocation());
+	if (LastDistanceToPlayer < AttackRange) {
+		return true;
+	}
+
+	return bCanAttack;
 }
 
 void AMeleeEnemy::BeginPlay()
@@ -32,7 +43,12 @@ void AMeleeEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 void AMeleeEnemy::OnBeat(float CurrentTimeSinceLastBeat)
 {
-	Super::OnBeat(CurrentTimeSinceLastBeat);
+	if (bCanAttack || LastDistanceToPlayer < AttackRange) {
+		CurrentAttack = StandardCombo.NextAttack();
+	}
+	else {
+		CurrentAttack = StandardCombo.ResetCombo();
+	}
 
 	if (CurrentAttack > -1) {
 		Attack();
@@ -53,6 +69,7 @@ void AMeleeEnemy::DoDamage()
 		FRotator rotation;
 
 		GetController()->GetPlayerViewPoint(start, rotation);
+		start = AttackPoint->GetComponentLocation();
 
 		FVector forward = rotation.Vector();
 

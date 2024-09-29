@@ -102,6 +102,11 @@ void AEnemyBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 
 }
 
+bool AEnemyBase::GetCanAttack()
+{
+	return bCanAttack;
+}
+
 void AEnemyBase::SetAttackState(bool CanAttack, bool CanChase)
 {
 	bCanAttack = CanAttack;

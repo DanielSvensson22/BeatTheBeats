@@ -18,6 +18,8 @@ public:
 	// Sets default values for this character's properties
 	AMeleeEnemy();
 
+	virtual bool GetCanAttack() override;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -37,6 +39,11 @@ public:
 
 private:
 
+	UPROPERTY(VisibleAnywhere)
+	USceneComponent* AttackPoint;
+
 	UPROPERTY(EditDefaultsOnly)
-		UParticleSystem* HitEffect;
+	UParticleSystem* HitEffect;
+
+	float LastDistanceToPlayer;
 };

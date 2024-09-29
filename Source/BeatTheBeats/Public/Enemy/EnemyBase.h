@@ -34,7 +34,8 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	FORCEINLINE bool GetCanAttack() { return bCanAttack; }
+	virtual bool GetCanAttack();
+
 	FORCEINLINE float GetMaxAttackDistance() { return MaxAttackDistance; }
 	FORCEINLINE bool GetCanChasePlayer() { return bCanChasePlayer; }
 	FORCEINLINE bool IsAlive() { return CurrentHealth > 0; }
