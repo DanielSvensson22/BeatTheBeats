@@ -11,6 +11,8 @@ AMeleeEnemy::AMeleeEnemy() : Super()
 {
 	AttackPoint = CreateDefaultSubobject<USceneComponent>(TEXT("Attack point"));
 	AttackPoint->SetupAttachment(RootComponent);
+
+	bIsMelee = true;
 }
 
 bool AMeleeEnemy::GetCanAttack()

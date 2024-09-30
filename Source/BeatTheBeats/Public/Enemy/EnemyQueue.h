@@ -28,10 +28,13 @@ public:
 
 	void AddToQueue(AEnemyBase* Enemy);
 
+	void AddToRangedQueue(AEnemyBase* Enemy);
+
 	void RemoveEnemy(AEnemyBase* Enemy);
 
 private:
 
+	//Melee
 	std::queue<AEnemyBase*> WaitingEnemies;
 
 	UPROPERTY(EditDefaultsOnly)
@@ -39,5 +42,14 @@ private:
 
 	int CurrentEnemyCount = 0;
 
+	//Ranged
+	std::queue<AEnemyBase*> WaitingRangedEnemies;
+
+	UPROPERTY(EditDefaultsOnly)
+	int MaxRangedEnemies = 2;
+
+	int CurrentRangedEnemyCount = 0;
+
+	UPROPERTY(VisibleAnywhere)
 	TArray<AEnemyBase*> AttackingEnemies;
 };

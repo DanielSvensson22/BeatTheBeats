@@ -70,6 +70,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	float Damage = 10;
 
+	UPROPERTY(VisibleAnywhere)
+	bool bIsMelee = true;
+
 protected:
 
 	virtual void DoDamage();

@@ -36,11 +36,29 @@ void AEnemyQueue::Tick(float DeltaTime)
 			}
 		}
 	}
+
+	if (CurrentRangedEnemyCount < MaxRangedEnemies) {
+		if (WaitingRangedEnemies.size() > 0) {
+			AEnemyBase* enemy = WaitingRangedEnemies.front();
+			WaitingRangedEnemies.pop();
+
+			if (enemy->IsAlive()) {
+				enemy->SetAttackState(true, true);
+				CurrentRangedEnemyCount++;
+				AttackingEnemies.Emplace(enemy);
+			}
+		}
+	}
 }
 
 void AEnemyQueue::AddToQueue(AEnemyBase* Enemy)
 {
 	WaitingEnemies.emplace(Enemy);
+}
+
+void AEnemyQueue::AddToRangedQueue(AEnemyBase* Enemy)
+{
+	WaitingRangedEnemies.emplace(Enemy);
 }
 
 void AEnemyQueue::RemoveEnemy(AEnemyBase* Enemy)

@@ -4,23 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
-#include "MeleeAIController.generated.h"
+#include "RangedAIController.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class BEATTHEBEATS_API AMeleeAIController : public AAIController
+class BEATTHEBEATS_API ARangedAIController : public AAIController
 {
 	GENERATED_BODY()
 	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-public:
-
-	void SetFocusState(AActor* focus, bool ShouldFocus);
 
 private:
 
@@ -29,6 +25,4 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	FName StartLocationKeyName = "StartLocation";
-
-	bool bHasSetFocus = false;
 };

@@ -117,7 +117,13 @@ void AEnemyBase::EnterQueue()
 {
 	if (!bHasAddedToQueue) {
 		if (EnemyQueue) {
-			EnemyQueue->AddToQueue(this);
+			if (bIsMelee) {
+				EnemyQueue->AddToQueue(this);
+			}
+			else {
+				EnemyQueue->AddToRangedQueue(this);
+			}
+
 			bHasAddedToQueue = true;
 		}
 	}
