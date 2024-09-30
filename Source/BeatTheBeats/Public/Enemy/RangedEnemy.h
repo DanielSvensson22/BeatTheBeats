@@ -6,6 +6,8 @@
 #include "Enemy/EnemyBase.h"
 #include "RangedEnemy.generated.h"
 
+class UNiagaraSystem;
+
 /**
  * 
  */
@@ -39,6 +41,10 @@ public:
 
 private:
 
+	void AddLaserBeam(const FVector& end);
+
+private:
+
 	UPROPERTY(VisibleAnywhere)
 	USceneComponent* ShootPoint;
 
@@ -49,5 +55,11 @@ private:
 	UParticleSystem* MuzzleEffect;
 
 	UPROPERTY(EditDefaultsOnly)
+	UNiagaraSystem* LaserBeam;
+
+	UPROPERTY(EditDefaultsOnly)
 	float CloseQuarterDistance = 200;
+
+	UPROPERTY(EditDefaultsOnly)
+	float LaserWidth = 1;
 };

@@ -48,6 +48,8 @@ public:
 
 protected:
 
+	class ABeatManager* BeatManager;
+
 	UPROPERTY(EditDefaultsOnly)
 	FCombo StandardCombo;
 
@@ -78,8 +80,6 @@ protected:
 	virtual void DoDamage();
 
 private:
-
-	class ABeatManager* BeatManager;
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<ABeatManager> BeatManagerClass;

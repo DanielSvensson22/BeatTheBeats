@@ -5,6 +5,9 @@
 
 #include "Kismet/GameplayStatics.h"
 #include "Engine/DamageEvents.h"
+#include "Beats/BeatManager.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 
 ARangedEnemy::ARangedEnemy() : Super()
 {
@@ -32,7 +35,7 @@ void ARangedEnemy::BeginPlay()
 
 void ARangedEnemy::OnBeat(float CurrentTimeSinceLastBeat)
 {
-	if (bCanAttack) {
+	if (GetCanAttack()) {
 		CurrentAttack = StandardCombo.NextAttack();
 	}
 	else {
@@ -53,6 +56,8 @@ void ARangedEnemy::Attack()
 		FRotator rotation = direction.Rotation();
 
 		SetActorRotation(rotation);
+
+		AddLaserBeam(UGameplayStatics::GetPlayerPawn(this, 0)->GetActorLocation());
 	}
 	else {
 		DoDamage();
@@ -85,6 +90,12 @@ void ARangedEnemy::DoDamage()
 		if (AActor* hitActor = result.GetActor()) {
 			hitActor->TakeDamage(Damage, DamageEvent, GetInstigatorController(), this);
 		}
+
+		AddLaserBeam(result.Location);
+	}
+	else {
+		
+		AddLaserBeam(end);
 	}
 
 	if (MuzzleEffect) {
@@ -102,4 +113,16 @@ void ARangedEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+}
+
+void ARangedEnemy::AddLaserBeam(const FVector& end)
+{
+	if (LaserBeam) {
+		UNiagaraComponent* NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAttached(LaserBeam, ShootPoint,
+			NAME_None, FVector(0.f), FRotator(0.f), EAttachLocation::Type::KeepRelativeOffset, true);
+
+		NiagaraComp->SetNiagaraVariableFloat(FString("LifeTime"), BeatManager->TimeBetweenBeats());
+		NiagaraComp->SetNiagaraVariableFloat(FString("Width"), LaserWidth);
+		NiagaraComp->SetVariablePosition(FName("BeamEnd"), end);
+	}
 }
