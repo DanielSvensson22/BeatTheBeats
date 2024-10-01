@@ -46,6 +46,8 @@ public:
 
 	void EnterQueue();
 
+	virtual void Parry();
+
 protected:
 
 	class ABeatManager* BeatManager;

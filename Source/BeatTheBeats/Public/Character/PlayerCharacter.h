@@ -61,16 +61,34 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	TObjectPtr<UInputAction> Type3AttackAction;
 
+	UPROPERTY(EditAnywhere, Category = "Input")
+	TObjectPtr<UInputAction> NeautralBlockAction;
+
+	UPROPERTY(EditAnywhere, Category = "Input")
+	TObjectPtr<UInputAction> Type1BlockAction;
+
+	UPROPERTY(EditAnywhere, Category = "Input")
+	TObjectPtr<UInputAction> Type2BlockAction;
+
+	UPROPERTY(EditAnywhere, Category = "Input")
+	TObjectPtr<UInputAction> Type3BlockAction;
+
 	/**
 	* Callbacks for input
 	*/
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void TargetLock();
+
 	void AddNeutralAttack();
 	void AddType1Attack();
 	void AddType2Attack();
 	void AddType3Attack();
+
+	void AddNeutralBlock();
+	void AddType1Block();
+	void AddType2Block();
+	void AddType3Block();
 
 private:
 	void AttackCallback(Attacks AttackType, float MotionValue, float AnimLength, int Combo, int ComboStep);
@@ -117,6 +135,10 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<ABeatManager> BeatManagerClass;
+
+	Attacks CurrentBlockedType;
+
+	bool bIsBlocking = false;
 
 public:
 	FORCEINLINE ECameraState GetCameraState() const { return CameraState; }

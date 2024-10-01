@@ -78,10 +78,18 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(MovementAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Move);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Look);
 		EnhancedInputComponent->BindAction(TargetLockAction, ETriggerEvent::Started, this, &APlayerCharacter::TargetLock);
+
+		//Attacks
 		EnhancedInputComponent->BindAction(NeautralAttackAction, ETriggerEvent::Started, this, &APlayerCharacter::AddNeutralAttack);
 		EnhancedInputComponent->BindAction(Type1AttackAction, ETriggerEvent::Started, this, &APlayerCharacter::AddType1Attack);
 		EnhancedInputComponent->BindAction(Type2AttackAction, ETriggerEvent::Started, this, &APlayerCharacter::AddType2Attack);
 		EnhancedInputComponent->BindAction(Type3AttackAction, ETriggerEvent::Started, this, &APlayerCharacter::AddType3Attack);
+
+		//Blocks
+		EnhancedInputComponent->BindAction(NeautralBlockAction, ETriggerEvent::Started, this, &APlayerCharacter::AddNeutralBlock);
+		EnhancedInputComponent->BindAction(Type1BlockAction, ETriggerEvent::Started, this, &APlayerCharacter::AddType1Block);
+		EnhancedInputComponent->BindAction(Type2BlockAction, ETriggerEvent::Started, this, &APlayerCharacter::AddType2Block);
+		EnhancedInputComponent->BindAction(Type3BlockAction, ETriggerEvent::Started, this, &APlayerCharacter::AddType3Block);
 	}
 }
 
@@ -211,6 +219,38 @@ void APlayerCharacter::AddType3Attack()
 	UE_LOG(LogTemp, Display, TEXT("Added Type 3 Attack to queue."));
 }
 
+void APlayerCharacter::AddNeutralBlock()
+{
+	if (!bIsBlocking) {
+		CurrentBlockedType = Attacks::Attack_Neutral;
+		bIsBlocking = true;
+	}
+}
+
+void APlayerCharacter::AddType1Block()
+{
+	if (!bIsBlocking) {
+		CurrentBlockedType = Attacks::Attack_Type1;
+		bIsBlocking = true;
+	}
+}
+
+void APlayerCharacter::AddType2Block()
+{
+	if (!bIsBlocking) {
+		CurrentBlockedType = Attacks::Attack_Type2;
+		bIsBlocking = true;
+	}
+}
+
+void APlayerCharacter::AddType3Block()
+{
+	if (!bIsBlocking) {
+		CurrentBlockedType = Attacks::Attack_Type3;
+		bIsBlocking = true;
+	}
+}
+
 void APlayerCharacter::AttackCallback(Attacks AttackType, float MotionValue, float AnimLength, int Combo, int ComboStep)
 {
 	//To Do: Add damage functionality...
@@ -254,31 +294,42 @@ void APlayerCharacter::OnBeat(float CurrentTimeSinceLastBeat)
 void APlayerCharacter::ProcessIncomingAttacks()
 {
 	for (auto& [Enemy, EnemyType, Damage] : IncomingAttacks) {
-		FString type;
+		if (bIsBlocking && CurrentBlockedType == EnemyType) {
+			float dot = GetActorForwardVector().Dot(Enemy->GetActorForwardVector());
 
-		switch (EnemyType) {
-		case Attacks::Attack_Neutral:
-			type = "Neutral";
-			break;
-
-		case Attacks::Attack_Type1:
-			type = "Type 1";
-			break;
-
-		case Attacks::Attack_Type2:
-			type = "Type 2";
-			break;
-
-		case Attacks::Attack_Type3:
-			type = "Type 3";
-			break;
-
-		default:
-			UE_LOG(LogTemp, Error, TEXT("Attack type not implemented!"));
+			if (dot < 0) {
+				Enemy->Parry();
+			}
 		}
+		else {
+			FString type;
 
-		UE_LOG(LogTemp, Warning, TEXT("Ouch! Enemy of type %s hit for %f damage!"), *type, Damage);
+			switch (EnemyType) {
+			case Attacks::Attack_Neutral:
+				type = "Neutral";
+				break;
+
+			case Attacks::Attack_Type1:
+				type = "Type 1";
+				break;
+
+			case Attacks::Attack_Type2:
+				type = "Type 2";
+				break;
+
+			case Attacks::Attack_Type3:
+				type = "Type 3";
+				break;
+
+			default:
+				UE_LOG(LogTemp, Error, TEXT("Attack type not implemented!"));
+			}
+
+			UE_LOG(LogTemp, Warning, TEXT("Ouch! Enemy of type %s hit for %f damage!"), *type, Damage);
+		}
+		
 	}
 
 	IncomingAttacks.Empty();
+	bIsBlocking = false;
 }

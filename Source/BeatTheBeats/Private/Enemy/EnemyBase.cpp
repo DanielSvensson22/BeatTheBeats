@@ -129,6 +129,35 @@ void AEnemyBase::EnterQueue()
 	}
 }
 
+void AEnemyBase::Parry()
+{
+	FString attack;
+
+	switch (EnemyType) {
+	case Attacks::Attack_Neutral:
+		attack = "Neutral";
+		break;
+
+	case Attacks::Attack_Type1:
+		attack = "Type 1";
+		break;
+
+	case Attacks::Attack_Type2:
+		attack = "Type 2";
+		break;
+
+	case Attacks::Attack_Type3:
+		attack = "Type 3";
+		break;
+
+	default:
+		attack = "Not Implemented";
+		break;
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("%s attack was parried!"), *attack);
+}
+
 void AEnemyBase::DoDamage()
 {
 
