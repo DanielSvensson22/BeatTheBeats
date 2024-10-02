@@ -16,6 +16,7 @@
 #include "EnhancedInputComponent.h"
 #include "Enemy/EnemyBase.h"
 #include "Beats/BeatManager.h"
+#include "Weapons/WeaponBase.h"
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -27,6 +28,9 @@ APlayerCharacter::APlayerCharacter()
 
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 600.f, 0.f);
+
+	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Weapon"));
+	WeaponMesh->SetupAttachment(GetMesh(), TEXT("RightHandSocket"));
 
 	ECameraState::ECS_FreeCamera;
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
