@@ -22,6 +22,20 @@ public:
 
 	void SetFocusState(AActor* focus, bool ShouldFocus);
 
+public:
+
+	UPROPERTY(VisibleAnywhere)
+	float RandomDistance = 0;
+
+	UPROPERTY(VisibleAnywhere)
+	bool WalkingRight = true;
+
+	UPROPERTY(VisibleAnywhere)
+	FVector TargetPosition;
+
+	UPROPERTY(VisibleAnywhere)
+	float CurrentAngle;
+
 private:
 
 	UPROPERTY(EditDefaultsOnly)

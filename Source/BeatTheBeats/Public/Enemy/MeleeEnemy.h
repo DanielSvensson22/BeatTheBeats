@@ -37,6 +37,10 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	FORCEINLINE float GetMinStalkDistance() { return MinStalkDistance; }
+	FORCEINLINE float GetMaxStalkDistance() { return MaxStalkDistance; }
+	FORCEINLINE float GetStalkSpeed() { return StalkSpeed; }
+
 private:
 
 	UPROPERTY(VisibleAnywhere)
@@ -46,4 +50,13 @@ private:
 	UParticleSystem* HitEffect;
 
 	float LastDistanceToPlayer;
+
+	UPROPERTY(EditDefaultsOnly)
+	float MinStalkDistance = 300;
+
+	UPROPERTY(EditDefaultsOnly)
+	float MaxStalkDistance = 1500;
+
+	UPROPERTY(EditDefaultsOnly)
+	float StalkSpeed = 10;
 };
