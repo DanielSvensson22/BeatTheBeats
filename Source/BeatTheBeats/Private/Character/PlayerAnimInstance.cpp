@@ -32,6 +32,6 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaTime)
 		}
 
 		GroundSpeed = UKismetMathLibrary::VSizeXY(PlayerCharacterMovement->Velocity);
-		Direction = CalculateDirection(PlayerCharacterMovement->Velocity, PlayerCharacter->GetActorRotation());
+		Direction = UKismetAnimationLibrary::CalculateDirection(PlayerCharacterMovement->Velocity, PlayerCharacter->GetActorRotation());
 	}
 }
