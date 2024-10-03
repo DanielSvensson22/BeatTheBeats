@@ -17,6 +17,7 @@ class UComboManagerComponent;
 class AEnemyBase;
 class ABeatManager;
 class AWeaponBase;
+class UChildActorComponent;
 
 UCLASS()
 class BEATTHEBEATS_API APlayerCharacter : public ACharacter
@@ -105,6 +106,12 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> WeaponMesh;
 
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<AWeaponBase> Weapon;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AWeaponBase> WeaponClass;
+
 	// Camera Components
 	ECameraState CameraState = ECameraState::ECS_FreeCamera;
 
@@ -148,7 +155,7 @@ private:
 	TObjectPtr<AWeaponBase> OverlappingWeapon;
 
 public:
-	FORCEINLINE void SetOverlappingWeapon(AWeaponBase* Weapon) { OverlappingWeapon = Weapon; }
+	//FORCEINLINE void SetOverlappingWeapon(AWeaponBase* Weapon) { OverlappingWeapon = Weapon; }
 	FORCEINLINE ECameraState GetCameraState() const { return CameraState; }
 	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	FORCEINLINE bool GetIsLockingTarget() const { return bIsLockingTarget; }

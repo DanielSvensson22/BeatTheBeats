@@ -29,8 +29,12 @@ APlayerCharacter::APlayerCharacter()
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 600.f, 0.f);
 
-	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Weapon"));
-	WeaponMesh->SetupAttachment(GetMesh(), TEXT("RightHandSocket"));
+	//WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Weapon"));
+	//WeaponMesh->SetupAttachment(GetMesh(), TEXT("RightHandSocket"));
+
+	//Weapon = CreateDefaultSubobject<UChildActorComponent>(TEXT("Weapon"));
+	//Weapon->SetChildActorClass(WeaponClass);
+	//Weapon->SetupAttachment(GetMesh(), TEXT("RightHandSocket"));
 
 	ECameraState::ECS_FreeCamera;
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
@@ -55,6 +59,10 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	Weapon = GetWorld()->SpawnActor<AWeaponBase>(WeaponClass);
+	Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("RightHandSocket"));
+	Weapon->SetOwner(this);
+
 	BeatManager = Cast<ABeatManager>(UGameplayStatics::GetActorOfClass(this, BeatManagerClass));
 
 	if (BeatManager == nullptr) {
