@@ -5,13 +5,14 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "../Combos/Combo.h"
+#include "Interfaces/HitInterface.h"
 #include "EnemyBase.generated.h"
 
 class ABeatManager;
 class AEnemyQueue;
 
 UCLASS()
-class BEATTHEBEATS_API AEnemyBase : public ACharacter
+class BEATTHEBEATS_API AEnemyBase : public ACharacter, public IHitInterface
 {
 	GENERATED_BODY()
 
@@ -27,12 +28,20 @@ protected:
 
 	virtual void Attack();
 
+	/**
+	* Play Montage functions
+	*/
+	void PlayHitReactMontage(const FName& SectionName);
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	virtual void GetHit(const FVector& ImpactPoint) override;
+	void DirectionalHitReact(const FVector& ImpactPoint);
 
 	virtual bool GetCanAttack();
 
@@ -77,6 +86,24 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	bool bIsMelee = true;
 
+	/**
+	* Animation Montages
+	*/
+	UPROPERTY(EditDefaultsOnly, Category = "Montages")
+	UAnimMontage* HitReactMontage;
+
+	/**
+	* Sounds
+	*/
+	UPROPERTY(EditAnywhere, Category = "Sounds")
+	USoundBase* HitSound; // No need forward declearing
+
+	/**
+	* Particles
+	*/
+	UPROPERTY(EditAnywhere, Category = "VisualEffects")
+	UParticleSystem* HitParticles; // No need forward declearing
+
 protected:
 
 	virtual void DoDamage();
@@ -99,4 +126,6 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AEnemyQueue> EnemyQueueClass;
+
+	
 };
