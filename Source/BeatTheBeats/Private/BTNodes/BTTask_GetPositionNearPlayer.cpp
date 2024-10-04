@@ -8,6 +8,7 @@
 #include "Enemy/MeleeEnemy.h"
 #include "Enemy/MeleeAIController.h"
 #include "NavigationSystem.h"
+#include "NavigationPath.h"
 
 UBTTask_GetPositionNearPlayer::UBTTask_GetPositionNearPlayer()
 {
@@ -57,13 +58,17 @@ EBTNodeResult::Type UBTTask_GetPositionNearPlayer::ExecuteTask(UBehaviorTreeComp
 				controller->TargetPosition = player->GetActorLocation() +
 											(controller->RandomDistance * player->GetActorForwardVector().RotateAngleAxis(controller->CurrentAngle, FVector::UpVector));
 
-				if (controller->CurrentAngle > 90 || controller->CurrentAngle < -90) {
+				if (controller->CurrentAngle >= 90 || controller->CurrentAngle <= -90) {
 					controller->WalkingRight = !controller->WalkingRight;
 				}
 
-				GetValidPosition(controller);
+				bool Valid = GetValidPosition(controller);
 
 				OwnerComp.GetBlackboardComponent()->SetValueAsVector(GetSelectedBlackboardKey(), controller->TargetPosition);
+				OwnerComp.GetBlackboardComponent()->SetValueAsBool(BlackboardValidMoveKey.SelectedKeyName, Valid);
+				controller->LastPosition = player->GetActorLocation();
+
+				controller->CurrentAngle = FMath::Clamp(controller->CurrentAngle, -90, 90);
 
 				return EBTNodeResult::Type::Succeeded;
 			}
@@ -73,10 +78,31 @@ EBTNodeResult::Type UBTTask_GetPositionNearPlayer::ExecuteTask(UBehaviorTreeComp
 	return EBTNodeResult::Type::Failed;
 }
 
-void UBTTask_GetPositionNearPlayer::GetValidPosition(AMeleeAIController* controller)
+bool UBTTask_GetPositionNearPlayer::GetValidPosition(AMeleeAIController* controller)
 {
-	auto* const NavSystem = UNavigationSystemV1::GetCurrent(GetWorld());
-	FNavLocation location;
-	NavSystem->ProjectPointToNavigation(controller->TargetPosition, location);
-	controller->TargetPosition = location.Location;
+	FVector Start = controller->GetPawn()->GetActorLocation();
+	FVector End = controller->TargetPosition;
+	UNavigationPath* NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(controller->GetWorld(), Start, End, nullptr);
+
+	if (NavPath == nullptr || !NavPath->IsValid() || NavPath->IsPartial()) {
+		controller->WalkingRight = !controller->WalkingRight;
+		return false;
+	}
+
+	return true;
+}
+
+void UBTTask_GetPositionNearPlayer::InitializeFromAsset(UBehaviorTree& Asset)
+{
+	Super::InitializeFromAsset(Asset);
+
+	UBlackboardData* BBAsset = GetBlackboardAsset();
+	if (BBAsset)
+	{
+		BlackboardValidMoveKey.ResolveSelectedKey(*BBAsset);
+	}
+	else
+	{
+		UE_LOG(LogBehaviorTree, Warning, TEXT("Can't initialize task: %s, make sure that behavior tree specifies blackboard asset!"), *GetName());
+	}
 }

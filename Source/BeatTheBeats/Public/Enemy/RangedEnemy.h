@@ -39,6 +39,8 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	FORCEINLINE float GetFleeDistance() { return FleeDistance; }
+
 private:
 
 	void AddLaserBeam(const FVector& end);
@@ -62,4 +64,7 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	float LaserWidth = 1;
+
+	UPROPERTY(EditDefaultsOnly)
+	float FleeDistance = 100;
 };
