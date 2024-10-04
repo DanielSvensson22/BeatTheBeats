@@ -10,6 +10,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
+#include "Animation/AnimInstance.h"
 
 #include "Components/InputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -17,6 +18,7 @@
 #include "Enemy/EnemyBase.h"
 #include "Beats/BeatManager.h"
 #include "Weapons/WeaponBase.h"
+#include "Components/BoxComponent.h"
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -28,13 +30,6 @@ APlayerCharacter::APlayerCharacter()
 
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 600.f, 0.f);
-
-	//WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Weapon"));
-	//WeaponMesh->SetupAttachment(GetMesh(), TEXT("RightHandSocket"));
-
-	//Weapon = CreateDefaultSubobject<UChildActorComponent>(TEXT("Weapon"));
-	//Weapon->SetChildActorClass(WeaponClass);
-	//Weapon->SetupAttachment(GetMesh(), TEXT("RightHandSocket"));
 
 	ECameraState::ECS_FreeCamera;
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
@@ -116,6 +111,15 @@ float APlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damag
 	return DamageAmount;
 }
 
+void APlayerCharacter::SetWeaponCollisionEnabled(ECollisionEnabled::Type CollisionEnable)
+{
+	if (Weapon != nullptr && Weapon->GetWeaponBox() != nullptr)
+	{
+		Weapon->GetWeaponBox()->SetCollisionEnabled(CollisionEnable);
+		Weapon->IgnoreActors.Empty();
+	}
+}
+
 void APlayerCharacter::Move(const FInputActionValue& Value)
 {
 	const FVector2D MovementVector = Value.Get<FVector2D>();
@@ -161,7 +165,7 @@ void APlayerCharacter::TargetLock()
 		const FVector End = Start + UKismetMathLibrary::GetForwardVector(CameraRotation) * TargetLockTraceRange;
 
 		TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypesArray; // object types to trace
-		ObjectTypesArray.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn));
+		ObjectTypesArray.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic));
 
 		TArray<AActor*> IgnoreActors; // leave blank if not needed
 
@@ -267,14 +271,17 @@ void APlayerCharacter::AttackCallback(Attacks AttackType, float MotionValue, flo
 {
 	//To Do: Add damage functionality...
 	FString attackName;
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 
 	switch (AttackType) {
 	case Attacks::Attack_Neutral:
 		attackName = "Landed Neutral Attack";
+		PlayAttackMontage(AnimInstance, "AttackNeutral");
 		break;
 
 	case Attacks::Attack_Type1:
 		attackName = "Landed Type 1 Attack";
+		PlayAttackMontage(AnimInstance, "Attack1");
 		break;
 
 	case Attacks::Attack_Type2:
@@ -294,6 +301,15 @@ void APlayerCharacter::AttackCallback(Attacks AttackType, float MotionValue, flo
 	}
 
 	UE_LOG(LogTemp, Warning, TEXT("%s on Combo step %i in Combo %i"), *attackName, ComboStep, Combo);
+}
+
+void APlayerCharacter::PlayAttackMontage(UAnimInstance* AnimInstance, FName SectionName)
+{
+	if (AnimInstance != nullptr && AttackMontage != nullptr)
+	{
+		AnimInstance->Montage_Play(AttackMontage);
+		AnimInstance->Montage_JumpToSection(SectionName, AttackMontage);
+	}
 }
 
 void APlayerCharacter::OnBeat(float CurrentTimeSinceLastBeat)

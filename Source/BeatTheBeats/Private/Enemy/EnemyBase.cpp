@@ -13,7 +13,7 @@ AEnemyBase::AEnemyBase()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
-	GetMesh()->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
+	GetMesh()->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetGenerateOverlapEvents(true);
@@ -100,6 +100,57 @@ void AEnemyBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+}
+
+
+void AEnemyBase::PlayHitReactMontage(const FName& SectionName)
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance != nullptr && HitReactMontage != nullptr)
+	{
+		AnimInstance->Montage_Play(HitReactMontage);
+		AnimInstance->Montage_JumpToSection(SectionName, HitReactMontage);
+	}
+}
+
+void AEnemyBase::GetHit(const FVector& ImpactPoint)
+{
+	if (GetWorld()) DrawDebugSphere(GetWorld(), ImpactPoint, 10.f, 12, FColor::Orange, false, 5.f);
+
+	DirectionalHitReact(ImpactPoint);
+}
+
+void AEnemyBase::DirectionalHitReact(const FVector& ImpactPoint)
+{
+	const FVector Forward = GetActorForwardVector();
+	//Lower Impact Point to the Enemy's Actor Location Z
+	const FVector ImpactLower(ImpactPoint.X, ImpactPoint.Y, GetActorLocation().Z);
+	FVector ToHit = (ImpactLower - GetActorLocation()).GetSafeNormal();
+	// Forward * ToHit = |Forward||ToHit| * cos(theta)
+	// |Forward| && |ToHit| = 1, so Forward * Tohit = cos(theta)
+	const double CosTheta = FVector::DotProduct(Forward, ToHit);
+	double Theta = FMath::Acos(CosTheta);
+	//Convert from radians to degrees
+	Theta = FMath::RadiansToDegrees(Theta);
+	// If Crossproduct points down, Theta should be negative
+	const FVector CrossProduct = FVector::CrossProduct(Forward, ToHit);
+	if (CrossProduct.Z < 0) { Theta *= -1.f; }
+
+	// Condition for which AM to Play
+	FName SectionName("FromBack");
+	if (Theta >= -45.f && Theta < 45.f) { SectionName = FName("FromFront"); }
+	else if (Theta >= -135.f && Theta < -45.f) { SectionName = FName("FromLeft"); }
+	else if (Theta >= 45.f && Theta < 135.f) { SectionName = FName("FromRight"); }
+
+	PlayHitReactMontage(FName(SectionName));
+
+	/*
+	** Draw debug line for calculation vector
+	*/
+	if (GEngine != nullptr) { GEngine->AddOnScreenDebugMessage(1, 5.f, FColor::Green, FString::Printf(TEXT("Theta: %f"), Theta)); }
+	UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + CrossProduct * 100.f, 5.f, FColor::Blue, 5.f);
+	UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + Forward * 100.f, 5.f, FColor::Red, 5.f);
+	UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + ToHit * 100.f, 5.f, FColor::Green, 5.f);
 }
 
 bool AEnemyBase::GetCanAttack()
