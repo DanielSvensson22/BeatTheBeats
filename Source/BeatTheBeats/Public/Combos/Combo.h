@@ -92,7 +92,7 @@ public:
 		return false;
 	}
 
-	FORCEINLINE int AttackCount() { return ComboAttacks.Num(); }
+	FORCEINLINE int AttackCount() const { return ComboAttacks.Num(); }
 
 private:
 

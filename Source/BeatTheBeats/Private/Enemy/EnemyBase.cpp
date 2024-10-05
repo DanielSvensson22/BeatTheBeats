@@ -6,6 +6,7 @@
 #include "Beats/BeatManager.h"
 #include "Enemy/EnemyQueue.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/WidgetComponent.h"
 
 // Sets default values
 AEnemyBase::AEnemyBase()
@@ -18,6 +19,11 @@ AEnemyBase::AEnemyBase()
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetGenerateOverlapEvents(true);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+
+	EnemyWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Enemy Widget"));
+	EnemyWidget->SetWidgetSpace(EWidgetSpace::Screen);
+	EnemyWidget->SetupAttachment(RootComponent);
+	EnemyWidget->AddLocalOffset(FVector(0, 0, GetCapsuleComponent()->GetScaledCapsuleHalfHeight()));
 }
 
 // Called when the game starts or when spawned

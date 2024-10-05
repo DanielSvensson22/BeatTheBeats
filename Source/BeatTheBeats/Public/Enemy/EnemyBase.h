@@ -10,6 +10,7 @@
 
 class ABeatManager;
 class AEnemyQueue;
+class UWidgetComponent;
 
 UCLASS()
 class BEATTHEBEATS_API AEnemyBase : public ACharacter, public IHitInterface
@@ -57,6 +58,12 @@ public:
 
 	virtual void Parry();
 
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE float GetHealthPercent() const { return CurrentHealth / MaxHealth; }
+
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE float GetPerformAttackPercent() const { return (float)(CurrentAttack + 1) / StandardCombo.AttackCount(); }
+
 protected:
 
 	class ABeatManager* BeatManager;
@@ -96,13 +103,16 @@ protected:
 	* Sounds
 	*/
 	UPROPERTY(EditAnywhere, Category = "Sounds")
-	USoundBase* HitSound; // No need forward declearing
+	USoundBase* HitSound; // No need forward declaring
 
 	/**
 	* Particles
 	*/
 	UPROPERTY(EditAnywhere, Category = "VisualEffects")
-	UParticleSystem* HitParticles; // No need forward declearing
+	UParticleSystem* HitParticles; // No need forward declaring
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	UWidgetComponent* EnemyWidget;
 
 protected:
 
@@ -126,6 +136,4 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AEnemyQueue> EnemyQueueClass;
-
-	
 };
