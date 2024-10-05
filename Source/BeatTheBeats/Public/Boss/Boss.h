@@ -4,11 +4,20 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "Enemy/EnemyBase.h"
+#include "Enemy/Enemy.h"
 #include "Boss.generated.h"
 
+UENUM(BlueprintType)
+enum class EBossState : uint8
+{
+	EBS_Chasing UMETA(DisplayName = "Chasing"),
+	EBS_Attacking UMETA(DisplayName = "Attacking"),
+};
+
+class UAnimMontage;
+
 UCLASS()
-class BEATTHEBEATS_API ABoss : public AEnemyBase
+class BEATTHEBEATS_API ABoss : public AEnemy
 {
 	GENERATED_BODY()
 
@@ -24,7 +33,18 @@ protected:
 
 	virtual void Attack() override;
 
+	void PlayAttackMontage();
+
 	virtual void DoDamage() override;
+
+	UPROPERTY(BlueprintReadWrite)
+	EBossState BossState;
+
+private:
+	UPROPERTY(EditDefaultsOnly, Category = "Montages")
+	TObjectPtr<UAnimMontage> AttackMontage;
+
+	APawn* Player;
 
 public:	
 
