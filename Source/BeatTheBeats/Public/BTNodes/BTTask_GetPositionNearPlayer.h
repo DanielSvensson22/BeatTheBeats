@@ -20,11 +20,16 @@ public:
 
 	UBTTask_GetPositionNearPlayer();
 
+	static bool GetValidPosition(AMeleeAIController* controller);
+
 protected:
 
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 
 private:
 
-	void GetValidPosition(AMeleeAIController* controller);
+	virtual void InitializeFromAsset(UBehaviorTree& Asset) override;
+
+	UPROPERTY(EditAnywhere, Category = Blackboard)
+		struct FBlackboardKeySelector BlackboardValidMoveKey;
 };

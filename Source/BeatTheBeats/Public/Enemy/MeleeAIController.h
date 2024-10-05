@@ -33,6 +33,8 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	FVector TargetPosition;
 
+	FVector LastPosition;
+
 	UPROPERTY(VisibleAnywhere)
 	float CurrentAngle;
 

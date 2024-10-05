@@ -3,26 +3,51 @@
 
 #include "Boss/Boss.h"
 #include "Components\CapsuleComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Animation/AnimMontage.h"
 
 ABoss::ABoss() : Super()
 {
-	
+	PrimaryActorTick.bCanEverTick = true;
+	BossState = EBossState::EBS_Chasing;
+
+	Attack3EffectPos = CreateDefaultSubobject<USceneComponent>("EffectPos(Attack3)");
+	Attack3EffectPos->SetupAttachment(GetRootComponent());
 }
 
 void ABoss::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	Player = UGameplayStatics::GetPlayerPawn(this, 0);
 }
 
 void ABoss::OnBeat(float CurrentTimeSinceLastBeat)
 {
-
+	if (bCanAttack)
+	{
+		Attack();
+	}
 }
 
 void ABoss::Attack()
 {
+	if (BossState == EBossState::EBS_Attacking) return;
+	PlayAttackMontage();
 
+	BossState = EBossState::EBS_Attacking;
+}
+
+void ABoss::PlayAttackMontage()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && AttackMontage)
+	{
+
+		AnimInstance->Montage_Play(AttackMontage);
+		AnimInstance->Montage_JumpToSection(FName("Attack3"), AttackMontage);
+		UE_LOG(LogTemp, Warning, TEXT("Montage is Playing!!!"));
+	}
 }
 
 void ABoss::DoDamage()
@@ -30,10 +55,31 @@ void ABoss::DoDamage()
 
 }
 
+void ABoss::SpawnAttackParticleEffect(FName SocketName)
+{
+	if (AttackParticleEffect && Attack3EffectPos)
+	{
+		UWorld* World = GetWorld();
+		// Spawn the particle effect attached to the given scene component
+		UGameplayStatics::SpawnEmitterAtLocation(World, AttackParticleEffect, Attack3EffectPos->GetComponentTransform(), true);
+	}
+}
+
 void ABoss::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	FVector PlayerLocation = Player->GetActorLocation();
+	FVector BossLocation = GetActorLocation();
 
+	float Distance = FVector::Dist(PlayerLocation, BossLocation);
+	//UE_LOG(LogTemp, Warning, TEXT("Distance from Player to Boss: %f"), Distance);
+	if (Distance <= AttackRange)
+	{
+		bCanAttack = true;
+	}
+	else {
+		bCanAttack = false;
+	}
 }
 
 void ABoss::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

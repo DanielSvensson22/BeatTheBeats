@@ -3,6 +3,7 @@
 
 #include "Enemy/EnemyQueue.h"
 #include "Enemy/EnemyBase.h"
+#include "NavigationSystem.h"
 
 // Sets default values
 AEnemyQueue::AEnemyQueue()
@@ -17,6 +18,11 @@ void AEnemyQueue::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	UNavigationSystemV1* NavSystem = UNavigationSystemV1::GetCurrent(GetWorld());
+
+	if (NavSystem) {
+		NavSystem->Build();
+	}
 }
 
 // Called every frame
