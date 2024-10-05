@@ -212,6 +212,12 @@ void APlayerCharacter::AddNeutralAttack()
 	//To Do: Calculate damage based on performance...
 	ComboManager->AddAttack(Attacks::Attack_Neutral, 1);
 	UE_LOG(LogTemp, Display, TEXT("Added Neutral Attack to queue."));
+
+	// Play Animation Based on Performace
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	PlayAttackMontage(AnimInstance, "PerfectNeutral");
+
+	//TO DO: Set up condition for normal/perfect hit...
 }
 
 void APlayerCharacter::AddType1Attack()
@@ -219,6 +225,12 @@ void APlayerCharacter::AddType1Attack()
 	//To Do: Calculate damage based on performance...
 	ComboManager->AddAttack(Attacks::Attack_Type1, 1);
 	UE_LOG(LogTemp, Display, TEXT("Added Type 1 Attack to queue."));
+
+	// Play Animation Based on Performace
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	PlayAttackMontage(AnimInstance, "Perfect1");
+
+	//TO DO: Set up condition for normal/perfect hit...
 }
 
 void APlayerCharacter::AddType2Attack()
@@ -271,17 +283,16 @@ void APlayerCharacter::AttackCallback(Attacks AttackType, float MotionValue, flo
 {
 	//To Do: Add damage functionality...
 	FString attackName;
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 
 	switch (AttackType) {
 	case Attacks::Attack_Neutral:
 		attackName = "Landed Neutral Attack";
-		PlayAttackMontage(AnimInstance, "AttackNeutral");
+		
 		break;
 
 	case Attacks::Attack_Type1:
 		attackName = "Landed Type 1 Attack";
-		PlayAttackMontage(AnimInstance, "Attack1");
+		
 		break;
 
 	case Attacks::Attack_Type2:
