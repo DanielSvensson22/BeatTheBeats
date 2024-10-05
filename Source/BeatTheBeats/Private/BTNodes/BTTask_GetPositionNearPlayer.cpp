@@ -64,6 +64,10 @@ EBTNodeResult::Type UBTTask_GetPositionNearPlayer::ExecuteTask(UBehaviorTreeComp
 
 				bool Valid = GetValidPosition(controller);
 
+				if (Valid) {
+					Valid = GetValidPath(controller, enemy);
+				}
+
 				OwnerComp.GetBlackboardComponent()->SetValueAsVector(GetSelectedBlackboardKey(), controller->TargetPosition);
 				OwnerComp.GetBlackboardComponent()->SetValueAsBool(BlackboardValidMoveKey.SelectedKeyName, Valid);
 				controller->LastPosition = player->GetActorLocation();
@@ -105,4 +109,20 @@ void UBTTask_GetPositionNearPlayer::InitializeFromAsset(UBehaviorTree& Asset)
 	{
 		UE_LOG(LogBehaviorTree, Warning, TEXT("Can't initialize task: %s, make sure that behavior tree specifies blackboard asset!"), *GetName());
 	}
+}
+
+bool UBTTask_GetPositionNearPlayer::GetValidPath(AMeleeAIController* controller, AEnemyBase* enemy)
+{
+	FHitResult result;
+	FCollisionQueryParams params;
+
+	params.AddIgnoredActor(enemy);
+
+	if (GetWorld()->LineTraceSingleByChannel(result, enemy->GetActorLocation(), 
+		FVector(controller->TargetPosition.X, controller->TargetPosition.Y, enemy->GetActorLocation().Z), ECollisionChannel::ECC_GameTraceChannel2, params)) {
+		controller->WalkingRight = !controller->WalkingRight;
+		return false;
+	}
+
+	return true;
 }

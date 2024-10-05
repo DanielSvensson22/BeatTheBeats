@@ -7,6 +7,7 @@
 #include "BTTask_GetPositionNearPlayer.generated.h"
 
 class AMeleeAIController;
+class AEnemyBase;
 
 /**
  * 
@@ -29,6 +30,8 @@ protected:
 private:
 
 	virtual void InitializeFromAsset(UBehaviorTree& Asset) override;
+
+	bool GetValidPath(AMeleeAIController* controller, AEnemyBase* enemy);
 
 	UPROPERTY(EditAnywhere, Category = Blackboard)
 		struct FBlackboardKeySelector BlackboardValidMoveKey;
