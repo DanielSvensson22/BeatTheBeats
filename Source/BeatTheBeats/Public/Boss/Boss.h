@@ -37,6 +37,14 @@ protected:
 
 	virtual void DoDamage() override;
 
+	UFUNCTION(BlueprintCallable, Category = "Effects")
+	void SpawnAttackParticleEffect(FName SocketName);
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
+	UParticleSystem* AttackParticleEffect;
+
+protected:
 	UPROPERTY(BlueprintReadWrite)
 	EBossState BossState;
 
@@ -45,6 +53,9 @@ private:
 	TObjectPtr<UAnimMontage> AttackMontage;
 
 	APawn* Player;
+
+	UPROPERTY(VisibleAnywhere)
+	USceneComponent* Attack3EffectPos;
 
 public:	
 

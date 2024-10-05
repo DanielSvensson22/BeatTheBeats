@@ -10,6 +10,9 @@ ABoss::ABoss() : Super()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	BossState = EBossState::EBS_Chasing;
+
+	Attack3EffectPos = CreateDefaultSubobject<USceneComponent>("EffectPos(Attack3)");
+	Attack3EffectPos->SetupAttachment(GetRootComponent());
 }
 
 void ABoss::BeginPlay()
@@ -21,11 +24,8 @@ void ABoss::BeginPlay()
 
 void ABoss::OnBeat(float CurrentTimeSinceLastBeat)
 {
-
-	UE_LOG(LogTemp, Warning, TEXT("Attack On Beat!!"));
 	if (bCanAttack)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Attack On Beat!!"));
 		Attack();
 	}
 }
@@ -55,6 +55,16 @@ void ABoss::DoDamage()
 
 }
 
+void ABoss::SpawnAttackParticleEffect(FName SocketName)
+{
+	if (AttackParticleEffect && Attack3EffectPos)
+	{
+		UWorld* World = GetWorld();
+		// Spawn the particle effect attached to the given scene component
+		UGameplayStatics::SpawnEmitterAtLocation(World, AttackParticleEffect, Attack3EffectPos->GetComponentTransform(), true);
+	}
+}
+
 void ABoss::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -66,8 +76,8 @@ void ABoss::Tick(float DeltaTime)
 	if (Distance <= AttackRange)
 	{
 		bCanAttack = true;
-	} else 
-	{
+	}
+	else {
 		bCanAttack = false;
 	}
 }
