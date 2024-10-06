@@ -210,40 +210,32 @@ void APlayerCharacter::SetTargetLockCamera()
 void APlayerCharacter::AddNeutralAttack()
 {
 	//To Do: Calculate damage based on performance...
-	ComboManager->AddAttack(Attacks::Attack_Neutral, 1);
+	bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
+	ComboManager->AddAttack(Attacks::Attack_Neutral, 1, !AddedLastBeat);
 	UE_LOG(LogTemp, Display, TEXT("Added Neutral Attack to queue."));
-
-	// Play Animation Based on Performace
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	PlayAttackMontage(AnimInstance, "PerfectNeutral");
-
-	//TO DO: Set up condition for normal/perfect hit...
 }
 
 void APlayerCharacter::AddType1Attack()
 {
 	//To Do: Calculate damage based on performance...
-	ComboManager->AddAttack(Attacks::Attack_Type1, 1);
+	bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
+	ComboManager->AddAttack(Attacks::Attack_Type1, 1, !AddedLastBeat);
 	UE_LOG(LogTemp, Display, TEXT("Added Type 1 Attack to queue."));
-
-	// Play Animation Based on Performace
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	PlayAttackMontage(AnimInstance, "Perfect1");
-
-	//TO DO: Set up condition for normal/perfect hit...
 }
 
 void APlayerCharacter::AddType2Attack()
 {
 	//To Do: Calculate damage based on performance...
-	ComboManager->AddAttack(Attacks::Attack_Type2, 1);
+	bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
+	ComboManager->AddAttack(Attacks::Attack_Type2, 1, !AddedLastBeat);
 	UE_LOG(LogTemp, Display, TEXT("Added Type 2 Attack to queue."));
 }
 
 void APlayerCharacter::AddType3Attack()
 {
 	//To Do: Calculate damage based on performance...
-	ComboManager->AddAttack(Attacks::Attack_Type3, 1);
+	bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
+	ComboManager->AddAttack(Attacks::Attack_Type3, 1, !AddedLastBeat);
 	UE_LOG(LogTemp, Display, TEXT("Added Type 3 Attack to queue."));
 }
 
@@ -314,8 +306,10 @@ void APlayerCharacter::AttackCallback(Attacks AttackType, float MotionValue, flo
 	UE_LOG(LogTemp, Warning, TEXT("%s on Combo step %i in Combo %i"), *attackName, ComboStep, Combo);
 }
 
-void APlayerCharacter::PlayAttackMontage(UAnimInstance* AnimInstance, FName SectionName)
+void APlayerCharacter::PlayAttackMontage(FName SectionName, bool AddTimeBetweenBeats)
 {
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
 	if (AnimInstance != nullptr && AttackMontage != nullptr)
 	{
 		int32 Section = AttackMontage->GetSectionIndex(SectionName);
@@ -336,7 +330,14 @@ void APlayerCharacter::PlayAttackMontage(UAnimInstance* AnimInstance, FName Sect
 			}
 		}
 
-		float PlayRate = Length / (BeatManager->GetTimeUntilNextBeat() + BeatManager->TimeBetweenBeats());
+		float PlayRate = 0;
+
+		if (AddTimeBetweenBeats) {
+			PlayRate = Length / (BeatManager->GetTimeUntilNextBeat() + BeatManager->TimeBetweenBeats());
+		}
+		else {
+			PlayRate = Length / BeatManager->GetTimeUntilNextBeat();
+		}
 
 		AnimInstance->Montage_Play(AttackMontage, PlayRate);
 		AnimInstance->Montage_JumpToSection(SectionName, AttackMontage);

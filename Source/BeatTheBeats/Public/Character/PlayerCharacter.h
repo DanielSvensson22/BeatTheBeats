@@ -36,6 +36,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetWeaponCollisionEnabled(ECollisionEnabled::Type CollisionEnable);
 
+	void PlayAttackMontage(FName SectionName, bool AddTimeBetweenBeats);
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -97,7 +99,6 @@ protected:
 
 private:
 	void AttackCallback(Attacks AttackType, float MotionValue, float AnimLength, int Combo, int ComboStep);
-	void PlayAttackMontage(UAnimInstance* AnimInstance, FName SectionName);
 	void SetTargetLockCamera();
 
 	void OnBeat(float CurrentTimeSinceLastBeat);

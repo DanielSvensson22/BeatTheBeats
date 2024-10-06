@@ -58,6 +58,21 @@ void UComboManagerComponent::AddAttack(Attacks AttackType, float Damage, bool Pl
 {
 	if (StoredAttacks.size() < 2) {
 		StoredAttacks.emplace(AttackType, Damage, PlayerAddedThisBeat);
+
+		if (player) {
+			if (StoredAttacks.size() == 1) {
+				PerformAnimation(AttackType, BeatManager->ClosenessToBeat(), PlayerAddedThisBeat);
+			}
+			else {
+				if (UpcomingAttackAnims.size() > 0) {
+					UpcomingAttackAnims.emplace(AttackType, BeatManager->ClosenessToBeat(), true);
+				}
+				else {
+					auto& [pad1, pad2, ShouldNotAttack] = StoredAttacks.front();
+					UpcomingAttackAnims.emplace(AttackType, BeatManager->ClosenessToBeat(), !ShouldNotAttack);
+				}
+			}
+		}
 	}
 }
 
@@ -83,6 +98,18 @@ void UComboManagerComponent::ProcessNextAttack(float CurrentTimeSinceLastBeat)
 			
 			if (!nextAttackMatchesInput) {
 				CurrentCombo = GetNextCombo(AttackType);
+			}
+
+			if (UpcomingAttackAnims.size() > 0) {
+				auto& [AttackAnimType, ClosenessToBeat, ShouldAttack] = UpcomingAttackAnims.front();
+
+				if (ShouldAttack) {
+					UpcomingAttackAnims.pop();
+					PerformAnimation(AttackAnimType, ClosenessToBeat, false);
+				}
+				else {
+					UpcomingAttackAnims.front() = std::make_tuple(AttackAnimType, ClosenessToBeat, true);
+				}
 			}
 			
 			PerformAttack(AttackType);
@@ -124,6 +151,38 @@ void UComboManagerComponent::PerformAttack(Attacks AttackType)
 				AddAttack(Attacks::Attack_Pause, 0, false);
 			}
 		}
+	}
+}
+
+void UComboManagerComponent::PerformAnimation(Attacks AttackType, float ClosenessToBeat, bool AddTimeBetweenBeats)
+{
+	switch (AttackType) {
+	case Attacks::Attack_Neutral:
+		if (ClosenessToBeat > ClosenessPercentForPerfectBeat) {
+			player->PlayAttackMontage(TEXT("PerfectNeutral"), AddTimeBetweenBeats);
+		}
+		else {
+			player->PlayAttackMontage(TEXT("AttackNeutral"), AddTimeBetweenBeats);
+		}
+		break;
+
+	case Attacks::Attack_Type1:
+		if (ClosenessToBeat > ClosenessPercentForPerfectBeat) {
+			player->PlayAttackMontage(TEXT("Perfect1"), AddTimeBetweenBeats);
+		}
+		else {
+			player->PlayAttackMontage(TEXT("Attack1"), AddTimeBetweenBeats);
+		}
+		break;
+
+	default:
+		if (ClosenessToBeat > ClosenessPercentForPerfectBeat) {
+			player->PlayAttackMontage(TEXT("PerfectNeutral"), AddTimeBetweenBeats);
+		}
+		else {
+			player->PlayAttackMontage(TEXT("AttackNeutral"), AddTimeBetweenBeats);
+		}
+		break;
 	}
 }
 

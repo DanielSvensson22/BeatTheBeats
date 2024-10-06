@@ -106,6 +106,8 @@ private:
 
 	void PerformAttack(Attacks AttackType);
 
+	void PerformAnimation(Attacks AttackType, float ClosenessToBeat, bool AddTimeBetweenBeats);
+
 private:
 
 	typedef std::tuple<Attacks, float, bool> StoredAttack;
@@ -133,6 +135,8 @@ private:
 
 	std::queue<StoredAttack> StoredAttacks;
 
+	std::queue<StoredAttack> UpcomingAttackAnims;
+
 	int CurrentComboStep = -1;
 
 	int CurrentCombo = 0;
@@ -144,4 +148,7 @@ private:
 
 	APlayerCharacter* player;
 	AttackCallback callback;
+
+	UPROPERTY(EditDefaultsOnly)
+	float ClosenessPercentForPerfectBeat = 0.8f;
 };

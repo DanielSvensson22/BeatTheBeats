@@ -46,7 +46,7 @@ public:
 	UFUNCTION(BlueprintPure)
 	FORCEINLINE float ClosenessToBeat() const {
 		if (CurrentTimeSinceLastBeat < AfterBeatGrace()) {
-			return std::abs(CurrentTimeSinceLastBeat - AfterBeatGrace()) / TimeBetweenBeats();
+			return std::abs(TimeBetweenBeats() - CurrentTimeSinceLastBeat) / TimeBetweenBeats();
 		}
 		else {
 			return CurrentTimeSinceLastBeat / TimeBetweenBeats();
