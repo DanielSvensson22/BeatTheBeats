@@ -318,7 +318,27 @@ void APlayerCharacter::PlayAttackMontage(UAnimInstance* AnimInstance, FName Sect
 {
 	if (AnimInstance != nullptr && AttackMontage != nullptr)
 	{
-		AnimInstance->Montage_Play(AttackMontage);
+		int32 Section = AttackMontage->GetSectionIndex(SectionName);
+
+		float Length = AttackMontage->GetSectionLength(Section);
+
+		TArray<const FAnimNotifyEvent*> Notifies;
+		float Start, End;
+
+		AttackMontage->GetSectionStartAndEndTime(Section, Start, End);
+
+		AttackMontage->GetAnimNotifies(Start, End, false, Notifies);
+
+		for (auto& Notify : Notifies) {
+			if (Notify->NotifyName == TEXT("DisableBoxCollision")) {
+				Length = Notify->GetTriggerTime() - Start;
+				break;
+			}
+		}
+
+		float PlayRate = Length / (BeatManager->GetTimeUntilNextBeat() + BeatManager->TimeBetweenBeats());
+
+		AnimInstance->Montage_Play(AttackMontage, PlayRate);
 		AnimInstance->Montage_JumpToSection(SectionName, AttackMontage);
 	}
 }
