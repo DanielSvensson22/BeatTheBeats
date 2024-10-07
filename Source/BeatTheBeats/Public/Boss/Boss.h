@@ -10,10 +10,12 @@
 UENUM(BlueprintType)
 enum class EBossState : uint8
 {
+	EBS_Unoccupied UMETA(DisplayName = "Unoccupied"),
 	EBS_Chasing UMETA(DisplayName = "Chasing"),
 	EBS_Attacking UMETA(DisplayName = "Attacking"),
 };
 
+class AAIController;
 class UAnimMontage;
 
 UCLASS()
@@ -56,6 +58,10 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	USceneComponent* Attack3EffectPos;
+
+	AAIController* AIController;
+
+	bool RotateBoss = false;
 
 public:	
 

@@ -5,6 +5,7 @@
 #include "Components\CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Animation/AnimMontage.h"
+#include "AIController.h"
 
 ABoss::ABoss() : Super()
 {
@@ -20,6 +21,8 @@ void ABoss::BeginPlay()
 	Super::BeginPlay();
 
 	Player = UGameplayStatics::GetPlayerPawn(this, 0);
+	AIController = this->GetController<AAIController>();
+	AIController->MoveToActor(Player);
 }
 
 void ABoss::OnBeat(float CurrentTimeSinceLastBeat)
@@ -57,11 +60,14 @@ void ABoss::DoDamage()
 
 void ABoss::SpawnAttackParticleEffect(FName SocketName)
 {
+	RotateBoss = true;
 	if (AttackParticleEffect && Attack3EffectPos)
 	{
 		UWorld* World = GetWorld();
 		// Spawn the particle effect attached to the given scene component
 		UGameplayStatics::SpawnEmitterAtLocation(World, AttackParticleEffect, Attack3EffectPos->GetComponentTransform(), true);
+
+		//UGameplayStatics::SpawnEmitterAttached(AttackParticleEffect, Attack3EffectPos, NAME_None);
 	}
 }
 
@@ -79,6 +85,24 @@ void ABoss::Tick(float DeltaTime)
 	}
 	else {
 		bCanAttack = false;
+	}
+
+	if (RotateBoss)
+	{
+		FVector Direction = (PlayerLocation - BossLocation).GetSafeNormal();
+		FRotator TargetRotation = Direction.Rotation();
+		float RotationSpeed = 1.f;
+
+		FRotator CurrentRotation = GetActorRotation();
+		FRotator NewRotation = FMath::RInterpTo(CurrentRotation, TargetRotation, GetWorld()->GetDeltaSeconds(), RotationSpeed); // RotationSpeed is a float that controls the speed
+		SetActorRotation(NewRotation);
+	}
+
+	if (BossState == EBossState::EBS_Unoccupied) 
+	{
+		RotateBoss = false;
+		BossState = EBossState::EBS_Chasing;
+		AIController->MoveToActor(Player);
 	}
 }
 
