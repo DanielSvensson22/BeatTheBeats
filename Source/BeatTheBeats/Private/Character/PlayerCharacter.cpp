@@ -20,6 +20,7 @@
 #include "Weapons/WeaponBase.h"
 #include "Components/BoxComponent.h"
 #include "../Public/Character/QTEComponent.h"
+#include "Camera/BBCameraShake.h"
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -104,6 +105,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		//Debug
 		EnhancedInputComponent->BindAction(QTEAction, ETriggerEvent::Started, this, &APlayerCharacter::EnterQTE);
 		EnhancedInputComponent->BindAction(QTEAction, ETriggerEvent::Completed, this, &APlayerCharacter::ExitQTE);
+		EnhancedInputComponent->BindAction(CameraShakeAction, ETriggerEvent::Started, this, &APlayerCharacter::CameraShake);
 	}
 }
 
@@ -264,6 +266,14 @@ void APlayerCharacter::AddType3Attack()
 		ComboManager->AddAttack(Attacks::Attack_Type3, 1, !AddedLastBeat);
 		UE_LOG(LogTemp, Display, TEXT("Added Type 3 Attack to queue."));
 	}
+}
+
+void APlayerCharacter::CameraShake()
+{
+	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Shake!"));
+
+	//UGameplayStatics::PlayWorldCameraShake(this, <ULegacyCameraShake>(CameraShakeClass, )
+	UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->StartCameraShake(UBBCameraShake::StaticClass());
 }
 
 void APlayerCharacter::AddNeutralBlock()

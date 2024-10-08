@@ -20,6 +20,7 @@ class ABeatManager;
 class AWeaponBase;
 class UAnimMontage;
 class UQTEComponent;
+class ULegacyCameraShake;
 
 UCLASS()
 class BEATTHEBEATS_API APlayerCharacter : public ACharacter
@@ -82,6 +83,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	TObjectPtr<UInputAction> Type3BlockAction;
 
+	UPROPERTY(EditAnywhere, Category = "Input")
+	TObjectPtr<UInputAction> CameraShakeAction;
+
 	/**
 	* Callbacks for input
 	*/
@@ -98,6 +102,8 @@ protected:
 	void AddType1Block();
 	void AddType2Block();
 	void AddType3Block();
+
+	void CameraShake();
 
 private:
 	void AttackCallback(Attacks AttackType, float MotionValue, float AnimLength, int Combo, int ComboStep);
@@ -132,6 +138,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UCameraComponent> ViewCamera;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UCameraShakeBase> CameraShakeClass;
 
 	/**
 	* Target Lock Components
