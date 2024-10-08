@@ -19,6 +19,7 @@
 #include "Beats/BeatManager.h"
 #include "Weapons/WeaponBase.h"
 #include "Components/BoxComponent.h"
+#include "../Public/Character/QTEComponent.h"
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -48,6 +49,8 @@ APlayerCharacter::APlayerCharacter()
 
 	ComboManager = CreateDefaultSubobject<UComboManagerComponent>(TEXT("Combo Manager"));
 	ComboManager->BindAttackCallbackFunc(this, &APlayerCharacter::AttackCallback);
+
+	QTE = CreateDefaultSubobject<UQTEComponent>(TEXT("QTE Component"));
 }
 
 void APlayerCharacter::BeginPlay()
@@ -97,6 +100,10 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(Type1BlockAction, ETriggerEvent::Started, this, &APlayerCharacter::AddType1Block);
 		EnhancedInputComponent->BindAction(Type2BlockAction, ETriggerEvent::Started, this, &APlayerCharacter::AddType2Block);
 		EnhancedInputComponent->BindAction(Type3BlockAction, ETriggerEvent::Started, this, &APlayerCharacter::AddType3Block);
+
+		//Debug
+		EnhancedInputComponent->BindAction(QTEAction, ETriggerEvent::Started, this, &APlayerCharacter::EnterQTE);
+		EnhancedInputComponent->BindAction(QTEAction, ETriggerEvent::Completed, this, &APlayerCharacter::ExitQTE);
 	}
 }
 
@@ -209,34 +216,54 @@ void APlayerCharacter::SetTargetLockCamera()
 
 void APlayerCharacter::AddNeutralAttack()
 {
-	//To Do: Calculate damage based on performance...
-	bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
-	ComboManager->AddAttack(Attacks::Attack_Neutral, 1, !AddedLastBeat);
-	UE_LOG(LogTemp, Display, TEXT("Added Neutral Attack to queue."));
+	if (bInQTE) {
+		QTE->AttemptAttack(Attacks::Attack_Neutral);
+	}
+	else {
+		//To Do: Calculate damage based on performance...
+		bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
+		ComboManager->AddAttack(Attacks::Attack_Neutral, 1, !AddedLastBeat);
+		UE_LOG(LogTemp, Display, TEXT("Added Neutral Attack to queue."));
+	}
 }
 
 void APlayerCharacter::AddType1Attack()
 {
-	//To Do: Calculate damage based on performance...
-	bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
-	ComboManager->AddAttack(Attacks::Attack_Type1, 1, !AddedLastBeat);
-	UE_LOG(LogTemp, Display, TEXT("Added Type 1 Attack to queue."));
+	if (bInQTE) {
+		QTE->AttemptAttack(Attacks::Attack_Type1);
+	}
+	else {
+		//To Do: Calculate damage based on performance...
+		bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
+		ComboManager->AddAttack(Attacks::Attack_Type1, 1, !AddedLastBeat);
+		UE_LOG(LogTemp, Display, TEXT("Added Type 1 Attack to queue."));
+	}
 }
 
 void APlayerCharacter::AddType2Attack()
 {
-	//To Do: Calculate damage based on performance...
-	bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
-	ComboManager->AddAttack(Attacks::Attack_Type2, 1, !AddedLastBeat);
-	UE_LOG(LogTemp, Display, TEXT("Added Type 2 Attack to queue."));
+	if (bInQTE) {
+		QTE->AttemptAttack(Attacks::Attack_Type2);
+	}
+	else {
+		//To Do: Calculate damage based on performance...
+		bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
+		ComboManager->AddAttack(Attacks::Attack_Type2, 1, !AddedLastBeat);
+		UE_LOG(LogTemp, Display, TEXT("Added Type 2 Attack to queue."));
+	}
 }
 
 void APlayerCharacter::AddType3Attack()
 {
-	//To Do: Calculate damage based on performance...
-	bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
-	ComboManager->AddAttack(Attacks::Attack_Type3, 1, !AddedLastBeat);
-	UE_LOG(LogTemp, Display, TEXT("Added Type 3 Attack to queue."));
+	if (bInQTE) {
+		QTE->AttemptAttack(Attacks::Attack_Type3);
+	}
+	else {
+		//To Do: Calculate damage based on performance...
+		bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
+		ComboManager->AddAttack(Attacks::Attack_Type3, 1, !AddedLastBeat);
+		UE_LOG(LogTemp, Display, TEXT("Added Type 3 Attack to queue."));
+	}
 }
 
 void APlayerCharacter::AddNeutralBlock()
@@ -392,4 +419,20 @@ void APlayerCharacter::ProcessIncomingAttacks()
 
 	IncomingAttacks.Empty();
 	bIsBlocking = false;
+}
+
+void APlayerCharacter::EnterQTE()
+{
+	if (QTE) {
+		QTE->StartQTE(&DebugQTEDescription);
+		bInQTE = true;
+	}
+}
+
+void APlayerCharacter::ExitQTE()
+{
+	if (QTE) {
+		QTE->EndQTE();
+		bInQTE = false;
+	}
 }

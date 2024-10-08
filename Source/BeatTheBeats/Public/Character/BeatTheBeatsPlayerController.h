@@ -22,6 +22,8 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	FORCEINLINE ABeatManager* GetBeatManager() { return BeatManager; }
+
+	FORCEINLINE UUserWidget* GetHUD() { return HUD; }
 	
 protected:
 

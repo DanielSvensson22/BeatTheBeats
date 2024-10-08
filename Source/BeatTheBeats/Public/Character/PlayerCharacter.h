@@ -8,6 +8,7 @@
 #include "Combos/Combo.h"
 #include <tuple>
 #include "PlayerCameraType.h"
+#include "../Combos/QTEDescription.h"
 #include "PlayerCharacter.generated.h"
 
 class UInputAction;
@@ -18,6 +19,7 @@ class AEnemyBase;
 class ABeatManager;
 class AWeaponBase;
 class UAnimMontage;
+class UQTEComponent;
 
 UCLASS()
 class BEATTHEBEATS_API APlayerCharacter : public ACharacter
@@ -105,6 +107,9 @@ private:
 
 	void ProcessIncomingAttacks();
 
+	void EnterQTE();
+	void ExitQTE();
+
 private:
 	typedef std::tuple<AEnemyBase*, Attacks, float> IncomingAttack;
 
@@ -168,6 +173,18 @@ private:
 	*/
 	UPROPERTY(EditDefaultsOnly, Category = "Montages")
 	TObjectPtr<UAnimMontage> AttackMontage;
+
+	UPROPERTY(VisibleAnywhere)
+	UQTEComponent* QTE;
+
+	//Debug
+	UPROPERTY(EditAnywhere, Category = "Input")
+	TObjectPtr<UInputAction> QTEAction;
+
+	UPROPERTY(EditDefaultsOnly)
+	TArray<FQTEDescription> DebugQTEDescription;
+
+	bool bInQTE = false;
 
 public:
 	FORCEINLINE ECameraState GetCameraState() const { return CameraState; }

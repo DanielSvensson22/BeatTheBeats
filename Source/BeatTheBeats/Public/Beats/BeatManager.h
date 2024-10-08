@@ -43,6 +43,10 @@ public:
 		return FMath::InterpSinIn(MaxIndicatorScale, MinIndicatorScale, CurrentTimeSinceLastBeat / TimeBetweenBeats());
 	}
 
+	FORCEINLINE float GetIndicatorScale(float MaxIndicatorScale, float MinIndicatorScale, float Step) const {
+		return FMath::InterpSinIn(MaxIndicatorScale, MinIndicatorScale, Step / TimeBetweenBeats());
+	}
+
 	UFUNCTION(BlueprintPure)
 	FORCEINLINE float ClosenessToBeat() const {
 		if (CurrentTimeSinceLastBeat < AfterBeatGrace()) {
