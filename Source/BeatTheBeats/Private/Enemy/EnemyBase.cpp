@@ -124,6 +124,8 @@ void AEnemyBase::GetHit(const FVector& ImpactPoint)
 	if (GetWorld()) DrawDebugSphere(GetWorld(), ImpactPoint, 10.f, 12, FColor::Orange, false, 5.f);
 
 	DirectionalHitReact(ImpactPoint);
+
+	bIsStunned = true;
 }
 
 void AEnemyBase::DirectionalHitReact(const FVector& ImpactPoint)
