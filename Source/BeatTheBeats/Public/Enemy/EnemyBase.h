@@ -64,6 +64,10 @@ public:
 	UFUNCTION(BlueprintPure)
 	FORCEINLINE float GetPerformAttackPercent() const { return (float)(CurrentAttack + 1) / StandardCombo.AttackCount(); }
 
+	FORCEINLINE bool GetIsStunned() { return bIsStunned; }
+
+	FORCEINLINE float GetMaxViewDistance() { return MaxViewDistance; }
+
 protected:
 
 	class ABeatManager* BeatManager;
@@ -92,6 +96,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 	bool bIsMelee = true;
+
+	UPROPERTY(VisibleAnywhere)
+	bool bIsStunned = false;
 
 	/**
 	* Animation Montages
@@ -127,6 +134,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	float MaxAttackDistance = 100;
+
+	UPROPERTY(EditDefaultsOnly)
+	float MaxViewDistance = 2000;
 
 	bool bCanChasePlayer = false;
 

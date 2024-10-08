@@ -35,15 +35,21 @@ void ARangedEnemy::BeginPlay()
 
 void ARangedEnemy::OnBeat(float CurrentTimeSinceLastBeat)
 {
-	if (GetCanAttack()) {
-		CurrentAttack = StandardCombo.NextAttack();
+	if (bIsStunned) {
+		CurrentAttack = StandardCombo.ResetCombo();
+		bIsStunned = false;
 	}
 	else {
-		CurrentAttack = StandardCombo.ResetCombo();
-	}
+		if (GetCanAttack()) {
+			CurrentAttack = StandardCombo.NextAttack();
+		}
+		else {
+			CurrentAttack = StandardCombo.ResetCombo();
+		}
 
-	if (CurrentAttack > -1) {
-		Attack();
+		if (CurrentAttack > -1) {
+			Attack();
+		}
 	}
 }
 

@@ -11,6 +11,7 @@
 #include "../Combos/QTEDescription.h"
 #include "PlayerCharacter.generated.h"
 
+
 class UInputAction;
 class USpringArmComponent;
 class UCameraComponent;
@@ -19,8 +20,11 @@ class AEnemyBase;
 class ABeatManager;
 class AWeaponBase;
 class UAnimMontage;
+<<<<<<< Updated upstream
 class UQTEComponent;
+=======
 class ULegacyCameraShake;
+>>>>>>> Stashed changes
 
 UCLASS()
 class BEATTHEBEATS_API APlayerCharacter : public ACharacter
@@ -127,6 +131,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AWeaponBase> WeaponClass;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UCameraShakeBase> CameraShakeClass;
 
 	/**
 	* Camera Components
@@ -138,9 +145,6 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UCameraComponent> ViewCamera;
-
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UCameraShakeBase> CameraShakeClass;
 
 	/**
 	* Target Lock Components

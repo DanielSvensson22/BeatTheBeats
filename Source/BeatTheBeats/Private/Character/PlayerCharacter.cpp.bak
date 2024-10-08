@@ -19,8 +19,11 @@
 #include "Beats/BeatManager.h"
 #include "Weapons/WeaponBase.h"
 #include "Components/BoxComponent.h"
+<<<<<<< Updated upstream
 #include "../Public/Character/QTEComponent.h"
+=======
 #include "Camera/BBCameraShake.h"
+>>>>>>> Stashed changes
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -103,9 +106,12 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(Type3BlockAction, ETriggerEvent::Started, this, &APlayerCharacter::AddType3Block);
 
 		//Debug
+<<<<<<< Updated upstream
 		EnhancedInputComponent->BindAction(QTEAction, ETriggerEvent::Started, this, &APlayerCharacter::EnterQTE);
 		EnhancedInputComponent->BindAction(QTEAction, ETriggerEvent::Completed, this, &APlayerCharacter::ExitQTE);
+=======
 		EnhancedInputComponent->BindAction(CameraShakeAction, ETriggerEvent::Started, this, &APlayerCharacter::CameraShake);
+>>>>>>> Stashed changes
 	}
 }
 
@@ -268,14 +274,6 @@ void APlayerCharacter::AddType3Attack()
 	}
 }
 
-void APlayerCharacter::CameraShake()
-{
-	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Shake!"));
-
-	//UGameplayStatics::PlayWorldCameraShake(this, <ULegacyCameraShake>(CameraShakeClass, )
-	UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->StartCameraShake(UBBCameraShake::StaticClass());
-}
-
 void APlayerCharacter::AddNeutralBlock()
 {
 	if (!bIsBlocking) {
@@ -306,6 +304,14 @@ void APlayerCharacter::AddType3Block()
 		CurrentBlockedType = Attacks::Attack_Type3;
 		bIsBlocking = true;
 	}
+}
+
+void APlayerCharacter::CameraShake()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Shake!"));
+
+	//UGameplayStatics::PlayWorldCameraShake(this, <ULegacyCameraShake>(CameraShakeClass, )
+	UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->StartCameraShake(UBBCameraShake::StaticClass());
 }
 
 void APlayerCharacter::AttackCallback(Attacks AttackType, float MotionValue, float AnimLength, int Combo, int ComboStep)
