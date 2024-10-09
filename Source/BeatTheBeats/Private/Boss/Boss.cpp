@@ -101,9 +101,14 @@ void ABoss::Tick(float DeltaTime)
 	if (BossState == EBossState::EBS_Unoccupied) 
 	{
 		RotateBoss = false;
+	}
+	else if (BossState == EBossState::EBS_Chasing)
+	{
 		BossState = EBossState::EBS_Chasing;
 		AIController->MoveToActor(Player);
 	}
+
+
 }
 
 void ABoss::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
