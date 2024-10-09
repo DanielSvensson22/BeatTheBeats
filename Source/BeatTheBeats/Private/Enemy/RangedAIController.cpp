@@ -5,10 +5,6 @@
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
-ARangedAIController::ARangedAIController(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
-{
-}
-
 void ARangedAIController::BeginPlay()
 {
 	Super::BeginPlay();

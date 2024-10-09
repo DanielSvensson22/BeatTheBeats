@@ -6,10 +6,6 @@
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
-AMeleeAIController::AMeleeAIController(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
-{
-}
-
 void AMeleeAIController::BeginPlay()
 {
 	Super::BeginPlay();

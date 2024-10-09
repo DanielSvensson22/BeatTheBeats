@@ -21,7 +21,6 @@ class AWeaponBase;
 class UAnimMontage;
 class UQTEComponent;
 class ULegacyCameraShake;
-class UNiagaraSystem;
 
 UCLASS()
 class BEATTHEBEATS_API APlayerCharacter : public ACharacter
@@ -86,14 +85,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Input")
 	TObjectPtr<UInputAction> CameraShakeAction;
-	
-	UPROPERTY(EditAnywhere, Category = "Input")
-	TObjectPtr<UInputAction> ParticleAction;
-	
-	//Effects
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
-	UNiagaraSystem* TempParticleEffect;
-	//UParticleSystem* TempParticleEffect;
 
 	/**
 	* Callbacks for input
@@ -113,7 +104,6 @@ protected:
 	void AddType3Block();
 
 	void CameraShake();
-	void SpawnParticle();
 
 private:
 	void AttackCallback(Attacks AttackType, float MotionValue, float AnimLength, int Combo, int ComboStep);
