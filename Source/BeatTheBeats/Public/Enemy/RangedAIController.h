@@ -4,15 +4,20 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
+#include "CrowdHandlingAIController.h"
 #include "RangedAIController.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class BEATTHEBEATS_API ARangedAIController : public AAIController
+class BEATTHEBEATS_API ARangedAIController : public ACrowdHandlingAIController
 {
 	GENERATED_BODY()
+
+public:
+
+	ARangedAIController(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 	
 protected:
 	// Called when the game starts or when spawned

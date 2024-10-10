@@ -20,12 +20,8 @@ EBTNodeResult::Type UBTTask_GetPlayerPosition::ExecuteTask(UBehaviorTreeComponen
 	AEnemyBase* enemy = Cast<AEnemyBase>(OwnerComp.GetAIOwner()->GetPawn());
 
 	if (player && enemy) {
-
-		FVector dir = player->GetActorLocation() - enemy->GetActorLocation();
-
-		float dot = enemy->GetActorForwardVector().Dot(dir);
-
-		if (FVector::Dist(player->GetActorLocation(), enemy->GetActorLocation()) < enemy->GetMaxViewDistance()) {
+		if (FVector::Dist(player->GetActorLocation(), enemy->GetActorLocation()) < enemy->GetMaxViewDistance() 
+			|| OwnerComp.GetAIOwner()->LineOfSightTo(player, FVector::ZeroVector)) {
 			OwnerComp.GetBlackboardComponent()->SetValueAsObject(GetSelectedBlackboardKey(), player);
 			return EBTNodeResult::Type::Succeeded;
 		}
