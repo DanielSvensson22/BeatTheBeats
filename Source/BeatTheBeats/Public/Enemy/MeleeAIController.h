@@ -4,20 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
-#include "CrowdHandlingAIController.h"
 #include "MeleeAIController.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class BEATTHEBEATS_API AMeleeAIController : public ACrowdHandlingAIController
+class BEATTHEBEATS_API AMeleeAIController : public AAIController
 {
 	GENERATED_BODY()
-
-public:
-
-	AMeleeAIController(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 	
 protected:
 	// Called when the game starts or when spawned

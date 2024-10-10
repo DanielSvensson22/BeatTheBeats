@@ -21,9 +21,6 @@
 #include "Components/BoxComponent.h"
 #include "../Public/Character/QTEComponent.h"
 #include "Camera/BBCameraShake.h"
-#include "NiagaraComponent.h"
-#include "NiagaraSystem.h"
-#include "NiagaraFunctionLibrary.h"
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -109,7 +106,6 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(QTEAction, ETriggerEvent::Started, this, &APlayerCharacter::EnterQTE);
 		EnhancedInputComponent->BindAction(QTEAction, ETriggerEvent::Completed, this, &APlayerCharacter::ExitQTE);
 		EnhancedInputComponent->BindAction(CameraShakeAction, ETriggerEvent::Started, this, &APlayerCharacter::CameraShake);
-		EnhancedInputComponent->BindAction(ParticleAction, ETriggerEvent::Started, this, &APlayerCharacter::SpawnParticle);
 	}
 }
 
@@ -278,16 +274,6 @@ void APlayerCharacter::CameraShake()
 
 	//UGameplayStatics::PlayWorldCameraShake(this, <ULegacyCameraShake>(CameraShakeClass, )
 	UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->StartCameraShake(UBBCameraShake::StaticClass());
-}
-void APlayerCharacter::SpawnParticle()
-{
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Particle!"));
-
-	if (TempParticleEffect != NULL)
-	{
-		//UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), TempParticleEffect, GetActorLocation(), true);
-		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), TempParticleEffect, GetActorLocation(), FRotator(1), FVector(1), true, true, ENCPoolMethod::AutoRelease, true);
-	}
 }
 
 void APlayerCharacter::AddNeutralBlock()
