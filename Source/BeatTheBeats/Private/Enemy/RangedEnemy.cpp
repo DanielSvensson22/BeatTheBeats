@@ -55,8 +55,6 @@ void ARangedEnemy::OnBeat(float CurrentTimeSinceLastBeat)
 
 void ARangedEnemy::Attack()
 {
-	Super::Attack();
-
 	if (CurrentAttack < StandardCombo.AttackCount() - 1) {
 		FVector direction = UGameplayStatics::GetPlayerPawn(this, 0)->GetActorLocation() - GetActorLocation();
 		FRotator rotation = direction.Rotation();

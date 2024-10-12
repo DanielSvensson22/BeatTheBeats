@@ -12,6 +12,7 @@
 #include "ComboManagerComponent.generated.h"
 
 class APlayerCharacter;
+class AWeaponBase;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class BEATTHEBEATS_API UComboManagerComponent : public UActorComponent
@@ -37,6 +38,8 @@ public:
 	void ProcessNextAttack(float CurrentTimeSinceLastBeat);
 
 	void BindAttackCallbackFunc(APlayerCharacter* playerCharacter, AttackCallback callbackFunc);
+
+	void SetWeapon(AWeaponBase* PlayerWeapon);
 
 private:
 
@@ -151,4 +154,6 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	float ClosenessPercentForPerfectBeat = 0.8f;
+
+	AWeaponBase* Weapon;
 };

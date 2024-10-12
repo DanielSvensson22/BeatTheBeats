@@ -42,6 +42,15 @@ public:
 
 	void PlayAttackMontage(FName SectionName, bool AddTimeBetweenBeats);
 
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE float GetPlayerHealth() const { return CurrentHealth; }
+
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE float GetMaxPlayerHealth() const { return MaxHealth; }
+
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE bool IsAlive() const { return CurrentHealth > 0; }
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -126,6 +135,8 @@ private:
 	void EnterQTE();
 	void ExitQTE();
 
+	void ApplyDamage(float Damage);
+
 private:
 	typedef std::tuple<AEnemyBase*, Attacks, float> IncomingAttack;
 
@@ -183,9 +194,21 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<ABeatManager> BeatManagerClass;
 
+	FDelegateHandle BeatHandle;
+
 	Attacks CurrentBlockedType;
 
 	bool bIsBlocking = false;
+
+	float CurrentHealth;
+
+	UPROPERTY(EditDefaultsOnly)
+	float MaxHealth = 100;
+
+	bool bHasDied = false;
+
+	UPROPERTY(EditDefaultsOnly)
+	float PlayerDamage = 10;
 
 	/**
 	* Animation Montages

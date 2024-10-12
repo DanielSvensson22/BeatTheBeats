@@ -67,11 +67,17 @@ void AEnemyQueue::AddToRangedQueue(AEnemyBase* Enemy)
 	WaitingRangedEnemies.emplace(Enemy);
 }
 
-void AEnemyQueue::RemoveEnemy(AEnemyBase* Enemy)
+void AEnemyQueue::RemoveEnemy(AEnemyBase* Enemy, bool IsMelee)
 {
 	if (AttackingEnemies.Contains(Enemy)) {
 		AttackingEnemies.Remove(Enemy);
-		CurrentEnemyCount--;
+
+		if (IsMelee) {
+			CurrentEnemyCount--;
+		}
+		else {
+			CurrentRangedEnemyCount--;
+		}	
 	}
 }
 

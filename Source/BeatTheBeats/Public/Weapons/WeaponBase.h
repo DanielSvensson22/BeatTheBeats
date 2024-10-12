@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "../Combos/Combo.h"
 #include "WeaponBase.generated.h"
 
 class UBoxComponent;
@@ -16,6 +17,8 @@ class BEATTHEBEATS_API AWeaponBase : public AActor
 public:	
 	AWeaponBase();
 	virtual void Tick(float DeltaTime) override;
+
+	void SetAttackStatus(float Damage, Attacks AttackType, bool OnBeat);
 
 	// Actors to Ignore during an Overlaping Event
 	TArray<AActor*> IgnoreActors;
@@ -38,6 +41,11 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USceneComponent> BoxTraceEnd;
+
+	//Combat info:
+	float CurrentDamage = 0;
+	Attacks CurrentAttackType = Attacks::Attack_Neutral;
+	bool CurrentlyOnBeat = false;
 
 public:
 	FORCEINLINE TObjectPtr<UBoxComponent> GetWeaponBox() const { return WeaponBox; }

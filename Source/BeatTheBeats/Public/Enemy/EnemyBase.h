@@ -44,6 +44,8 @@ public:
 	virtual void GetHit(const FVector& ImpactPoint) override;
 	void DirectionalHitReact(const FVector& ImpactPoint);
 
+	virtual void ApplyDamage(float Damage, Attacks AttackType, bool OnBeat) override;
+
 	virtual bool GetCanAttack();
 
 	FORCEINLINE float GetMaxAttackDistance() { return MaxAttackDistance; }
@@ -88,6 +90,8 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	float CurrentHealth;
 
+	bool bHasDied = false;
+
 	UPROPERTY(EditDefaultsOnly)
 	float AttackRange = 100;
 
@@ -130,6 +134,8 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<ABeatManager> BeatManagerClass;
 
+	FDelegateHandle BeatHandle;
+
 	APawn* Player;
 
 	UPROPERTY(EditDefaultsOnly)
@@ -146,4 +152,7 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AEnemyQueue> EnemyQueueClass;
+
+	UPROPERTY(EditDefaultsOnly)
+	float OptimalAttackMultiplier = 2;
 };

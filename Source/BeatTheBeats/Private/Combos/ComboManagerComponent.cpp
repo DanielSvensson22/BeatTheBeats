@@ -8,6 +8,7 @@
 #include <tuple>
 #include <queue>
 #include "Character/PlayerCharacter.h"
+#include "Weapons/WeaponBase.h"
 
 // Sets default values for this component's properties
 UComboManagerComponent::UComboManagerComponent()
@@ -62,6 +63,10 @@ void UComboManagerComponent::AddAttack(Attacks AttackType, float Damage, bool Pl
 		if (player) {
 			if (StoredAttacks.size() == 1) {
 				PerformAnimation(AttackType, BeatManager->ClosenessToBeat(), PlayerAddedThisBeat);
+
+				if (Weapon) {
+					Weapon->SetAttackStatus(Damage, AttackType, BeatManager->ClosenessToBeat() > ClosenessPercentForPerfectBeat);
+				}
 			}
 			else {
 				if (UpcomingAttackAnims.size() > 0) {
@@ -106,6 +111,10 @@ void UComboManagerComponent::ProcessNextAttack(float CurrentTimeSinceLastBeat)
 				if (ShouldAttack) {
 					UpcomingAttackAnims.pop();
 					PerformAnimation(AttackAnimType, ClosenessToBeat, false);
+
+					if (Weapon) {
+						Weapon->SetAttackStatus(Damage, AttackType, ClosenessToBeat > ClosenessPercentForPerfectBeat);
+					}
 				}
 				else {
 					UpcomingAttackAnims.front() = std::make_tuple(AttackAnimType, ClosenessToBeat, true);
@@ -128,6 +137,11 @@ void UComboManagerComponent::BindAttackCallbackFunc(APlayerCharacter* playerChar
 {
 	player = playerCharacter;
 	callback = callbackFunc;
+}
+
+void UComboManagerComponent::SetWeapon(AWeaponBase* PlayerWeapon)
+{
+	Weapon = PlayerWeapon;
 }
 
 void UComboManagerComponent::PerformAttack(Attacks AttackType)

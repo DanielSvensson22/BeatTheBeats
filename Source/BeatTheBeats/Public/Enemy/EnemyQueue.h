@@ -30,7 +30,7 @@ public:
 
 	void AddToRangedQueue(AEnemyBase* Enemy);
 
-	void RemoveEnemy(AEnemyBase* Enemy);
+	void RemoveEnemy(AEnemyBase* Enemy, bool IsMelee);
 
 private:
 

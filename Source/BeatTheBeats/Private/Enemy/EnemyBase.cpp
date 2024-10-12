@@ -15,10 +15,12 @@ AEnemyBase::AEnemyBase()
 	PrimaryActorTick.bCanEverTick = false;
 
 	GetMesh()->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
-	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Ignore);
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel3, ECollisionResponse::ECR_Block);
 	GetMesh()->SetGenerateOverlapEvents(true);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel3, ECollisionResponse::ECR_Block);
 
 	EnemyWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Enemy Widget"));
 	EnemyWidget->SetWidgetSpace(EWidgetSpace::Screen);
@@ -39,7 +41,7 @@ void AEnemyBase::BeginPlay()
 		UE_LOG(LogTemp, Error, TEXT("No Beat Manager was found in the scene!"));
 	}
 	else {
-		BeatManager->BindFuncToOnBeat(this, &AEnemyBase::OnBeat);
+		BeatHandle = BeatManager->BindFuncToOnBeat(this, &AEnemyBase::OnBeat);
 	}
 
 	EnemyQueue = Cast<AEnemyQueue>(UGameplayStatics::GetActorOfClass(this, EnemyQueueClass));
@@ -159,6 +161,47 @@ void AEnemyBase::DirectionalHitReact(const FVector& ImpactPoint)
 	UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + CrossProduct * 100.f, 5.f, FColor::Blue, 5.f);
 	UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + Forward * 100.f, 5.f, FColor::Red, 5.f);
 	UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + ToHit * 100.f, 5.f, FColor::Green, 5.f);
+}
+
+void AEnemyBase::ApplyDamage(float InitialDamage, Attacks AttackType, bool OnBeat)
+{
+	float FinalDamage = InitialDamage;
+
+	if (AttackType == Attacks::Attack_Neutral) {
+		//Change nothing.
+	}
+	else if (AttackType == EnemyType) {
+		FinalDamage *= OptimalAttackMultiplier;
+	}
+	else {
+		FinalDamage /= OptimalAttackMultiplier;
+	}
+
+	if (OnBeat) {
+		FinalDamage *= OptimalAttackMultiplier;
+	}
+	else {
+		FinalDamage /= OptimalAttackMultiplier;
+	}
+
+	CurrentHealth = FMath::Clamp(CurrentHealth - FinalDamage, 0, MaxHealth);
+
+	if (!IsAlive()) {
+		if (!bHasDied) {
+			bHasDied = true;
+
+			EnemyQueue->RemoveEnemy(this, bIsMelee);
+
+			DetachFromControllerPendingDestroy();
+
+			GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			SetActorTickEnabled(false);
+
+			BeatManager->UnBindFuncFromOnBeat(BeatHandle);
+
+			CurrentAttack = StandardCombo.ResetCombo();
+		}
+	}
 }
 
 bool AEnemyBase::GetCanAttack()

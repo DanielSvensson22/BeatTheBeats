@@ -2,6 +2,7 @@
 
 
 #include "Character/PlayerCharacter.h"
+#include "Character/BeatTheBeatsPlayerController.h"
 #include "GameFramework\SpringArmComponent.h"
 #include "GameFramework\CharacterMovementComponent.h"
 #include "Camera/CameraComponent.h"
@@ -19,6 +20,7 @@
 #include "Beats/BeatManager.h"
 #include "Weapons/WeaponBase.h"
 #include "Components/BoxComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "../Public/Character/QTEComponent.h"
 #include "Camera/BBCameraShake.h"
 #include "NiagaraComponent.h"
@@ -65,13 +67,17 @@ void APlayerCharacter::BeginPlay()
 	Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("RightHandSocket"));
 	Weapon->SetOwner(this);
 
+	ComboManager->SetWeapon(Weapon);
+
+	CurrentHealth = MaxHealth;
+
 	BeatManager = Cast<ABeatManager>(UGameplayStatics::GetActorOfClass(this, BeatManagerClass));
 
 	if (BeatManager == nullptr) {
 		UE_LOG(LogTemp, Error, TEXT("No Beat Manager was found in the scene!"));
 	}
 	else {
-		BeatManager->BindFuncToOnBeat(this, &APlayerCharacter::OnBeat);
+		BeatHandle = BeatManager->BindFuncToOnBeat(this, &APlayerCharacter::OnBeat);
 	}
 }
 
@@ -226,9 +232,8 @@ void APlayerCharacter::AddNeutralAttack()
 		QTE->AttemptAttack(Attacks::Attack_Neutral);
 	}
 	else {
-		//To Do: Calculate damage based on performance...
 		bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
-		ComboManager->AddAttack(Attacks::Attack_Neutral, 1, !AddedLastBeat);
+		ComboManager->AddAttack(Attacks::Attack_Neutral, PlayerDamage, !AddedLastBeat);
 		UE_LOG(LogTemp, Display, TEXT("Added Neutral Attack to queue."));
 	}
 }
@@ -239,9 +244,8 @@ void APlayerCharacter::AddType1Attack()
 		QTE->AttemptAttack(Attacks::Attack_Type1);
 	}
 	else {
-		//To Do: Calculate damage based on performance...
 		bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
-		ComboManager->AddAttack(Attacks::Attack_Type1, 1, !AddedLastBeat);
+		ComboManager->AddAttack(Attacks::Attack_Type1, PlayerDamage, !AddedLastBeat);
 		UE_LOG(LogTemp, Display, TEXT("Added Type 1 Attack to queue."));
 	}
 }
@@ -252,9 +256,8 @@ void APlayerCharacter::AddType2Attack()
 		QTE->AttemptAttack(Attacks::Attack_Type2);
 	}
 	else {
-		//To Do: Calculate damage based on performance...
 		bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
-		ComboManager->AddAttack(Attacks::Attack_Type2, 1, !AddedLastBeat);
+		ComboManager->AddAttack(Attacks::Attack_Type2, PlayerDamage, !AddedLastBeat);
 		UE_LOG(LogTemp, Display, TEXT("Added Type 2 Attack to queue."));
 	}
 }
@@ -265,9 +268,8 @@ void APlayerCharacter::AddType3Attack()
 		QTE->AttemptAttack(Attacks::Attack_Type3);
 	}
 	else {
-		//To Do: Calculate damage based on performance...
 		bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
-		ComboManager->AddAttack(Attacks::Attack_Type3, 1, !AddedLastBeat);
+		ComboManager->AddAttack(Attacks::Attack_Type3, PlayerDamage, !AddedLastBeat);
 		UE_LOG(LogTemp, Display, TEXT("Added Type 3 Attack to queue."));
 	}
 }
@@ -411,32 +413,12 @@ void APlayerCharacter::ProcessIncomingAttacks()
 			if (dot < 0) {
 				Enemy->Parry();
 			}
+			else {
+				ApplyDamage(Damage);
+			}
 		}
 		else {
-			FString type;
-
-			switch (EnemyType) {
-			case Attacks::Attack_Neutral:
-				type = "Neutral";
-				break;
-
-			case Attacks::Attack_Type1:
-				type = "Type 1";
-				break;
-
-			case Attacks::Attack_Type2:
-				type = "Type 2";
-				break;
-
-			case Attacks::Attack_Type3:
-				type = "Type 3";
-				break;
-
-			default:
-				UE_LOG(LogTemp, Error, TEXT("Attack type not implemented!"));
-			}
-
-			UE_LOG(LogTemp, Warning, TEXT("Ouch! Enemy of type %s hit for %f damage!"), *type, Damage);
+			ApplyDamage(Damage);
 		}
 		
 	}
@@ -458,5 +440,30 @@ void APlayerCharacter::ExitQTE()
 	if (QTE) {
 		QTE->EndQTE();
 		bInQTE = false;
+	}
+}
+
+void APlayerCharacter::ApplyDamage(float Damage)
+{
+	CurrentHealth = FMath::Clamp(CurrentHealth - Damage, 0, MaxHealth);
+
+	UE_LOG(LogTemp, Display, TEXT("Remaining health: %f"), CurrentHealth);
+
+	if (!IsAlive()) {
+		if (!bHasDied) {
+			bHasDied = true;
+
+			ABeatTheBeatsPlayerController* controller = Cast<ABeatTheBeatsPlayerController>(GetController());
+
+			if (controller) {
+				controller->GameOver();
+				DisableInput(controller);
+			}
+
+			GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			SetActorTickEnabled(false);
+
+			BeatManager->UnBindFuncFromOnBeat(BeatHandle);
+		}
 	}
 }

@@ -58,8 +58,17 @@ public:
 	}
 
 	template<typename Type>
-	void BindFuncToOnBeat(Type* type, void (Type::* Func)(float)) {
-		OnBeat.AddUObject(type, Func);
+	FDelegateHandle BindFuncToOnBeat(Type* type, void (Type::* Func)(float)) {
+		return OnBeat.AddUObject(type, Func);
+	}
+
+	void UnBindFuncFromOnBeat(FDelegateHandle handle) {
+		if (OnBeat.Remove(handle)) {
+
+		}
+		else {
+			UE_LOG(LogTemp, Error, TEXT("Could not remove function from Beat Manager!"));
+		}
 	}
 
 private:

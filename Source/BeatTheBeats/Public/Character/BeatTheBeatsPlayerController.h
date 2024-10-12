@@ -24,6 +24,8 @@ public:
 	FORCEINLINE ABeatManager* GetBeatManager() { return BeatManager; }
 
 	FORCEINLINE UUserWidget* GetHUD() { return HUD; }
+
+	void GameOver();
 	
 protected:
 
@@ -51,4 +53,10 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<ABeatManager> BeatManagerClass;
+
+	UPROPERTY()
+	UUserWidget* GameOverScreen;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UUserWidget> GameOverScreenClass;
 };

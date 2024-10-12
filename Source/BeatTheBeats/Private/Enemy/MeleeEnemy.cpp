@@ -65,8 +65,6 @@ void AMeleeEnemy::OnBeat(float CurrentTimeSinceLastBeat)
 
 void AMeleeEnemy::Attack()
 {
-	Super::Attack();
-
 	DoDamage();
 }
 

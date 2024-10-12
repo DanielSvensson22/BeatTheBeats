@@ -30,3 +30,12 @@ void ABeatTheBeatsPlayerController::BeginPlay()
 		UE_LOG(LogTemp, Error, TEXT("No Beat Manager was found in the scene!"));
 	}
 }
+
+void ABeatTheBeatsPlayerController::GameOver()
+{
+	GameOverScreen = CreateWidget(this, GameOverScreenClass);
+
+	if (GameOverScreen) {
+		GameOverScreen->AddToViewport();
+	}
+}
