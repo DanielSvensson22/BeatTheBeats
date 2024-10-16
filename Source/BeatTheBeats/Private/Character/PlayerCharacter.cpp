@@ -85,8 +85,11 @@ void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	RotatePlayerToAttack(DeltaTime);
+
 	SetTargetLockCamera();
 
+	bMovedThisTick = false;
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -154,6 +157,8 @@ void APlayerCharacter::Move(const FInputActionValue& Value)
 		AddMovementInput(ForwardDirection, MovementVector.Y);
 		AddMovementInput(RightDirection, MovementVector.X);
 	}
+
+	bMovedThisTick = true;
 }
 
 void APlayerCharacter::Look(const FInputActionValue& Value)
@@ -467,5 +472,12 @@ void APlayerCharacter::ApplyDamage(float Damage)
 
 			BeatManager->UnBindFuncFromOnBeat(BeatHandle);
 		}
+	}
+}
+
+void APlayerCharacter::RotatePlayerToAttack(float DeltaTime)
+{
+	if (!bMovedThisTick && !bIsLockingTarget) {
+		SetActorRotation(FMath::RInterpTo(GetActorRotation(), GetController()->GetControlRotation(), DeltaTime, RotationSpeed));
 	}
 }

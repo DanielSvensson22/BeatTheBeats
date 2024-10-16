@@ -137,6 +137,8 @@ private:
 
 	void ApplyDamage(float Damage);
 
+	void RotatePlayerToAttack(float DeltaTime);
+
 private:
 	typedef std::tuple<AEnemyBase*, Attacks, float> IncomingAttack;
 
@@ -209,6 +211,11 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	float PlayerDamage = 10;
+
+	bool bMovedThisTick = false;
+
+	UPROPERTY(EditDefaultsOnly)
+	float RotationSpeed = 10;
 
 	/**
 	* Animation Montages
