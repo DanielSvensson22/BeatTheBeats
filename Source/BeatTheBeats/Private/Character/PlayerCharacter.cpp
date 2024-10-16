@@ -453,6 +453,8 @@ void APlayerCharacter::ApplyDamage(float Damage)
 		if (!bHasDied) {
 			bHasDied = true;
 
+			UE_LOG(LogTemp, Warning, TEXT("Player died!"));
+
 			ABeatTheBeatsPlayerController* controller = Cast<ABeatTheBeatsPlayerController>(GetController());
 
 			if (controller) {
