@@ -7,6 +7,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "Beats/BeatManager.h"
+#include "Score/ScoreManager.h"
 
 void ABeatTheBeatsPlayerController::BeginPlay()
 {
@@ -28,6 +29,15 @@ void ABeatTheBeatsPlayerController::BeginPlay()
 
 	if (BeatManager == nullptr) {
 		UE_LOG(LogTemp, Error, TEXT("No Beat Manager was found in the scene!"));
+	}
+
+	ScoreManager = Cast<AScoreManager>(UGameplayStatics::GetActorOfClass(this, ScoreManagerClass));
+
+	if (ScoreManager == nullptr) {
+		UE_LOG(LogTemp, Error, TEXT("No Score Manager was found in the scene!"));
+	}
+	else {
+		ScoreManager->SetupScoreManager(HUD);
 	}
 }
 

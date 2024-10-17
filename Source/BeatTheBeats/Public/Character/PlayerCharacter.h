@@ -22,6 +22,7 @@ class UAnimMontage;
 class UQTEComponent;
 class ULegacyCameraShake;
 class UNiagaraSystem;
+class AScoreManager;
 
 UCLASS()
 class BEATTHEBEATS_API APlayerCharacter : public ACharacter
@@ -216,6 +217,11 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	float RotationSpeed = 10;
+
+	AScoreManager* ScoreManager;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AScoreManager> ScoreManagerClass;
 
 	/**
 	* Animation Montages

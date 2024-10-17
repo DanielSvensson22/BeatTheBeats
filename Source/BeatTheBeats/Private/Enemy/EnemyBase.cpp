@@ -7,6 +7,7 @@
 #include "Enemy/EnemyQueue.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
+#include "Score/ScoreManager.h"
 
 // Sets default values
 AEnemyBase::AEnemyBase()
@@ -54,6 +55,12 @@ void AEnemyBase::BeginPlay()
 
 	if (Player == nullptr) {
 		UE_LOG(LogTemp, Error, TEXT("Player pawn was not found by the AI!"));
+	}
+
+	ScoreManager = Cast<AScoreManager>(UGameplayStatics::GetActorOfClass(this, ScoreManagerClass));
+
+	if (ScoreManager == nullptr) {
+		UE_LOG(LogTemp, Error, TEXT("No Score Manager was found in the scene!"));
 	}
 }
 
@@ -202,6 +209,11 @@ void AEnemyBase::ApplyDamage(float InitialDamage, Attacks AttackType, bool OnBea
 			CurrentAttack = StandardCombo.ResetCombo();
 		}
 	}
+	else {
+		if (ScoreManager) {
+			ScoreManager->AddPoints(FinalDamage);
+		}
+	}
 }
 
 bool AEnemyBase::GetCanAttack()
@@ -258,6 +270,10 @@ void AEnemyBase::Parry()
 	}
 
 	UE_LOG(LogTemp, Warning, TEXT("%s attack was parried!"), *attack);
+
+	if (ScoreManager) {
+		ScoreManager->UpdateUI();
+	}
 }
 
 void AEnemyBase::DoDamage()

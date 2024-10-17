@@ -22,6 +22,7 @@
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "../Public/Character/QTEComponent.h"
+#include "Score/ScoreManager.h"
 #include "Camera/BBCameraShake.h"
 #include "NiagaraComponent.h"
 #include "NiagaraSystem.h"
@@ -78,6 +79,12 @@ void APlayerCharacter::BeginPlay()
 	}
 	else {
 		BeatHandle = BeatManager->BindFuncToOnBeat(this, &APlayerCharacter::OnBeat);
+	}
+
+	ScoreManager = Cast<AScoreManager>(UGameplayStatics::GetActorOfClass(this, ScoreManagerClass));
+
+	if (ScoreManager == nullptr) {
+		UE_LOG(LogTemp, Error, TEXT("No Score Manager was found in the scene!"));
 	}
 }
 
@@ -453,6 +460,10 @@ void APlayerCharacter::ApplyDamage(float Damage)
 	CurrentHealth = FMath::Clamp(CurrentHealth - Damage, 0, MaxHealth);
 
 	UE_LOG(LogTemp, Display, TEXT("Remaining health: %f"), CurrentHealth);
+
+	if (ScoreManager) {
+		ScoreManager->TookDamage();
+	}
 
 	if (!IsAlive()) {
 		if (!bHasDied) {
