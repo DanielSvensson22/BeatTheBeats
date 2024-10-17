@@ -11,6 +11,7 @@
 class ABeatManager;
 class AEnemyQueue;
 class UWidgetComponent;
+class AScoreManager;
 
 UCLASS()
 class BEATTHEBEATS_API AEnemyBase : public ACharacter, public IHitInterface
@@ -155,4 +156,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	float OptimalAttackMultiplier = 2;
+
+	AScoreManager* ScoreManager;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AScoreManager> ScoreManagerClass;
 };

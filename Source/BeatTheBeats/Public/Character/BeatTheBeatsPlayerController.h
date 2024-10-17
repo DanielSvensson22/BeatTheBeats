@@ -9,6 +9,7 @@
 class UInputMappingContext;
 class UUserWidget;
 class ABeatManager;
+class AScoreManager;
 
 /**
  * 
@@ -59,4 +60,9 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UUserWidget> GameOverScreenClass;
+
+	AScoreManager* ScoreManager;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AScoreManager> ScoreManagerClass;
 };

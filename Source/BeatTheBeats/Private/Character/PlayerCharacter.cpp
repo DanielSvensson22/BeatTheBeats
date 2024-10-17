@@ -22,6 +22,7 @@
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "../Public/Character/QTEComponent.h"
+#include "Score/ScoreManager.h"
 #include "Camera/BBCameraShake.h"
 #include "NiagaraComponent.h"
 #include "NiagaraSystem.h"
@@ -79,14 +80,23 @@ void APlayerCharacter::BeginPlay()
 	else {
 		BeatHandle = BeatManager->BindFuncToOnBeat(this, &APlayerCharacter::OnBeat);
 	}
+
+	ScoreManager = Cast<AScoreManager>(UGameplayStatics::GetActorOfClass(this, ScoreManagerClass));
+
+	if (ScoreManager == nullptr) {
+		UE_LOG(LogTemp, Error, TEXT("No Score Manager was found in the scene!"));
+	}
 }
 
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	RotatePlayerToAttack(DeltaTime);
+
 	SetTargetLockCamera();
 
+	bMovedThisTick = false;
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -154,6 +164,8 @@ void APlayerCharacter::Move(const FInputActionValue& Value)
 		AddMovementInput(ForwardDirection, MovementVector.Y);
 		AddMovementInput(RightDirection, MovementVector.X);
 	}
+
+	bMovedThisTick = true;
 }
 
 void APlayerCharacter::Look(const FInputActionValue& Value)
@@ -449,9 +461,15 @@ void APlayerCharacter::ApplyDamage(float Damage)
 
 	UE_LOG(LogTemp, Display, TEXT("Remaining health: %f"), CurrentHealth);
 
+	if (ScoreManager) {
+		ScoreManager->TookDamage();
+	}
+
 	if (!IsAlive()) {
 		if (!bHasDied) {
 			bHasDied = true;
+
+			UE_LOG(LogTemp, Warning, TEXT("Player died!"));
 
 			ABeatTheBeatsPlayerController* controller = Cast<ABeatTheBeatsPlayerController>(GetController());
 
@@ -465,5 +483,12 @@ void APlayerCharacter::ApplyDamage(float Damage)
 
 			BeatManager->UnBindFuncFromOnBeat(BeatHandle);
 		}
+	}
+}
+
+void APlayerCharacter::RotatePlayerToAttack(float DeltaTime)
+{
+	if (!bMovedThisTick && !bIsLockingTarget) {
+		SetActorRotation(FMath::RInterpTo(GetActorRotation(), GetController()->GetControlRotation(), DeltaTime, RotationSpeed));
 	}
 }

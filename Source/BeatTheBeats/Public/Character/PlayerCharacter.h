@@ -22,6 +22,7 @@ class UAnimMontage;
 class UQTEComponent;
 class ULegacyCameraShake;
 class UNiagaraSystem;
+class AScoreManager;
 
 UCLASS()
 class BEATTHEBEATS_API APlayerCharacter : public ACharacter
@@ -137,6 +138,8 @@ private:
 
 	void ApplyDamage(float Damage);
 
+	void RotatePlayerToAttack(float DeltaTime);
+
 private:
 	typedef std::tuple<AEnemyBase*, Attacks, float> IncomingAttack;
 
@@ -209,6 +212,16 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	float PlayerDamage = 10;
+
+	bool bMovedThisTick = false;
+
+	UPROPERTY(EditDefaultsOnly)
+	float RotationSpeed = 10;
+
+	AScoreManager* ScoreManager;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AScoreManager> ScoreManagerClass;
 
 	/**
 	* Animation Montages
