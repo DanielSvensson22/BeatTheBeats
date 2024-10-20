@@ -19,7 +19,7 @@ class AAIController;
 class UAnimMontage;
 
 UCLASS()
-class BEATTHEBEATS_API ABoss : public AEnemy
+class BEATTHEBEATS_API ABoss : public AEnemyBase
 {
 	GENERATED_BODY()
 
@@ -33,7 +33,7 @@ protected:
 
 	virtual void OnBeat(float CurrentTimeSinceLastBeat) override;
 
-	virtual void Attack() override;
+    void SlamAttack();
 
 	void PlayAttackMontage();
 
@@ -41,6 +41,8 @@ protected:
 
 	UFUNCTION(BlueprintCallable, Category = "Effects")
 	void SpawnAttackParticleEffect(FName SocketName);
+public:
+
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
@@ -53,6 +55,9 @@ protected:
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Montages")
 	TObjectPtr<UAnimMontage> AttackMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Montages")
+	TObjectPtr<UAnimMontage> Death;
 
 	APawn* Player;
 

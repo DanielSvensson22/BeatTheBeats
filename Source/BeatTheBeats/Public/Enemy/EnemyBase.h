@@ -51,6 +51,8 @@ public:
 
 	FORCEINLINE float GetMaxAttackDistance() { return MaxAttackDistance; }
 	FORCEINLINE bool GetCanChasePlayer() { return bCanChasePlayer; }
+
+	UFUNCTION(BlueprintPure)
 	FORCEINLINE bool IsAlive() { return CurrentHealth > 0; }
 
 	FORCEINLINE Attacks GetEnemyType() { return EnemyType; }
@@ -89,7 +91,7 @@ protected:
 	float MaxHealth = 100;
 
 	UPROPERTY(VisibleAnywhere)
-	float CurrentHealth;
+	float CurrentHealth = 100;
 
 	bool bHasDied = false;
 

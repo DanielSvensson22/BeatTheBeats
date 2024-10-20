@@ -12,7 +12,7 @@
 // Sets default values
 AEnemyBase::AEnemyBase()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
 	GetMesh()->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
@@ -35,7 +35,7 @@ void AEnemyBase::BeginPlay()
 	Super::BeginPlay();
 
 	CurrentHealth = MaxHealth;
-	
+
 	BeatManager = Cast<ABeatManager>(UGameplayStatics::GetActorOfClass(this, BeatManagerClass));
 
 	if (BeatManager == nullptr) {
@@ -197,14 +197,16 @@ void AEnemyBase::ApplyDamage(float InitialDamage, Attacks AttackType, bool OnBea
 		if (!bHasDied) {
 			bHasDied = true;
 
-			EnemyQueue->RemoveEnemy(this, bIsMelee);
+			if (EnemyQueue)
+				EnemyQueue->RemoveEnemy(this, bIsMelee);
 
 			DetachFromControllerPendingDestroy();
 
 			GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 			SetActorTickEnabled(false);
 
-			BeatManager->UnBindFuncFromOnBeat(BeatHandle);
+			if (BeatManager)
+				BeatManager->UnBindFuncFromOnBeat(BeatHandle);
 
 			CurrentAttack = StandardCombo.ResetCombo();
 		}

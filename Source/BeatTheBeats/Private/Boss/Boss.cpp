@@ -33,7 +33,7 @@ void ABoss::OnBeat(float CurrentTimeSinceLastBeat)
 	}
 }
 
-void ABoss::Attack()
+void ABoss::SlamAttack()
 {
 	if (BossState == EBossState::EBS_Attacking) return;
 	PlayAttackMontage();
