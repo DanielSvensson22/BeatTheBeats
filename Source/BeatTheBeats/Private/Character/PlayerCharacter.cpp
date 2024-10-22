@@ -483,7 +483,7 @@ void APlayerCharacter::ApplyDamage(float Damage)
 
 			BeatManager->UnBindFuncFromOnBeat(BeatHandle);
 
-			ReloadLevel();
+			//ReloadLevel();
 		}
 	}
 }
