@@ -482,6 +482,8 @@ void APlayerCharacter::ApplyDamage(float Damage)
 			SetActorTickEnabled(false);
 
 			BeatManager->UnBindFuncFromOnBeat(BeatHandle);
+
+			//ReloadLevel();
 		}
 	}
 }
@@ -491,4 +493,9 @@ void APlayerCharacter::RotatePlayerToAttack(float DeltaTime)
 	if (!bMovedThisTick && !bIsLockingTarget) {
 		SetActorRotation(FMath::RInterpTo(GetActorRotation(), GetController()->GetControlRotation(), DeltaTime, RotationSpeed));
 	}
+}
+
+void APlayerCharacter::ReloadLevel_Implementation()
+{
+
 }

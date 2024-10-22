@@ -125,6 +125,9 @@ protected:
 	void CameraShake();
 	void SpawnParticle();
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Reload")
+	void ReloadLevel();
+
 private:
 	void AttackCallback(Attacks AttackType, float MotionValue, float AnimLength, int Combo, int ComboStep);
 	void SetTargetLockCamera();
