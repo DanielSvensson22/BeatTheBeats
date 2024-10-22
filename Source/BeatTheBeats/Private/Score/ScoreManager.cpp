@@ -31,7 +31,10 @@ void AScoreManager::Tick(float DeltaTime)
 		CurrentTimeUntilPointsLoss -= DeltaTime;
 	}
 	else {
-		AddPoints(-(PointsLossRate * DeltaTime));
+		if (!bHasLostPoints) {
+			bHasLostPoints = true;
+			AddPoints(-DamagePointsLoss);
+		}
 	}
 }
 
@@ -68,12 +71,12 @@ void AScoreManager::AddPoints(float points)
 	Points += FMath::Clamp(points, 0, INT32_MAX);
 	CurrentStagePoints += points;
 
-	if (CurrentStagePoints >= ScoreStages[CurrentStage].GetPointsNeeded() && CurrentStage < ScoreStages.Num() - 1) {
+	while (CurrentStagePoints >= ScoreStages[CurrentStage].GetPointsNeeded() && CurrentStage < ScoreStages.Num() - 1) {
 		CurrentStagePoints -= ScoreStages[CurrentStage].GetPointsNeeded();
 		CurrentStage++;
 	}
 
-	if (CurrentStagePoints < 0 && CurrentStage > 0) {
+	while (CurrentStagePoints < 0 && CurrentStage > 0) {
 		CurrentStage--;
 		CurrentStagePoints = ScoreStages[CurrentStage].GetPointsNeeded() + CurrentStagePoints;
 	}
@@ -103,6 +106,7 @@ void AScoreManager::UpdateUI()
 		}
 
 		CurrentTimeUntilPointsLoss = TimeUntilPointsLoss;
+		bHasLostPoints = false;
 	}
 }
 

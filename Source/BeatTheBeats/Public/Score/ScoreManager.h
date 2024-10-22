@@ -59,8 +59,7 @@ private:
 
 	float CurrentTimeUntilPointsLoss;
 
-	UPROPERTY(EditDefaultsOnly)
-	float PointsLossRate = 1;
+	bool bHasLostPoints = false;
 
 	UTextBlock* ScoreText;
 	URadialSlider* ScoreSlider;
