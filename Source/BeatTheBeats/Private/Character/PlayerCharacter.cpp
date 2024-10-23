@@ -483,9 +483,15 @@ void APlayerCharacter::ApplyDamage(float Damage)
 
 			BeatManager->UnBindFuncFromOnBeat(BeatHandle);
 
+			controller->bShowMouseCursor = true;
+			controller->bEnableClickEvents = true;
+			controller->bEnableMouseOverEvents = true;
+
 			//ReloadLevel();
 		}
 	}
+
+	UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->StartCameraShake(UBBCameraShake::StaticClass());
 }
 
 void APlayerCharacter::RotatePlayerToAttack(float DeltaTime)
