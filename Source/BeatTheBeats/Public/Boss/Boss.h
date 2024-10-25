@@ -12,7 +12,10 @@ enum class EBossState : uint8
 {
 	EBS_Unoccupied UMETA(DisplayName = "Unoccupied"),
 	EBS_Chasing UMETA(DisplayName = "Chasing"),
-	EBS_Attacking UMETA(DisplayName = "Attacking"),
+	EBS_StartChasing UMETA(DisplayName = "StartChasing"),
+	EBS_SlamAttacking UMETA(DisplayName = "Attacking"),
+	EBS_RayAttacking UMETA(DisplayName = "RayAttacking"),
+	EBS_BulletAttacking UMETA(DisplayName = "BulletAttacking"),
 };
 
 class AAIController;

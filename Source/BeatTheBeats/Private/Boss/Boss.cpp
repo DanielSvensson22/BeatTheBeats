@@ -10,7 +10,7 @@
 ABoss::ABoss() : Super()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	BossState = EBossState::EBS_Chasing;
+	BossState = EBossState::EBS_StartChasing;
 
 	Attack3EffectPos = CreateDefaultSubobject<USceneComponent>("EffectPos(Attack3)");
 	Attack3EffectPos->SetupAttachment(GetRootComponent());
@@ -27,18 +27,26 @@ void ABoss::BeginPlay()
 
 void ABoss::OnBeat(float CurrentTimeSinceLastBeat)
 {
-	if (bCanAttack)
+	switch (BossState)
 	{
-		Attack();
+	case EBossState::EBS_SlamAttacking:
+		SlamAttack();
+		break;
+	case EBossState::EBS_BulletAttacking:
+		break;
+	case EBossState::EBS_RayAttacking:
+		break;
 	}
 }
 
 void ABoss::SlamAttack()
 {
-	if (BossState == EBossState::EBS_Attacking) return;
+	if (!bCanAttack) return;
+	RotateBoss = false;
+	AIController->StopMovement();
 	PlayAttackMontage();
 
-	BossState = EBossState::EBS_Attacking;
+	bCanAttack = false;
 }
 
 void ABoss::PlayAttackMontage()
@@ -66,8 +74,6 @@ void ABoss::SpawnAttackParticleEffect(FName SocketName)
 		UWorld* World = GetWorld();
 		// Spawn the particle effect attached to the given scene component
 		UGameplayStatics::SpawnEmitterAtLocation(World, AttackParticleEffect, Attack3EffectPos->GetComponentTransform(), true);
-
-		//UGameplayStatics::SpawnEmitterAttached(AttackParticleEffect, Attack3EffectPos, NAME_None);
 	}
 }
 
@@ -77,35 +83,42 @@ void ABoss::Tick(float DeltaTime)
 	FVector PlayerLocation = Player->GetActorLocation();
 	FVector BossLocation = GetActorLocation();
 
-	float Distance = FVector::Dist(PlayerLocation, BossLocation);
-	//UE_LOG(LogTemp, Warning, TEXT("Distance from Player to Boss: %f"), Distance);
-	if (Distance <= AttackRange)
-	{
-		bCanAttack = true;
-	}
-	else {
-		bCanAttack = false;
-	}
-
 	if (RotateBoss)
 	{
 		FVector Direction = (PlayerLocation - BossLocation).GetSafeNormal();
 		FRotator TargetRotation = Direction.Rotation();
-		float RotationSpeed = 1.f;
+		float RotationSpeed = 2.f;
 
 		FRotator CurrentRotation = GetActorRotation();
 		FRotator NewRotation = FMath::RInterpTo(CurrentRotation, TargetRotation, GetWorld()->GetDeltaSeconds(), RotationSpeed); // RotationSpeed is a float that controls the speed
-		SetActorRotation(NewRotation);
+		SetActorRotation(FRotator(0, NewRotation.Yaw, 0));
 	}
+	float Distance = FVector::Dist(PlayerLocation, BossLocation);
 
-	if (BossState == EBossState::EBS_Unoccupied) 
+	switch (BossState)
 	{
+	case EBossState::EBS_Unoccupied:
 		RotateBoss = false;
-	}
-	else if (BossState == EBossState::EBS_Chasing)
-	{
-		BossState = EBossState::EBS_Chasing;
+		BossState = EBossState::EBS_StartChasing;
+		break;
+	case EBossState::EBS_Chasing:
+		if (Distance <= AttackRange)
+		{
+			bCanAttack = true;
+		}
+		else {
+			bCanAttack = false;
+		}
+
+		if (bCanAttack) 
+			BossState = EBossState::EBS_SlamAttacking;
+		break;
+	case EBossState::EBS_StartChasing:
 		AIController->MoveToActor(Player);
+		BossState = EBossState::EBS_Chasing;
+		break;
+	default:
+		break;
 	}
 
 
