@@ -5,6 +5,7 @@
 #include "Components\CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Animation/AnimMontage.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "AIController.h"
 
 ABoss::ABoss() : Super()
@@ -35,6 +36,7 @@ void ABoss::OnBeat(float CurrentTimeSinceLastBeat)
 	case EBossState::EBS_BulletAttacking:
 		break;
 	case EBossState::EBS_RayAttacking:
+		RayAttack();
 		break;
 	}
 }
@@ -44,36 +46,95 @@ void ABoss::SlamAttack()
 	if (!bCanAttack) return;
 	RotateBoss = false;
 	AIController->StopMovement();
-	PlayAttackMontage();
+	PlayAttackMontage(FName("Attack3"));
 
 	bCanAttack = false;
 }
 
-void ABoss::PlayAttackMontage()
+void ABoss::RayAttack()
+{
+	if (!bCanAttack) return;
+	AIController->StopMovement();
+	PlayAttackMontage("AttackRanged");
+	bCanAttack = false;
+}
+
+void ABoss::PlayAttackMontage(FName Section)
 {
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	if (AnimInstance && AttackMontage)
 	{
-
 		AnimInstance->Montage_Play(AttackMontage);
-		AnimInstance->Montage_JumpToSection(FName("Attack3"), AttackMontage);
-		UE_LOG(LogTemp, Warning, TEXT("Montage is Playing!!!"));
+		AnimInstance->Montage_JumpToSection(Section, AttackMontage);
 	}
 }
+
+
 
 void ABoss::DoDamage()
 {
 
 }
 
-void ABoss::SpawnAttackParticleEffect(FName SocketName)
+void ABoss::SpawnAttackParticleEffect(UParticleSystem* Particle, const FTransform& SpawnTransform)
 {
-	RotateBoss = true;
-	if (AttackParticleEffect && Attack3EffectPos)
+	if (Particle)
 	{
 		UWorld* World = GetWorld();
 		// Spawn the particle effect attached to the given scene component
-		UGameplayStatics::SpawnEmitterAtLocation(World, AttackParticleEffect, Attack3EffectPos->GetComponentTransform(), true);
+		UGameplayStatics::SpawnEmitterAtLocation(World, Particle, SpawnTransform, true);
+	}
+}
+
+void ABoss::ParticleEffects()
+{
+	switch (BossState)
+	{
+	case EBossState::EBS_SlamAttacking:
+		SpawnAttackParticleEffect(AttackSlam, Attack3EffectPos->GetComponentTransform());
+		break;
+	case EBossState::EBS_RayAttacking:
+		if (USkeletalMeshComponent* SkeletalMeshComponent = Cast<USkeletalMeshComponent>(GetMesh()))
+		{
+			FTransform Transform = SkeletalMeshComponent->GetSocketTransform(FName("Muzzle_01")); // get the position where to start the Ray
+			FVector EffectLocation = Transform.GetLocation();
+			FVector PlayerLocation = Player->GetActorLocation();
+			FVector Direction = (PlayerLocation - EffectLocation).GetSafeNormal();
+
+#pragma region Ray Effect
+			FRotator EffectRotation = FRotationMatrix::MakeFromX(Direction).Rotator();
+			Transform.SetRotation(EffectRotation.Quaternion());
+			SpawnAttackParticleEffect(PrimaryAttackRay, Transform);
+#pragma endregion
+
+
+			FVector Start = EffectLocation; // Location where the ray originates
+			FVector End = Start + (Direction * 2000); // Extends in the ray direction
+			FCollisionQueryParams CollisionParams;
+			CollisionParams.AddIgnoredActor(this); // Ignore the actor firing the ray
+			FHitResult HitResult;
+			bool bHit = GetWorld()->LineTraceSingleByChannel(
+				HitResult,         // Stores info about the hit 
+				Start,             // Start location 
+				End,               // End location 
+				ECC_Visibility,    // Trace channel (you can use other channels) 
+				CollisionParams    // Collision parameters 
+			);
+
+			if (bHit)
+			{
+
+				FVector HitLocation = HitResult.Location;
+				FRotator HitRotation = HitResult.ImpactNormal.Rotation();
+				FTransform HitTransform;
+				HitTransform.SetLocation(HitLocation);
+				HitTransform.SetRotation(HitRotation.Quaternion());
+				HitTransform.SetScale3D(FVector(1.0f));
+				SpawnAttackParticleEffect(PrimaryAttackGroundImpact, HitTransform);
+			}
+
+		}
+		break;
 	}
 }
 
@@ -105,17 +166,20 @@ void ABoss::Tick(float DeltaTime)
 		if (Distance <= AttackRange)
 		{
 			bCanAttack = true;
+			BossState = EBossState::EBS_SlamAttacking;
 		}
 		else {
-			bCanAttack = false;
+			bCanAttack = true;
+			BossState = EBossState::EBS_RayAttacking;
 		}
 
-		if (bCanAttack) 
-			BossState = EBossState::EBS_SlamAttacking;
 		break;
 	case EBossState::EBS_StartChasing:
 		AIController->MoveToActor(Player);
 		BossState = EBossState::EBS_Chasing;
+		break;
+	case EBossState::EBS_RayAttacking:
+		RotateBoss = true;
 		break;
 	default:
 		break;
@@ -129,4 +193,3 @@ void ABoss::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 }
-

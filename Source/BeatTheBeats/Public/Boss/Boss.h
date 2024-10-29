@@ -20,6 +20,7 @@ enum class EBossState : uint8
 
 class AAIController;
 class UAnimMontage;
+class USkeletalMeshComponent;
 
 UCLASS()
 class BEATTHEBEATS_API ABoss : public AEnemyBase
@@ -38,18 +39,36 @@ protected:
 
     void SlamAttack();
 
-	void PlayAttackMontage();
+    void RayAttack();
+
+	void PlayAttackMontage(FName Section);
 
 	virtual void DoDamage() override;
 
+	void SpawnAttackParticleEffect(UParticleSystem* Particle, const FTransform& SpawnTransform);
+
+
 	UFUNCTION(BlueprintCallable, Category = "Effects")
-	void SpawnAttackParticleEffect(FName SocketName);
+	void ParticleEffects();
+
 public:
 
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
-	UParticleSystem* AttackParticleEffect;
+	UParticleSystem* AttackSlam;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
+	UParticleSystem* PrimaryAttackMuzzle;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
+	UParticleSystem* PrimaryAttackRay;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
+	UParticleSystem* PrimaryAttackImpact;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
+	UParticleSystem* PrimaryAttackGroundImpact;
 
 protected:
 	UPROPERTY(BlueprintReadWrite)
@@ -58,9 +77,6 @@ protected:
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Montages")
 	TObjectPtr<UAnimMontage> AttackMontage;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Montages")
-	TObjectPtr<UAnimMontage> Death;
 
 	APawn* Player;
 
