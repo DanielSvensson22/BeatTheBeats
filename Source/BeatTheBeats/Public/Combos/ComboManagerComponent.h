@@ -107,9 +107,19 @@ private:
 		//return 0;
 	}
 
+	FORCEINLINE int FindComboOfType(Attacks Type) {
+		for (int i = 0; i < Combos.Num(); i++) {
+			if (Combos[i].GetAttackType(0) == Type) {
+				return i;
+			}
+		}
+
+		return 0;
+	}
+
 	void PerformAttack(Attacks AttackType);
 
-	void PerformAnimation(Attacks AttackType, float ClosenessToBeat, bool AddTimeBetweenBeats);
+	void PerformAnimation(Attacks AttackType, float ClosenessToBeat, bool AddTimeBetweenBeats, UAnimMontage* montage);
 
 private:
 

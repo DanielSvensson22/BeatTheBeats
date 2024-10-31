@@ -61,14 +61,15 @@ void UComboManagerComponent::AddAttack(Attacks AttackType, float Damage, bool Pl
 		StoredAttacks.emplace(AttackType, Damage, PlayerAddedThisBeat);
 
 		if (player) {
-			if (StoredAttacks.size() == 1) {
-				PerformAnimation(AttackType, BeatManager->ClosenessToBeat(), PlayerAddedThisBeat);
+			if (StoredAttacks.size() == 1 && AttackType != Attacks::Attack_Pause) {
+				int combo = FindComboOfType(AttackType);
+				PerformAnimation(AttackType, BeatManager->ClosenessToBeat(), PlayerAddedThisBeat, Combos[combo].GetAnimMontage(Combos[combo].GetNextAttack(CurrentComboStep)));
 
 				if (Weapon) {
 					Weapon->SetAttackStatus(Damage, AttackType, BeatManager->ClosenessToBeat() > ClosenessPercentForPerfectBeat);
 				}
 			}
-			else {
+			else if (AttackType != Attacks::Attack_Pause) {
 				if (UpcomingAttackAnims.size() > 0) {
 					UpcomingAttackAnims.emplace(AttackType, BeatManager->ClosenessToBeat(), true);
 				}
@@ -110,7 +111,11 @@ void UComboManagerComponent::ProcessNextAttack(float CurrentTimeSinceLastBeat)
 
 				if (ShouldAttack) {
 					UpcomingAttackAnims.pop();
-					PerformAnimation(AttackAnimType, ClosenessToBeat, false);
+					
+					if (AttackAnimType != Attacks::Attack_Pause) {
+						PerformAnimation(AttackAnimType, ClosenessToBeat, false,
+							Combos[CurrentCombo].GetAnimMontage(Combos[CurrentCombo].GetNextAttack(CurrentComboStep + 1)));
+					}
 
 					if (Weapon) {
 						Weapon->SetAttackStatus(Damage, AttackType, ClosenessToBeat > ClosenessPercentForPerfectBeat);
@@ -168,35 +173,15 @@ void UComboManagerComponent::PerformAttack(Attacks AttackType)
 	}
 }
 
-void UComboManagerComponent::PerformAnimation(Attacks AttackType, float ClosenessToBeat, bool AddTimeBetweenBeats)
+void UComboManagerComponent::PerformAnimation(Attacks AttackType, float ClosenessToBeat, bool AddTimeBetweenBeats, UAnimMontage* montage)
 {
-	switch (AttackType) {
-	case Attacks::Attack_Neutral:
-		if (ClosenessToBeat > ClosenessPercentForPerfectBeat) {
-			player->PlayAttackMontage(TEXT("PerfectNeutral"), AddTimeBetweenBeats);
-		}
-		else {
-			player->PlayAttackMontage(TEXT("AttackNeutral"), AddTimeBetweenBeats);
-		}
-		break;
-
-	case Attacks::Attack_Type1:
-		if (ClosenessToBeat > ClosenessPercentForPerfectBeat) {
-			player->PlayAttackMontage(TEXT("Perfect1"), AddTimeBetweenBeats);
-		}
-		else {
-			player->PlayAttackMontage(TEXT("Attack1"), AddTimeBetweenBeats);
-		}
-		break;
-
-	default:
-		if (ClosenessToBeat > ClosenessPercentForPerfectBeat) {
-			player->PlayAttackMontage(TEXT("PerfectNeutral"), AddTimeBetweenBeats);
-		}
-		else {
-			player->PlayAttackMontage(TEXT("AttackNeutral"), AddTimeBetweenBeats);
-		}
-		break;
+	if (ClosenessToBeat > ClosenessPercentForPerfectBeat) {
+		player->PlayAttackMontage(montage, TEXT("Perfect"), AddTimeBetweenBeats);
 	}
+	else {
+		player->PlayAttackMontage(montage, TEXT("Default"), AddTimeBetweenBeats);
+	}
+
+	UE_LOG(LogTemp, Display, TEXT("Animated on combo %i step %i"), CurrentCombo, FMath::Max(CurrentComboStep, 0));
 }
 

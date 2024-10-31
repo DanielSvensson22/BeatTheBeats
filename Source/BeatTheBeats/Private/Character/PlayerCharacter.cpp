@@ -86,6 +86,8 @@ void APlayerCharacter::BeginPlay()
 	if (ScoreManager == nullptr) {
 		UE_LOG(LogTemp, Error, TEXT("No Score Manager was found in the scene!"));
 	}
+
+	SetNotifyName("Attack Window");
 }
 
 void APlayerCharacter::Tick(float DeltaTime)
@@ -309,6 +311,15 @@ void APlayerCharacter::AddNeutralBlock()
 	if (!bIsBlocking) {
 		CurrentBlockedType = Attacks::Attack_Neutral;
 		bIsBlocking = true;
+
+		if (BeatManager->ClosenessToBeat() > ClosenessForPeffectBlock) {
+			bPerfectBlock = true;
+		}
+		else {
+			bPerfectBlock = false;
+		}
+
+		PlayAttackMontage(BlockAnim, TEXT("Default"), true);
 	}
 }
 
@@ -317,6 +328,15 @@ void APlayerCharacter::AddType1Block()
 	if (!bIsBlocking) {
 		CurrentBlockedType = Attacks::Attack_Type1;
 		bIsBlocking = true;
+
+		if (BeatManager->ClosenessToBeat() > ClosenessForPeffectBlock) {
+			bPerfectBlock = true;
+		}
+		else {
+			bPerfectBlock = false;
+		}
+
+		PlayAttackMontage(BlockAnim, TEXT("Default"), true);
 	}
 }
 
@@ -325,6 +345,15 @@ void APlayerCharacter::AddType2Block()
 	if (!bIsBlocking) {
 		CurrentBlockedType = Attacks::Attack_Type2;
 		bIsBlocking = true;
+
+		if (BeatManager->ClosenessToBeat() > ClosenessForPeffectBlock) {
+			bPerfectBlock = true;
+		}
+		else {
+			bPerfectBlock = false;
+		}
+
+		PlayAttackMontage(BlockAnim, TEXT("Default"), true);
 	}
 }
 
@@ -333,6 +362,15 @@ void APlayerCharacter::AddType3Block()
 	if (!bIsBlocking) {
 		CurrentBlockedType = Attacks::Attack_Type3;
 		bIsBlocking = true;
+
+		if (BeatManager->ClosenessToBeat() > ClosenessForPeffectBlock) {
+			bPerfectBlock = true;
+		}
+		else {
+			bPerfectBlock = false;
+		}
+
+		PlayAttackMontage(BlockAnim, TEXT("Default"), true);
 	}
 }
 
@@ -371,26 +409,27 @@ void APlayerCharacter::AttackCallback(Attacks AttackType, float MotionValue, flo
 	UE_LOG(LogTemp, Warning, TEXT("%s on Combo step %i in Combo %i"), *attackName, ComboStep, Combo);
 }
 
-void APlayerCharacter::PlayAttackMontage(FName SectionName, bool AddTimeBetweenBeats)
+void APlayerCharacter::PlayAttackMontage(UAnimMontage* montage, FName SectionName, bool AddTimeBetweenBeats)
 {
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 
-	if (AnimInstance != nullptr && AttackMontage != nullptr)
+	if (AnimInstance != nullptr && montage != nullptr)
 	{
-		int32 Section = AttackMontage->GetSectionIndex(SectionName);
+		int32 Section = montage->GetSectionIndex(SectionName);
 
-		float Length = AttackMontage->GetSectionLength(Section);
+		float Length = montage->GetSectionLength(Section);
 
 		TArray<const FAnimNotifyEvent*> Notifies;
 		float Start, End;
 
-		AttackMontage->GetSectionStartAndEndTime(Section, Start, End);
+		montage->GetSectionStartAndEndTime(Section, Start, End);
 
-		AttackMontage->GetAnimNotifies(Start, End, false, Notifies);
+		montage->GetAnimNotifies(Start, End, false, Notifies);
+		
 
 		for (auto& Notify : Notifies) {
-			if (Notify->NotifyName == TEXT("DisableBoxCollision")) {
-				Length = Notify->GetTriggerTime() - Start;
+			if (Notify->NotifyName == AttackNotifyName) {
+				Length = Notify->GetEndTriggerTime() - Start;
 				break;
 			}
 		}
@@ -404,8 +443,8 @@ void APlayerCharacter::PlayAttackMontage(FName SectionName, bool AddTimeBetweenB
 			PlayRate = Length / BeatManager->GetTimeUntilNextBeat();
 		}
 
-		AnimInstance->Montage_Play(AttackMontage, PlayRate);
-		AnimInstance->Montage_JumpToSection(SectionName, AttackMontage);
+		AnimInstance->Montage_Play(montage, PlayRate);
+		AnimInstance->Montage_JumpToSection(SectionName, montage);
 	}
 }
 
@@ -424,6 +463,10 @@ void APlayerCharacter::ProcessIncomingAttacks()
 
 			if (dot < 0) {
 				Enemy->Parry();
+
+				if (!bPerfectBlock) {
+					ApplyDamage(Damage / 2);
+				}
 			}
 			else {
 				ApplyDamage(Damage);
@@ -487,7 +530,7 @@ void APlayerCharacter::ApplyDamage(float Damage)
 			controller->bEnableClickEvents = true;
 			controller->bEnableMouseOverEvents = true;
 
-			//ReloadLevel();
+			PlayAttackMontage(DeathAnim, TEXT("Default"), true);
 		}
 	}
 

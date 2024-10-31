@@ -28,7 +28,7 @@ struct BEATTHEBEATS_API FCombo
 
 public:
 	FCombo();
-	FCombo(TArray<UAnimationAsset*> animations, TArray<Attacks>& attacks, TArray<float>& motionValues);
+	FCombo(TArray<UAnimMontage*> animations, TArray<Attacks>& attacks, TArray<float>& motionValues);
 	~FCombo();
 
 	FORCEINLINE int NextAttack() {
@@ -49,6 +49,16 @@ public:
 		}
 
 		return CurrentAttack;
+	}
+
+	FORCEINLINE int GetNextAttack(int current) const {
+		int next = current + 1;
+
+		if (next >= ComboAttacks.Num()) {
+			next -= ComboAttacks.Num();
+		}
+
+		return next;
 	}
 
 	FORCEINLINE int ResetCombo() { CurrentAttack = -1; return -1; }
@@ -94,10 +104,28 @@ public:
 
 	FORCEINLINE int AttackCount() const { return ComboAttacks.Num(); }
 
+	FORCEINLINE UAnimMontage* GetCurrentMontage() {
+		if (CurrentAttack == -1) {
+			return nullptr;
+		}
+
+		return Animations[CurrentAttack];
+	}
+
+	FORCEINLINE UAnimMontage* GetAnimMontage(int index) { 
+		int next = index;
+
+		if (index >= Animations.Num()) {
+			next = 0;
+		}
+
+		return Animations[next];
+	}
+
 private:
 
 	UPROPERTY(EditDefaultsOnly)
-	TArray<UAnimationAsset*> Animations;
+	TArray<UAnimMontage*> Animations;
 
 	UPROPERTY(EditDefaultsOnly)
 	TArray<Attacks> ComboAttacks;

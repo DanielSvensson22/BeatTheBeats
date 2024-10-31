@@ -11,10 +11,11 @@
 			"AdditionalDependencies": [
 				"Engine",
 				"AIModule",
-				"GameplayCameras"
+				"GameplayCameras",
+				"NiagaraAnimNotifies"
 			]
 		},
-{
+		{
 			"Name": "AdvancedWidgets",
 			"Type": "Runtime",
 			"LoadingPhase": "Default"

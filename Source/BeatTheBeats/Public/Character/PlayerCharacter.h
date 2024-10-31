@@ -41,7 +41,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetWeaponCollisionEnabled(ECollisionEnabled::Type CollisionEnable);
 
-	void PlayAttackMontage(FName SectionName, bool AddTimeBetweenBeats);
+	void PlayAttackMontage(UAnimMontage* montage, FName SectionName, bool AddTimeBetweenBeats);
 
 	UFUNCTION(BlueprintPure)
 	FORCEINLINE float GetPlayerHealth() const { return CurrentHealth; }
@@ -51,6 +51,10 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	FORCEINLINE bool IsAlive() const { return CurrentHealth > 0; }
+
+	FORCEINLINE void SetNotifyName(const FString& name) {
+		AttackNotifyName = name;
+	}
 
 protected:
 	virtual void BeginPlay() override;
@@ -103,7 +107,6 @@ protected:
 	//Effects
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
 	UNiagaraSystem* TempParticleEffect;
-	//UParticleSystem* TempParticleEffect;
 
 	/**
 	* Callbacks for input
@@ -204,6 +207,11 @@ private:
 
 	Attacks CurrentBlockedType;
 
+	UPROPERTY(EditDefaultsOnly)
+	float ClosenessForPeffectBlock = 0.7f;
+
+	bool bPerfectBlock = false;
+
 	bool bIsBlocking = false;
 
 	float CurrentHealth;
@@ -226,14 +234,16 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AScoreManager> ScoreManagerClass;
 
-	/**
-	* Animation Montages
-	*/
-	UPROPERTY(EditDefaultsOnly, Category = "Montages")
-	TObjectPtr<UAnimMontage> AttackMontage;
-
 	UPROPERTY(VisibleAnywhere)
 	UQTEComponent* QTE;
+
+	//Montages
+
+	UPROPERTY(EditDefaultsOnly, Category = "Montages")
+	UAnimMontage* DeathAnim;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Montages")
+	UAnimMontage* BlockAnim;
 
 	//Debug
 	UPROPERTY(EditAnywhere, Category = "Input")
@@ -244,8 +254,12 @@ private:
 
 	bool bInQTE = false;
 
+	FString AttackNotifyName;
+
 public:
 	FORCEINLINE ECameraState GetCameraState() const { return CameraState; }
 	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+
+	UFUNCTION(BlueprintPure)
 	FORCEINLINE bool GetIsLockingTarget() const { return bIsLockingTarget; }
 };
