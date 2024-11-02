@@ -28,12 +28,17 @@ void ABoss::BeginPlay()
 
 void ABoss::OnBeat(float CurrentTimeSinceLastBeat)
 {
+	BeatCounter++;
+	if (BeatCounter > 7) BeatCounter = 1;
 	switch (BossState)
 	{
 	case EBossState::EBS_SlamAttacking:
 		SlamAttack();
 		break;
 	case EBossState::EBS_BulletAttacking:
+		break;
+	case EBossState::EBS_StartRayAttacking:
+		StartRayAttack();
 		break;
 	case EBossState::EBS_RayAttacking:
 		RayAttack();
@@ -54,9 +59,16 @@ void ABoss::SlamAttack()
 void ABoss::RayAttack()
 {
 	if (!bCanAttack) return;
-	AIController->StopMovement();
 	PlayAttackMontage("AttackRanged");
 	bCanAttack = false;
+}
+
+void ABoss::StartRayAttack()
+{
+	if (!bCanAttack) return;
+	AIController->StopMovement();
+	ParticleEffects();
+	BossState = EBossState::EBS_RayAttacking;
 }
 
 void ABoss::PlayAttackMontage(FName Section)
@@ -105,6 +117,7 @@ void ABoss::ParticleEffects()
 			FRotator EffectRotation = FRotationMatrix::MakeFromX(Direction).Rotator();
 			Transform.SetRotation(EffectRotation.Quaternion());
 			SpawnAttackParticleEffect(PrimaryAttackRay, Transform);
+			SpawnAttackParticleEffect(PrimaryAttackMuzzle, Transform);
 #pragma endregion
 
 
@@ -133,6 +146,15 @@ void ABoss::ParticleEffects()
 				SpawnAttackParticleEffect(PrimaryAttackGroundImpact, HitTransform);
 			}
 
+		}
+		break;
+	case EBossState::EBS_StartRayAttacking:
+		if (USkeletalMeshComponent* SkeletalMeshComponent = Cast<USkeletalMeshComponent>(GetMesh()))
+		{
+			FTransform Transform = SkeletalMeshComponent->GetSocketTransform(FName("MuzzleLeft")); // get the position where to start the Ray
+			SpawnAttackParticleEffect(PrimaryAttackMuzzle, Transform);
+		    Transform = SkeletalMeshComponent->GetSocketTransform(FName("MuzzleRight")); // get the position where to start the Ray
+			SpawnAttackParticleEffect(PrimaryAttackMuzzle, Transform);
 		}
 		break;
 	}
@@ -168,9 +190,10 @@ void ABoss::Tick(float DeltaTime)
 			bCanAttack = true;
 			BossState = EBossState::EBS_SlamAttacking;
 		}
-		else {
+		else if(Distance > AttackRange * 3 && BeatCounter == 1)
+		{
 			bCanAttack = true;
-			BossState = EBossState::EBS_RayAttacking;
+			BossState = EBossState::EBS_StartRayAttacking;
 		}
 
 		break;
