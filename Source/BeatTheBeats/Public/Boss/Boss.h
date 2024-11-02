@@ -15,6 +15,7 @@ enum class EBossState : uint8
 	EBS_StartChasing UMETA(DisplayName = "StartChasing"),
 	EBS_SlamAttacking UMETA(DisplayName = "Attacking"),
 	EBS_RayAttacking UMETA(DisplayName = "RayAttacking"),
+	EBS_StartRayAttacking UMETA(DisplayName = "RayAttacking"),
 	EBS_BulletAttacking UMETA(DisplayName = "BulletAttacking"),
 };
 
@@ -40,6 +41,8 @@ protected:
     void SlamAttack();
 
     void RayAttack();
+
+    void StartRayAttack();
 
 	void PlayAttackMontage(FName Section);
 
@@ -86,6 +89,8 @@ private:
 	AAIController* AIController;
 
 	bool RotateBoss = false;
+
+	int BeatCounter = 0;
 
 public:	
 
