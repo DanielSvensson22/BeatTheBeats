@@ -11,6 +11,7 @@ UENUM(BlueprintType)
 enum class EBossState : uint8
 {
 	EBS_Unoccupied UMETA(DisplayName = "Unoccupied"),
+	EBS_Falling UMETA(DisplayName = "Falling"),
 	EBS_Chasing UMETA(DisplayName = "Chasing"),
 	EBS_StartChasing UMETA(DisplayName = "StartChasing"),
 	EBS_SlamAttacking UMETA(DisplayName = "Attacking"),
@@ -38,13 +39,13 @@ protected:
 
 	virtual void OnBeat(float CurrentTimeSinceLastBeat) override;
 
-    void SlamAttack();
+	void SlamAttack();
 
-    void RayAttack();
+	void RayAttack();
 
-    void StartRayAttack();
+	void StartRayAttack();
 
-	void PlayAttackMontage(FName Section);
+	void PlayMontage(UAnimMontage* Montage, FName Section);
 
 	virtual void DoDamage() override;
 
@@ -55,7 +56,6 @@ protected:
 	void ParticleEffects();
 
 public:
-
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
@@ -81,6 +81,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Montages")
 	TObjectPtr<UAnimMontage> AttackMontage;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Montages")
+	TObjectPtr<UAnimMontage> MiscMontage;
+
 	APawn* Player;
 
 	UPROPERTY(VisibleAnywhere)
@@ -90,9 +93,12 @@ private:
 
 	bool RotateBoss = false;
 
+	bool IsFalling;
+
 	int BeatCounter = 0;
 
-public:	
-
+public:
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE bool IsSpawning() const { return BossState == EBossState::EBS_Falling; };
 
 };

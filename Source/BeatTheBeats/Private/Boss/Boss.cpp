@@ -11,7 +11,7 @@
 ABoss::ABoss() : Super()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	BossState = EBossState::EBS_StartChasing;
+	BossState = EBossState::EBS_Falling;
 
 	Attack3EffectPos = CreateDefaultSubobject<USceneComponent>("EffectPos(Attack3)");
 	Attack3EffectPos->SetupAttachment(GetRootComponent());
@@ -24,6 +24,8 @@ void ABoss::BeginPlay()
 	Player = UGameplayStatics::GetPlayerPawn(this, 0);
 	AIController = this->GetController<AAIController>();
 	AIController->MoveToActor(Player);
+
+	IsFalling = true;
 }
 
 void ABoss::OnBeat(float CurrentTimeSinceLastBeat)
@@ -51,7 +53,7 @@ void ABoss::SlamAttack()
 	if (!bCanAttack) return;
 	RotateBoss = false;
 	AIController->StopMovement();
-	PlayAttackMontage(FName("Attack3"));
+	PlayMontage(AttackMontage, "Attack3");
 
 	bCanAttack = false;
 }
@@ -59,7 +61,7 @@ void ABoss::SlamAttack()
 void ABoss::RayAttack()
 {
 	if (!bCanAttack) return;
-	PlayAttackMontage("AttackRanged");
+	PlayMontage(AttackMontage, "AttackRanged");
 	bCanAttack = false;
 }
 
@@ -71,13 +73,13 @@ void ABoss::StartRayAttack()
 	BossState = EBossState::EBS_RayAttacking;
 }
 
-void ABoss::PlayAttackMontage(FName Section)
+void ABoss::PlayMontage(UAnimMontage* Montage, FName Section)
 {
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	if (AnimInstance && AttackMontage)
+	if (AnimInstance && Montage)
 	{
-		AnimInstance->Montage_Play(AttackMontage);
-		AnimInstance->Montage_JumpToSection(Section, AttackMontage);
+		AnimInstance->Montage_Play(Montage);
+		AnimInstance->Montage_JumpToSection(Section, Montage);
 	}
 }
 
@@ -121,17 +123,17 @@ void ABoss::ParticleEffects()
 #pragma endregion
 
 
-			FVector Start = EffectLocation; // Location where the ray originates
-			FVector End = Start + (Direction * 2000); // Extends in the ray direction
+			FVector Start = EffectLocation;
+			FVector End = Start + (Direction * 2000);
 			FCollisionQueryParams CollisionParams;
-			CollisionParams.AddIgnoredActor(this); // Ignore the actor firing the ray
+			CollisionParams.AddIgnoredActor(this);
 			FHitResult HitResult;
 			bool bHit = GetWorld()->LineTraceSingleByChannel(
-				HitResult,         // Stores info about the hit 
-				Start,             // Start location 
-				End,               // End location 
-				ECC_Visibility,    // Trace channel (you can use other channels) 
-				CollisionParams    // Collision parameters 
+				HitResult,
+				Start,
+				End,
+				ECC_Visibility,
+				CollisionParams
 			);
 
 			if (bHit)
@@ -151,9 +153,9 @@ void ABoss::ParticleEffects()
 	case EBossState::EBS_StartRayAttacking:
 		if (USkeletalMeshComponent* SkeletalMeshComponent = Cast<USkeletalMeshComponent>(GetMesh()))
 		{
-			FTransform Transform = SkeletalMeshComponent->GetSocketTransform(FName("MuzzleLeft")); // get the position where to start the Ray
+			FTransform Transform = SkeletalMeshComponent->GetSocketTransform(FName("MuzzleLeft"));
 			SpawnAttackParticleEffect(PrimaryAttackMuzzle, Transform);
-		    Transform = SkeletalMeshComponent->GetSocketTransform(FName("MuzzleRight")); // get the position where to start the Ray
+			Transform = SkeletalMeshComponent->GetSocketTransform(FName("MuzzleRight"));
 			SpawnAttackParticleEffect(PrimaryAttackMuzzle, Transform);
 		}
 		break;
@@ -165,6 +167,29 @@ void ABoss::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	FVector PlayerLocation = Player->GetActorLocation();
 	FVector BossLocation = GetActorLocation();
+	float Distance = FVector::Dist(PlayerLocation, BossLocation);
+	if (BossState == EBossState::EBS_Falling)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("FALLING!!"));
+		FVector Start = GetActorLocation();
+		FVector End = Start + (FVector(0, 0, -1) * 400);
+		FCollisionQueryParams CollisionParams;
+		CollisionParams.AddIgnoredActor(this);
+		FHitResult HitResult;
+		bool bHit = GetWorld()->LineTraceSingleByChannel(
+			HitResult,
+			Start,
+			End,
+			ECC_PhysicsBody,
+			CollisionParams
+		);
+		if (bHit && IsFalling) {
+			Distance = FVector::Dist(PlayerLocation, HitResult.Location);
+			PlayMontage(MiscMontage, "Land");
+			IsFalling = false;
+		}
+
+	}
 
 	if (RotateBoss)
 	{
@@ -176,7 +201,6 @@ void ABoss::Tick(float DeltaTime)
 		FRotator NewRotation = FMath::RInterpTo(CurrentRotation, TargetRotation, GetWorld()->GetDeltaSeconds(), RotationSpeed); // RotationSpeed is a float that controls the speed
 		SetActorRotation(FRotator(0, NewRotation.Yaw, 0));
 	}
-	float Distance = FVector::Dist(PlayerLocation, BossLocation);
 
 	switch (BossState)
 	{
@@ -190,7 +214,7 @@ void ABoss::Tick(float DeltaTime)
 			bCanAttack = true;
 			BossState = EBossState::EBS_SlamAttacking;
 		}
-		else if(Distance > AttackRange * 3 && BeatCounter == 1)
+		else if (Distance > AttackRange * 3 && BeatCounter == 1)
 		{
 			bCanAttack = true;
 			BossState = EBossState::EBS_StartRayAttacking;
@@ -207,8 +231,6 @@ void ABoss::Tick(float DeltaTime)
 	default:
 		break;
 	}
-
-
 }
 
 void ABoss::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
