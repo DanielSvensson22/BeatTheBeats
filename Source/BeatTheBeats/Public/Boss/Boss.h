@@ -11,6 +11,7 @@ UENUM(BlueprintType)
 enum class EBossState : uint8
 {
 	EBS_Unoccupied UMETA(DisplayName = "Unoccupied"),
+	EBS_Spawning UMETA(DisplayName = "Spawning"),
 	EBS_Falling UMETA(DisplayName = "Falling"),
 	EBS_Chasing UMETA(DisplayName = "Chasing"),
 	EBS_StartChasing UMETA(DisplayName = "StartChasing"),
@@ -72,6 +73,18 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
 	UParticleSystem* PrimaryAttackGroundImpact;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
+	UParticleSystem* FallingTrailEffect;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
+	UParticleSystem* FallingSpawnEffect;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
+	UParticleSystem* LandingEffect;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
+	UParticleSystem* FallingResidualEffect;
 
 protected:
 	UPROPERTY(BlueprintReadWrite)

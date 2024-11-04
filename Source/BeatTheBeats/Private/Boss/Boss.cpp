@@ -11,10 +11,12 @@
 ABoss::ABoss() : Super()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	BossState = EBossState::EBS_Falling;
+	BossState = EBossState::EBS_Spawning;
 
 	Attack3EffectPos = CreateDefaultSubobject<USceneComponent>("EffectPos(Attack3)");
 	Attack3EffectPos->SetupAttachment(GetRootComponent());
+
+
 }
 
 void ABoss::BeginPlay()
@@ -26,6 +28,8 @@ void ABoss::BeginPlay()
 	AIController->MoveToActor(Player);
 
 	IsFalling = true;
+
+
 }
 
 void ABoss::OnBeat(float CurrentTimeSinceLastBeat)
@@ -161,7 +165,6 @@ void ABoss::ParticleEffects()
 		break;
 	}
 }
-
 void ABoss::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -170,7 +173,6 @@ void ABoss::Tick(float DeltaTime)
 	float Distance = FVector::Dist(PlayerLocation, BossLocation);
 	if (BossState == EBossState::EBS_Falling)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("FALLING!!"));
 		FVector Start = GetActorLocation();
 		FVector End = Start + (FVector(0, 0, -1) * 400);
 		FCollisionQueryParams CollisionParams;
@@ -186,6 +188,7 @@ void ABoss::Tick(float DeltaTime)
 		if (bHit && IsFalling) {
 			Distance = FVector::Dist(PlayerLocation, HitResult.Location);
 			PlayMontage(MiscMontage, "Land");
+			SpawnAttackParticleEffect(AttackSlam, Attack3EffectPos->GetComponentTransform());
 			IsFalling = false;
 		}
 
@@ -204,6 +207,29 @@ void ABoss::Tick(float DeltaTime)
 
 	switch (BossState)
 	{
+	case EBossState::EBS_Spawning:
+
+		UGameplayStatics::SpawnEmitterAttached(
+			FallingTrailEffect,
+			GetMesh(),
+			FName("Death_Cod"),
+			FVector::ZeroVector,
+			FRotator::ZeroRotator,
+			EAttachLocation::SnapToTarget,
+			true
+		);
+
+		if (USkeletalMeshComponent* SkeletalMeshComponent = Cast<USkeletalMeshComponent>(GetMesh()))
+		{
+			FTransform Transform = SkeletalMeshComponent->GetSocketTransform("Death_Cod");
+			SpawnAttackParticleEffect(FallingSpawnEffect, Transform);
+		    Transform = SkeletalMeshComponent->GetSocketTransform("FX_LandingImpact");
+			SpawnAttackParticleEffect(LandingEffect, Transform);
+			SpawnAttackParticleEffect(FallingResidualEffect, Transform);
+		}
+
+		BossState = EBossState::EBS_Falling;
+		break;
 	case EBossState::EBS_Unoccupied:
 		RotateBoss = false;
 		BossState = EBossState::EBS_StartChasing;
