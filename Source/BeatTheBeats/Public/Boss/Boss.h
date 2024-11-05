@@ -86,6 +86,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
 	UParticleSystem* FallingResidualEffect;
 
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn")
+	bool SpawnFromSky;
+
 protected:
 	UPROPERTY(BlueprintReadWrite)
 	EBossState BossState;
