@@ -11,7 +11,7 @@
 ABoss::ABoss() : Super()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	BossState = EBossState::EBS_Spawning;
+
 
 	Attack3EffectPos = CreateDefaultSubobject<USceneComponent>("EffectPos(Attack3)");
 	Attack3EffectPos->SetupAttachment(GetRootComponent());
@@ -26,6 +26,15 @@ void ABoss::BeginPlay()
 	Player = UGameplayStatics::GetPlayerPawn(this, 0);
 	AIController = this->GetController<AAIController>();
 	AIController->MoveToActor(Player);
+
+	if (SpawnFromSky)
+	{
+		BossState = EBossState::EBS_Spawning;
+	}
+	else
+	{
+		BossState = EBossState::EBS_Unoccupied;
+	}
 
 	IsFalling = true;
 
