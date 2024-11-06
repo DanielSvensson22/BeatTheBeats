@@ -47,6 +47,11 @@ private:
 	Attacks CurrentAttackType = Attacks::Attack_Neutral;
 	bool CurrentlyOnBeat = false;
 
+	UPROPERTY(EditDefaultsOnly)
+	FVector BoxTraceHalfSize = FVector(7.5f, 7.5f, 7.5f);
+
+	ETraceTypeQuery QueryType;
+
 public:
 	FORCEINLINE TObjectPtr<UBoxComponent> GetWeaponBox() const { return WeaponBox; }
 };

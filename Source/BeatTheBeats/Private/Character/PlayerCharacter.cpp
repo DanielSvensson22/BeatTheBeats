@@ -96,6 +96,8 @@ void APlayerCharacter::Tick(float DeltaTime)
 
 	RotatePlayerToAttack(DeltaTime);
 
+	MovePlayerToAttack(DeltaTime);
+
 	SetTargetLockCamera();
 
 	bMovedThisTick = false;
@@ -148,6 +150,37 @@ void APlayerCharacter::SetWeaponCollisionEnabled(ECollisionEnabled::Type Collisi
 	{
 		Weapon->GetWeaponBox()->SetCollisionEnabled(CollisionEnable);
 		Weapon->IgnoreActors.Empty();
+
+		if (CollisionEnable == ECollisionEnabled::NoCollision) {
+			EnemyToAttack = nullptr;
+			bClosingDistance = false;
+		}
+		else {
+			FHitResult result;
+			FCollisionQueryParams params;
+			params.AddIgnoredActor(this);
+			params.AddIgnoredActor(Weapon);
+
+			if (GetWorld()->LineTraceSingleByChannel(result, GetActorLocation(), 
+				GetActorLocation() + GetActorForwardVector() * MaxClosingDistance, ECollisionChannel::ECC_GameTraceChannel3, params)) {
+
+				EnemyToAttack = Cast<AEnemyBase>(result.GetActor());
+
+				UE_LOG(LogTemp, Warning, TEXT("Found enemy to close distance to"));
+
+				if (EnemyToAttack) {
+					float dist = FVector::Dist(GetActorLocation(), EnemyToAttack->GetActorLocation());
+
+					if (dist > MinClosingDistance) {
+						bClosingDistance = true;
+						UE_LOG(LogTemp, Warning, TEXT("Closing Distance!"));
+					}
+					else {
+						EnemyToAttack = nullptr;
+					}
+				}
+			}
+		}
 	}
 }
 
@@ -464,8 +497,15 @@ void APlayerCharacter::ProcessIncomingAttacks()
 			if (dot < 0) {
 				Enemy->Parry();
 
+				UNiagaraComponent* NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAttached(BlockEffect, GetMesh(), TEXT("shield_outer"), 
+															FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::KeepRelativeOffset, true);
+
 				if (!bPerfectBlock) {
 					ApplyDamage(Damage / 2);
+					NiagaraComp->SetVariableLinearColor(TEXT("Color"), FLinearColor::Blue);
+				}
+				else {
+					NiagaraComp->SetVariableLinearColor(TEXT("Color"), FLinearColor::Red);
 				}
 			}
 			else {
@@ -541,6 +581,16 @@ void APlayerCharacter::RotatePlayerToAttack(float DeltaTime)
 {
 	if (!bMovedThisTick && !bIsLockingTarget) {
 		SetActorRotation(FMath::RInterpTo(GetActorRotation(), GetController()->GetControlRotation(), DeltaTime, RotationSpeed));
+	}
+}
+
+void APlayerCharacter::MovePlayerToAttack(float DeltaTime)
+{
+	if (bClosingDistance && EnemyToAttack != nullptr) {
+		FVector offset = GetActorLocation() - EnemyToAttack->GetActorLocation();
+		offset.Normalize(1);
+		offset *= EnemyToAttack->GetCapsuleComponent()->GetScaledCapsuleRadius() * 2;
+		SetActorLocation(FMath::VInterpConstantTo(GetActorLocation(), EnemyToAttack->GetActorLocation() + offset, DeltaTime, ClosingDistanceSpeed));
 	}
 }
 

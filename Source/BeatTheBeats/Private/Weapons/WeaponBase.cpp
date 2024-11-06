@@ -29,6 +29,8 @@ AWeaponBase::AWeaponBase()
 void AWeaponBase::BeginPlay()
 {
 	Super::BeginPlay();
+
+	QueryType = UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_GameTraceChannel3);
 	
 	WeaponBox->OnComponentBeginOverlap.AddDynamic(this, &AWeaponBase::OnBoxOverlap);
 
@@ -64,9 +66,9 @@ void AWeaponBase::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 		this,
 		Start,
 		End,
-		FVector(7.5f, 7.5f, 7.5f),
+		BoxTraceHalfSize,
 		BoxTraceStart->GetComponentRotation(),
-		ETraceTypeQuery::TraceTypeQuery1,
+		QueryType,
 		false,
 		ActorsToIgnore,
 		EDrawDebugTrace::None,
@@ -80,7 +82,7 @@ void AWeaponBase::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 		if (HitInterface != nullptr)
 		{
 			HitInterface->GetHit(BoxHit.ImpactPoint);
-			HitInterface->ApplyDamage(CurrentDamage, CurrentAttackType, CurrentlyOnBeat);
+			HitInterface->ApplyDamage(CurrentDamage, CurrentAttackType, CurrentlyOnBeat, BoxHit.ImpactPoint);
 		}
 		IgnoreActors.AddUnique(BoxHit.GetActor());
 	}

@@ -1,5 +1,5 @@
-#include "Sound/SoundWave.h"
 #include "Beats/BPMCalculator.h"
+#include "Sound/SoundWave.h"
 
 float UBPMCalculator::BPMDetector(USoundWave* SoundWave)
 {

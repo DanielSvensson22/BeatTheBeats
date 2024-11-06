@@ -8,6 +8,8 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Score/ScoreManager.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 
 // Sets default values
 AEnemyBase::AEnemyBase()
@@ -170,7 +172,7 @@ void AEnemyBase::DirectionalHitReact(const FVector& ImpactPoint)
 	UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + ToHit * 100.f, 5.f, FColor::Green, 5.f);
 }
 
-void AEnemyBase::ApplyDamage(float InitialDamage, Attacks AttackType, bool OnBeat)
+void AEnemyBase::ApplyDamage(float InitialDamage, Attacks AttackType, bool OnBeat, FVector HitLocation)
 {
 	float FinalDamage = InitialDamage;
 
@@ -192,6 +194,20 @@ void AEnemyBase::ApplyDamage(float InitialDamage, Attacks AttackType, bool OnBea
 	}
 
 	CurrentHealth = FMath::Clamp(CurrentHealth - FinalDamage, 0, MaxHealth);
+
+	if (GetHitEffect) {
+		UNiagaraComponent* NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, GetHitEffect, HitLocation, GetActorRotation(), FVector::OneVector, true);
+
+		if (OnBeat && AttackType == EnemyType) {
+			NiagaraComp->SetVariableLinearColor(TEXT("Color"), FLinearColor::Red);
+		}
+		else if (OnBeat || AttackType == EnemyType) {
+			NiagaraComp->SetVariableLinearColor(TEXT("Color"), FLinearColor::Yellow);
+		}
+		else {
+			NiagaraComp->SetVariableLinearColor(TEXT("Color"), FLinearColor::Blue);
+		}
+	}	
 
 	if (!IsAlive()) {
 		if (!bHasDied) {

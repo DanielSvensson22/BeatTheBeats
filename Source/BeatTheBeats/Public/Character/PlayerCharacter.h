@@ -145,6 +145,7 @@ private:
 	void ApplyDamage(float Damage);
 
 	void RotatePlayerToAttack(float DeltaTime);
+	void MovePlayerToAttack(float DeltaTime);
 
 private:
 	typedef std::tuple<AEnemyBase*, Attacks, float> IncomingAttack;
@@ -236,6 +237,22 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	UQTEComponent* QTE;
+
+	UPROPERTY(EditDefaultsOnly)
+	UNiagaraSystem* BlockEffect;
+
+	bool bClosingDistance = false;
+
+	UPROPERTY(EditDefaultsOnly)
+	float ClosingDistanceSpeed = 1.0f;
+
+	AEnemyBase* EnemyToAttack;
+
+	UPROPERTY(EditDefaultsOnly)
+	float MaxClosingDistance = 200;
+
+	UPROPERTY(EditDefaultsOnly)
+	float MinClosingDistance = 50;
 
 	//Montages
 
