@@ -98,6 +98,8 @@ void APlayerCharacter::Tick(float DeltaTime)
 
 	MovePlayerToAttack(DeltaTime);
 
+	PerformDodge(DeltaTime);
+
 	SetTargetLockCamera();
 
 	bMovedThisTick = false;
@@ -124,6 +126,11 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(Type1BlockAction, ETriggerEvent::Started, this, &APlayerCharacter::AddType1Block);
 		EnhancedInputComponent->BindAction(Type2BlockAction, ETriggerEvent::Started, this, &APlayerCharacter::AddType2Block);
 		EnhancedInputComponent->BindAction(Type3BlockAction, ETriggerEvent::Started, this, &APlayerCharacter::AddType3Block);
+
+		//Dodges
+		EnhancedInputComponent->BindAction(DodgeBackAction, ETriggerEvent::Started, this, &APlayerCharacter::DodgeBack);
+		EnhancedInputComponent->BindAction(DodgeLeftAction, ETriggerEvent::Started, this, &APlayerCharacter::DodgeLeft);
+		EnhancedInputComponent->BindAction(DodgeRightAction, ETriggerEvent::Started, this, &APlayerCharacter::DodgeRight);
 
 		//Debug
 		EnhancedInputComponent->BindAction(QTEAction, ETriggerEvent::Started, this, &APlayerCharacter::EnterQTE);
@@ -154,6 +161,7 @@ void APlayerCharacter::SetWeaponCollisionEnabled(ECollisionEnabled::Type Collisi
 		if (CollisionEnable == ECollisionEnabled::NoCollision) {
 			EnemyToAttack = nullptr;
 			bClosingDistance = false;
+			bIsAttacking = false;
 		}
 		else {
 			FHitResult result;
@@ -194,7 +202,7 @@ void APlayerCharacter::Move(const FInputActionValue& Value)
 	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
-	if (Controller != nullptr)
+	if (Controller != nullptr && !bIsAttacking && !bIsDodging)
 	{
 		AddMovementInput(ForwardDirection, MovementVector.Y);
 		AddMovementInput(RightDirection, MovementVector.X);
@@ -279,9 +287,12 @@ void APlayerCharacter::AddNeutralAttack()
 		QTE->AttemptAttack(Attacks::Attack_Neutral);
 	}
 	else {
-		bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
-		ComboManager->AddAttack(Attacks::Attack_Neutral, PlayerDamage, !AddedLastBeat);
-		UE_LOG(LogTemp, Display, TEXT("Added Neutral Attack to queue."));
+		if (!bIsDodging) {
+			bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
+			ComboManager->AddAttack(Attacks::Attack_Neutral, PlayerDamage, !AddedLastBeat);
+			bIsAttacking = true;
+			UE_LOG(LogTemp, Display, TEXT("Added Neutral Attack to queue."));
+		}		
 	}
 }
 
@@ -291,9 +302,12 @@ void APlayerCharacter::AddType1Attack()
 		QTE->AttemptAttack(Attacks::Attack_Type1);
 	}
 	else {
-		bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
-		ComboManager->AddAttack(Attacks::Attack_Type1, PlayerDamage, !AddedLastBeat);
-		UE_LOG(LogTemp, Display, TEXT("Added Type 1 Attack to queue."));
+		if (!bIsDodging) {
+			bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
+			ComboManager->AddAttack(Attacks::Attack_Type1, PlayerDamage, !AddedLastBeat);
+			bIsAttacking = true;
+			UE_LOG(LogTemp, Display, TEXT("Added Type 1 Attack to queue."));
+		}
 	}
 }
 
@@ -303,9 +317,12 @@ void APlayerCharacter::AddType2Attack()
 		QTE->AttemptAttack(Attacks::Attack_Type2);
 	}
 	else {
-		bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
-		ComboManager->AddAttack(Attacks::Attack_Type2, PlayerDamage, !AddedLastBeat);
-		UE_LOG(LogTemp, Display, TEXT("Added Type 2 Attack to queue."));
+		if (!bIsDodging) {
+			bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
+			ComboManager->AddAttack(Attacks::Attack_Type2, PlayerDamage, !AddedLastBeat);
+			bIsAttacking = true;
+			UE_LOG(LogTemp, Display, TEXT("Added Type 2 Attack to queue."));
+		}
 	}
 }
 
@@ -315,9 +332,12 @@ void APlayerCharacter::AddType3Attack()
 		QTE->AttemptAttack(Attacks::Attack_Type3);
 	}
 	else {
-		bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
-		ComboManager->AddAttack(Attacks::Attack_Type3, PlayerDamage, !AddedLastBeat);
-		UE_LOG(LogTemp, Display, TEXT("Added Type 3 Attack to queue."));
+		if (!bIsDodging) {
+			bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
+			ComboManager->AddAttack(Attacks::Attack_Type3, PlayerDamage, !AddedLastBeat);
+			bIsAttacking = true;
+			UE_LOG(LogTemp, Display, TEXT("Added Type 3 Attack to queue."));
+		}		
 	}
 }
 
@@ -341,7 +361,7 @@ void APlayerCharacter::SpawnParticle()
 
 void APlayerCharacter::AddNeutralBlock()
 {
-	if (!bIsBlocking) {
+	if (!bIsBlocking && !bIsDodging) {
 		CurrentBlockedType = Attacks::Attack_Neutral;
 		bIsBlocking = true;
 
@@ -358,7 +378,7 @@ void APlayerCharacter::AddNeutralBlock()
 
 void APlayerCharacter::AddType1Block()
 {
-	if (!bIsBlocking) {
+	if (!bIsBlocking && !bIsDodging) {
 		CurrentBlockedType = Attacks::Attack_Type1;
 		bIsBlocking = true;
 
@@ -375,7 +395,7 @@ void APlayerCharacter::AddType1Block()
 
 void APlayerCharacter::AddType2Block()
 {
-	if (!bIsBlocking) {
+	if (!bIsBlocking && !bIsDodging) {
 		CurrentBlockedType = Attacks::Attack_Type2;
 		bIsBlocking = true;
 
@@ -392,7 +412,7 @@ void APlayerCharacter::AddType2Block()
 
 void APlayerCharacter::AddType3Block()
 {
-	if (!bIsBlocking) {
+	if (!bIsBlocking && !bIsDodging) {
 		CurrentBlockedType = Attacks::Attack_Type3;
 		bIsBlocking = true;
 
@@ -404,6 +424,48 @@ void APlayerCharacter::AddType3Block()
 		}
 
 		PlayAttackMontage(BlockAnim, TEXT("Default"), true);
+	}
+}
+
+void APlayerCharacter::DodgeBack()
+{
+	if (!bIsDodging) {
+		bIsDodging = true;
+		TimeUntilInvincibilityEnds = InvincibilityDuration;
+
+		FVector offset = GetActorForwardVector() * -1 * DodgeDistance;
+
+		DodgeLocation = GetActorLocation() + offset;
+
+		PlayAttackMontage(DodgeBackAnim, TEXT("Default"), true);
+	}
+}
+
+void APlayerCharacter::DodgeLeft()
+{
+	if (!bIsDodging) {
+		bIsDodging = true;
+		TimeUntilInvincibilityEnds = InvincibilityDuration;
+
+		FVector offset = GetActorRightVector() * -1 * DodgeDistance;
+
+		DodgeLocation = GetActorLocation() + offset;
+
+		PlayAttackMontage(DodgeLeftAnim, TEXT("Default"), true);
+	}	
+}
+
+void APlayerCharacter::DodgeRight()
+{
+	if (!bIsDodging) {
+		bIsDodging = true;
+		TimeUntilInvincibilityEnds = InvincibilityDuration;
+
+		FVector offset = GetActorRightVector() * DodgeDistance;
+
+		DodgeLocation = GetActorLocation() + offset;
+
+		PlayAttackMontage(DodgeRightAnim, TEXT("Default"), true);
 	}
 }
 
@@ -490,6 +552,12 @@ void APlayerCharacter::OnBeat(float CurrentTimeSinceLastBeat)
 
 void APlayerCharacter::ProcessIncomingAttacks()
 {
+	if (bIsDodging) {
+		IncomingAttacks.Empty();
+		bIsBlocking = false;
+		return;
+	}
+
 	for (auto& [Enemy, EnemyType, Damage] : IncomingAttacks) {
 		if (bIsBlocking && CurrentBlockedType == EnemyType) {
 			float dot = GetActorForwardVector().Dot(Enemy->GetActorForwardVector());
@@ -579,7 +647,7 @@ void APlayerCharacter::ApplyDamage(float Damage)
 
 void APlayerCharacter::RotatePlayerToAttack(float DeltaTime)
 {
-	if (!bMovedThisTick && !bIsLockingTarget) {
+	if (!bMovedThisTick && !bIsLockingTarget && !bIsDodging) {
 		SetActorRotation(FMath::RInterpTo(GetActorRotation(), GetController()->GetControlRotation(), DeltaTime, RotationSpeed));
 	}
 }
@@ -591,6 +659,19 @@ void APlayerCharacter::MovePlayerToAttack(float DeltaTime)
 		offset.Normalize(1);
 		offset *= EnemyToAttack->GetCapsuleComponent()->GetScaledCapsuleRadius() * 2;
 		SetActorLocation(FMath::VInterpConstantTo(GetActorLocation(), EnemyToAttack->GetActorLocation() + offset, DeltaTime, ClosingDistanceSpeed));
+	}
+}
+
+void APlayerCharacter::PerformDodge(float DeltaTime)
+{
+	if (bIsDodging) {
+		TimeUntilInvincibilityEnds -= DeltaTime;
+
+		if (TimeUntilInvincibilityEnds <= 0) {
+			bIsDodging = false;
+		}
+
+		SetActorLocation(FMath::VInterpConstantTo(GetActorLocation(), DodgeLocation, DeltaTime, DodgeSpeed));
 	}
 }
 

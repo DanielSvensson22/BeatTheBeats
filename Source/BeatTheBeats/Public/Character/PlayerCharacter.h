@@ -103,6 +103,15 @@ protected:
 	
 	UPROPERTY(EditAnywhere, Category = "Input")
 	TObjectPtr<UInputAction> ParticleAction;
+
+	UPROPERTY(EditAnywhere, Category = "Input")
+	TObjectPtr<UInputAction> DodgeBackAction;
+
+	UPROPERTY(EditAnywhere, Category = "Input")
+	TObjectPtr<UInputAction> DodgeLeftAction;
+
+	UPROPERTY(EditAnywhere, Category = "Input")
+	TObjectPtr<UInputAction> DodgeRightAction;
 	
 	//Effects
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
@@ -125,6 +134,10 @@ protected:
 	void AddType2Block();
 	void AddType3Block();
 
+	void DodgeBack();
+	void DodgeLeft();
+	void DodgeRight();
+
 	void CameraShake();
 	void SpawnParticle();
 
@@ -146,6 +159,7 @@ private:
 
 	void RotatePlayerToAttack(float DeltaTime);
 	void MovePlayerToAttack(float DeltaTime);
+	void PerformDodge(float DeltaTime);
 
 private:
 	typedef std::tuple<AEnemyBase*, Attacks, float> IncomingAttack;
@@ -208,6 +222,8 @@ private:
 
 	Attacks CurrentBlockedType;
 
+	bool bIsAttacking = false;
+
 	UPROPERTY(EditDefaultsOnly)
 	float ClosenessForPeffectBlock = 0.7f;
 
@@ -254,6 +270,23 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	float MinClosingDistance = 50;
 
+	//Dodging
+
+	bool bIsDodging = false;
+
+	FVector DodgeLocation;
+
+	UPROPERTY(EditDefaultsOnly)
+	float DodgeDistance = 100;
+
+	UPROPERTY(EditDefaultsOnly)
+	float DodgeSpeed = 100;
+
+	UPROPERTY(EditDefaultsOnly)
+	float InvincibilityDuration = 0.2f;
+
+	float TimeUntilInvincibilityEnds;
+
 	//Montages
 
 	UPROPERTY(EditDefaultsOnly, Category = "Montages")
@@ -261,6 +294,15 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Montages")
 	UAnimMontage* BlockAnim;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Montages")
+	UAnimMontage* DodgeBackAnim;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Montages")
+	UAnimMontage* DodgeLeftAnim;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Montages")
+	UAnimMontage* DodgeRightAnim;
 
 	//Debug
 	UPROPERTY(EditAnywhere, Category = "Input")
