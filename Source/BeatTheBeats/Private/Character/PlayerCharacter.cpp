@@ -27,6 +27,7 @@
 #include "NiagaraComponent.h"
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
+#include "Interfaces/LockOnInterface.h"
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -183,8 +184,45 @@ void APlayerCharacter::Look(const FInputActionValue& Value)
 
 void APlayerCharacter::TargetLock()
 {
+	//if (bIsLockingTarget)
+	//{
+	//	ECameraState::ECS_FreeCamera;
+	//	GetCharacterMovement()->bOrientRotationToMovement = true;
+	//	bIsLockingTarget = false;
+	//	TargetLockHitTarget = nullptr;
+	//	bUseControllerRotationYaw = false;
+	//}
+	//else
+	//{
+	//	const FVector Start = GetActorLocation();
+	//	const FRotator CameraRotation = ViewCamera->GetComponentRotation();
+	//	const FVector End = Start + UKismetMathLibrary::GetForwardVector(CameraRotation) * TargetLockTraceRange;
+
+	//	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypesArray; // object types to trace
+	//	ObjectTypesArray.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic));
+
+	//	TArray<AActor*> IgnoreActors; // leave blank if not needed
+
+	//	// IgnoreActors.Add(); // Add actors to ingore here if needed
+
+	//	FHitResult SphereHit;
+
+	//	UKismetSystemLibrary::SphereTraceSingleForObjects(this, Start, End, TargetLockTraceRadius, ObjectTypesArray, false, IgnoreActors, EDrawDebugTrace::ForDuration, SphereHit, true);
+
+	//	TargetLockHitTarget = SphereHit.GetActor();
+
+	//	if (TargetLockHitTarget != nullptr)
+	//	{
+	//		ECameraState::ECS_LockCamera;
+	//		GetCharacterMovement()->bOrientRotationToMovement = false;
+	//		bIsLockingTarget = true;
+	//		bUseControllerRotationYaw = true; // Character look at locked target
+	//	}
+	//}
+
 	if (bIsLockingTarget)
 	{
+		HitArray.Empty();
 		ECameraState::ECS_FreeCamera;
 		GetCharacterMovement()->bOrientRotationToMovement = true;
 		bIsLockingTarget = false;
@@ -202,27 +240,40 @@ void APlayerCharacter::TargetLock()
 
 		TArray<AActor*> IgnoreActors; // leave blank if not needed
 
-		// IgnoreActors.Add(); // Add actors to ingore here if needed
+		TArray<FHitResult> SphereHitMulti; // hit result
 
-		FHitResult SphereHit;
+		UKismetSystemLibrary::SphereTraceMultiForObjects(this, Start, End, TargetLockTraceRadius, ObjectTypesArray, false, IgnoreActors, EDrawDebugTrace::ForDuration, SphereHitMulti, true);
 
-		UKismetSystemLibrary::SphereTraceSingleForObjects(this, Start, End, TargetLockTraceRadius, ObjectTypesArray, false, IgnoreActors, EDrawDebugTrace::ForDuration, SphereHit, true);
+		int n = 0;
 
-		TargetLockHitTarget = SphereHit.GetActor();
-
-		if (TargetLockHitTarget != nullptr)
+		for (const FHitResult& HitResult : SphereHitMulti)
 		{
-			ECameraState::ECS_LockCamera;
-			GetCharacterMovement()->bOrientRotationToMovement = false;
-			bIsLockingTarget = true;
-			bUseControllerRotationYaw = true; // Character look at locked target
+			ILockOnInterface* LockOnInterface = Cast<ILockOnInterface>(HitResult.GetActor());
+			if (LockOnInterface != nullptr)
+			{
+				if (HitArray.Contains(HitResult.GetActor())) continue;
+				HitArray.Add(HitResult.GetActor());
+			}
 		}
+
+		for (AActor* Target : HitArray)
+		{
+			float Distance = GetDistanceTo(Target);
+			if (Distance <= ClosestDistance)
+			{
+				ClosestDistance = Distance;
+				TargetLockHitTarget = Target;
+				bIsLockingTarget = true;
+			}
+		}
+		n = HitArray.Num();
+		UE_LOG(LogTemp, Warning, TEXT("%d"), n)
 	}
 }
 
 void APlayerCharacter::SetTargetLockCamera()
 {
-	if (TargetLockHitTarget != nullptr)
+	/*if (TargetLockHitTarget != nullptr)
 	{
 		float Distance = GetDistanceTo(TargetLockHitTarget);
 		FVector LockOffset = TargetLockHitTarget->GetActorUpVector() * Distance * LockOffsetModifier;
@@ -236,6 +287,25 @@ void APlayerCharacter::SetTargetLockCamera()
 			bIsLockingTarget = false;
 			TargetLockHitTarget = nullptr;
 			bUseControllerRotationYaw = false;
+		}
+	}*/
+
+	if (TargetLockHitTarget != nullptr)
+	{
+		ClosestDistance = 100000.f;
+		float Distance = GetDistanceTo(TargetLockHitTarget);
+		FVector LockOffset = TargetLockHitTarget->GetActorUpVector() * Distance * LockOffsetModifier;
+
+		GetController()->SetControlRotation(UKismetMathLibrary::FindLookAtRotation(GetActorLocation() + LockOffset, TargetLockHitTarget->GetActorLocation()));
+
+		if (Distance > TargetLockMaxMoveDistance)
+		{
+			TargetLockHitTarget = nullptr;
+			bIsLockingTarget = false;
+			bUseControllerRotationYaw = false;
+			GetCharacterMovement()->bOrientRotationToMovement = true;
+			ECameraState::ECS_FreeCamera;
+			HitArray.Empty();
 		}
 	}
 }

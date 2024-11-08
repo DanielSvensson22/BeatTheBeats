@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "../Combos/Combo.h"
 #include "Interfaces/HitInterface.h"
+#include "Interfaces/LockOnInterface.h"
 #include "EnemyBase.generated.h"
 
 class ABeatManager;
@@ -14,7 +15,7 @@ class UWidgetComponent;
 class AScoreManager;
 
 UCLASS()
-class BEATTHEBEATS_API AEnemyBase : public ACharacter, public IHitInterface
+class BEATTHEBEATS_API AEnemyBase : public ACharacter, public IHitInterface, public ILockOnInterface
 {
 	GENERATED_BODY()
 

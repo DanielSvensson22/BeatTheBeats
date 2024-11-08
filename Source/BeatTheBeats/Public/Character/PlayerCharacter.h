@@ -175,6 +175,9 @@ private:
 	/**
 	* Target Lock Components
 	*/
+	TArray<AActor*> HitArray;
+	float ClosestDistance = 100000.f;
+
 	UPROPERTY(VisibleAnywhere, Category = "Target Lock")
 	TObjectPtr<AActor> TargetLockHitTarget;
 
