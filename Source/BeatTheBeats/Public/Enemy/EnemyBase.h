@@ -36,6 +36,9 @@ protected:
 	*/
 	void PlayHitReactMontage(const FName& SectionName);
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "DeathEvent")
+	void Death();
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

@@ -3,6 +3,7 @@
 
 #include "Enemy/EnemyBase.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "Beats/BeatManager.h"
 #include "Enemy/EnemyQueue.h"
 #include "Components/CapsuleComponent.h"
@@ -225,6 +226,8 @@ void AEnemyBase::ApplyDamage(float InitialDamage, Attacks AttackType, bool OnBea
 				BeatManager->UnBindFuncFromOnBeat(BeatHandle);
 
 			CurrentAttack = StandardCombo.ResetCombo();
+
+			Death();
 		}
 	}
 	else {
@@ -295,6 +298,11 @@ void AEnemyBase::Parry()
 }
 
 void AEnemyBase::DoDamage()
+{
+
+}
+
+void AEnemyBase::Death_Implementation()
 {
 
 }
