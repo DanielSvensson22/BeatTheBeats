@@ -125,8 +125,8 @@ void ARangedEnemy::AddLaserBeam(const FVector& end)
 		UNiagaraComponent* NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAttached(LaserBeam, ShootPoint,
 			NAME_None, FVector(0.f), FRotator(0.f), EAttachLocation::Type::KeepRelativeOffset, true);
 
-		NiagaraComp->SetNiagaraVariableFloat(FString("LifeTime"), BeatManager->TimeBetweenBeats());
-		NiagaraComp->SetNiagaraVariableFloat(FString("Width"), LaserWidth);
+		NiagaraComp->SetVariableFloat(FName("LifeTime"), BeatManager->TimeBetweenBeats());
+		NiagaraComp->SetVariableFloat(FName("Width"), LaserWidth);
 		NiagaraComp->SetVariablePosition(FName("BeamEnd"), end);
 	}
 }

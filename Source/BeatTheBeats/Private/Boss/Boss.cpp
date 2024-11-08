@@ -11,7 +11,7 @@
 ABoss::ABoss() : Super()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	BossState = EBossState::EBS_Spawning;
+
 
 	Attack3EffectPos = CreateDefaultSubobject<USceneComponent>("EffectPos(Attack3)");
 	Attack3EffectPos->SetupAttachment(GetRootComponent());
@@ -26,6 +26,15 @@ void ABoss::BeginPlay()
 	Player = UGameplayStatics::GetPlayerPawn(this, 0);
 	AIController = this->GetController<AAIController>();
 	AIController->MoveToActor(Player);
+
+	if (SpawnFromSky)
+	{
+		BossState = EBossState::EBS_Spawning;
+	}
+	else
+	{
+		BossState = EBossState::EBS_Unoccupied;
+	}
 
 	IsFalling = true;
 
@@ -205,6 +214,23 @@ void ABoss::Tick(float DeltaTime)
 		SetActorRotation(FRotator(0, NewRotation.Yaw, 0));
 	}
 
+
+	FVector Start = GetActorLocation();
+	FVector End = Player->GetActorLocation();
+	FCollisionQueryParams CollisionParams;
+	CollisionParams.AddIgnoredActor(this);
+	FHitResult HitResult;
+	bool bHit = GetWorld()->LineTraceSingleByChannel(
+		HitResult,
+		Start,
+		End,
+		ECC_Visibility,
+		CollisionParams
+	);
+
+	bool CanShoot = false;
+	if (HitResult.GetActor() && HitResult.GetActor() == Player) CanShoot = true;
+
 	switch (BossState)
 	{
 	case EBossState::EBS_Spawning:
@@ -223,7 +249,7 @@ void ABoss::Tick(float DeltaTime)
 		{
 			FTransform Transform = SkeletalMeshComponent->GetSocketTransform("Death_Cod");
 			SpawnAttackParticleEffect(FallingSpawnEffect, Transform);
-		    Transform = SkeletalMeshComponent->GetSocketTransform("FX_LandingImpact");
+			Transform = SkeletalMeshComponent->GetSocketTransform("FX_LandingImpact");
 			SpawnAttackParticleEffect(LandingEffect, Transform);
 			SpawnAttackParticleEffect(FallingResidualEffect, Transform);
 		}
@@ -240,7 +266,7 @@ void ABoss::Tick(float DeltaTime)
 			bCanAttack = true;
 			BossState = EBossState::EBS_SlamAttacking;
 		}
-		else if (Distance > AttackRange * 3 && BeatCounter == 1)
+		else if (Distance > AttackRange * 3 && BeatCounter == 1 && CanShoot)
 		{
 			bCanAttack = true;
 			BossState = EBossState::EBS_StartRayAttacking;

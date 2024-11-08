@@ -13,6 +13,7 @@ class ABeatManager;
 class AEnemyQueue;
 class UWidgetComponent;
 class AScoreManager;
+class UNiagaraSystem;
 
 UCLASS()
 class BEATTHEBEATS_API AEnemyBase : public ACharacter, public IHitInterface, public ILockOnInterface
@@ -36,6 +37,9 @@ protected:
 	*/
 	void PlayHitReactMontage(const FName& SectionName);
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "DeathEvent")
+	void Death();
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -46,7 +50,7 @@ public:
 	virtual void GetHit(const FVector& ImpactPoint) override;
 	void DirectionalHitReact(const FVector& ImpactPoint);
 
-	virtual void ApplyDamage(float Damage, Attacks AttackType, bool OnBeat) override;
+	virtual void ApplyDamage(float Damage, Attacks AttackType, bool OnBeat, FVector HitLocation) override;
 
 	virtual bool GetCanAttack();
 
@@ -164,4 +168,7 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AScoreManager> ScoreManagerClass;
+
+	UPROPERTY(EditDefaultsOnly)
+	UNiagaraSystem* GetHitEffect;
 };
