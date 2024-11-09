@@ -174,6 +174,35 @@ void ABoss::ParticleEffects()
 		break;
 	}
 }
+
+bool ABoss::CheckIfNeedsToRotate()
+{
+	if (!Player) return false;  // Ensure you have a reference to the player
+
+	// Get the boss and player locations and project them onto the 2D plane
+	FVector BossLocation = GetActorLocation();
+	BossLocation.Z = 0;
+
+	FVector PlayerLocation = Player->GetActorLocation();
+	PlayerLocation.Z = 0;
+
+	// Get the 2D direction vector to the player
+	FVector DirectionToPlayer = (PlayerLocation - BossLocation).GetSafeNormal();
+
+	// Get the forward vector of the boss and set Z to 0
+	FVector BossForward = GetActorForwardVector();
+	BossForward.Z = 0;
+	BossForward.Normalize();
+
+	// Calculate the angle between the forward vector and the direction to the player
+	float AngleDegrees = FMath::Acos(FVector::DotProduct(BossForward, DirectionToPlayer)) * (180.0f / PI);
+
+	// Define a threshold, e.g., 20 degrees
+
+	// Check if the angle exceeds the threshold
+	return AngleDegrees > RotationThreshold;
+}
+
 void ABoss::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -203,17 +232,6 @@ void ABoss::Tick(float DeltaTime)
 
 	}
 
-	if (RotateBoss)
-	{
-		FVector Direction = (PlayerLocation - BossLocation).GetSafeNormal();
-		FRotator TargetRotation = Direction.Rotation();
-		float RotationSpeed = 2.f;
-
-		FRotator CurrentRotation = GetActorRotation();
-		FRotator NewRotation = FMath::RInterpTo(CurrentRotation, TargetRotation, GetWorld()->GetDeltaSeconds(), RotationSpeed); // RotationSpeed is a float that controls the speed
-		SetActorRotation(FRotator(0, NewRotation.Yaw, 0));
-	}
-
 
 	FVector Start = GetActorLocation();
 	FVector End = Player->GetActorLocation();
@@ -230,6 +248,74 @@ void ABoss::Tick(float DeltaTime)
 
 	bool CanShoot = false;
 	if (HitResult.GetActor() && HitResult.GetActor() == Player) CanShoot = true;
+
+	if (BossState == EBossState::EBS_Rotating)
+	{
+		if (!CheckIfNeedsToRotate())
+		{
+			BossState = EBossState::EBS_Unoccupied;
+			bHasStartedRotationMontage = false;  // Reset flag when done rotating
+			RotationDuration = 0.0f;  // Reset rotation duration when done
+			return;
+		}
+
+		// Calculate direction and cross product for animation montage selection
+		FVector Direction = (PlayerLocation - BossLocation).GetSafeNormal();
+		FVector BossForward = GetActorForwardVector();
+		FVector CrossProduct = FVector::CrossProduct(BossForward, Direction);
+
+		// Perform the smooth rotation with dynamic speed
+		float AngleDegrees = FMath::Acos(FVector::DotProduct(BossForward, Direction)) * (180.0f / PI);
+		float RotationSpeed = FMath::GetMappedRangeValueClamped(FVector2D(0, 180), FVector2D(1, 4), AngleDegrees);
+
+		// Start the rotation montage if it hasn't started yet
+		if (!bHasStartedRotationMontage)
+		{
+			if (CrossProduct.Z > 0) // Left Turn
+			{
+				if (AngleDegrees > 15 && AngleDegrees < 90)
+				{
+					PlayMontage(RotateMontage, "TurnShortRight");
+				}
+				else if (AngleDegrees >= 90)
+				{
+					PlayMontage(RotateMontage, "TurnLongRight");
+				}
+			}
+			else if (CrossProduct.Z < -0) // Right Turn
+			{
+				if (AngleDegrees > 15 && AngleDegrees < 90)
+				{
+					PlayMontage(RotateMontage, "TurnShortLeft");
+				}
+				else if (AngleDegrees >= 90)
+				{
+					PlayMontage(RotateMontage, "TurnLongLeft");
+				}
+			}
+
+			bHasStartedRotationMontage = true;  // Set the flag to avoid re-triggering the montage
+		}
+
+			// Interpolate the rotation and set the new rotation
+			FRotator TargetRotation = Direction.Rotation();
+		FRotator CurrentRotation = GetActorRotation();
+		FRotator NewRotation = FMath::RInterpTo(CurrentRotation, TargetRotation, GetWorld()->GetDeltaSeconds(), RotationSpeed * (1 + RotationDuration * 1.0f));
+		SetActorRotation(FRotator(0, NewRotation.Yaw, 0));
+
+		// Increment rotation duration
+		RotationDuration += GetWorld()->GetDeltaSeconds();
+
+		// Snap rotation if it exceeds maximum rotation time
+		if (RotationDuration >= MaxRotationTime)
+		{
+			SetActorRotation(FRotator(0, TargetRotation.Yaw, 0));  // Snap to target
+			RotationDuration = 0.0f;  // Reset the duration counter
+			BossState = EBossState::EBS_Unoccupied;  // Set to unoccupied or another state
+			bHasStartedRotationMontage = false;  // Reset montage flag if done
+		}
+	}
+
 
 	switch (BossState)
 	{
@@ -257,8 +343,14 @@ void ABoss::Tick(float DeltaTime)
 		BossState = EBossState::EBS_Falling;
 		break;
 	case EBossState::EBS_Unoccupied:
-		RotateBoss = false;
-		BossState = EBossState::EBS_StartChasing;
+		if (CheckIfNeedsToRotate()) {
+			BossState = EBossState::EBS_Rotating;
+			bHasStartedRotationMontage = false;
+		}
+		else {
+			BossState = EBossState::EBS_StartChasing;
+		}
+
 		break;
 	case EBossState::EBS_Chasing:
 		if (Distance <= AttackRange)

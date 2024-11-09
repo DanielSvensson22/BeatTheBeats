@@ -11,6 +11,7 @@ UENUM(BlueprintType)
 enum class EBossState : uint8
 {
 	EBS_Unoccupied UMETA(DisplayName = "Unoccupied"),
+	EBS_Rotating UMETA(DisplayName = "Rotating"),
 	EBS_Spawning UMETA(DisplayName = "Spawning"),
 	EBS_Falling UMETA(DisplayName = "Falling"),
 	EBS_Chasing UMETA(DisplayName = "Chasing"),
@@ -55,6 +56,8 @@ protected:
 
 	UFUNCTION(BlueprintCallable, Category = "Effects")
 	void ParticleEffects();
+
+	bool CheckIfNeedsToRotate();
 
 public:
 
@@ -101,6 +104,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Montages")
 	TObjectPtr<UAnimMontage> MiscMontage;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Montages")
+	TObjectPtr<UAnimMontage> RotateMontage;
+
 	APawn* Player;
 
 	UPROPERTY(VisibleAnywhere)
@@ -113,6 +119,12 @@ private:
 	bool IsFalling;
 
 	int BeatCounter = 0;
+
+	bool bHasStartedRotationMontage;
+
+	float RotationDuration = 0.0f;  // Tracks how long boss has been rotating
+	const float MaxRotationTime = 2.0f;  // Maximum time to rotate before snapping
+	float RotationThreshold = 2.0f; // How much the boss needs to Rotate to count as facing towards the player
 
 public:
 	UFUNCTION(BlueprintCallable)
