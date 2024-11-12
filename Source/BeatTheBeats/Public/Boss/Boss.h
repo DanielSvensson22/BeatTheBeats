@@ -43,6 +43,8 @@ protected:
 
 	void SlamAttack();
 
+	void SlamDamage();
+
 	void RayAttack();
 
 	void StartRayAttack();
@@ -50,6 +52,8 @@ protected:
 	void PlayMontage(UAnimMontage* Montage, FName Section);
 
 	virtual void DoDamage() override;
+
+
 
 	void SpawnAttackParticleEffect(UParticleSystem* Particle, const FTransform& SpawnTransform);
 
@@ -111,6 +115,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	USceneComponent* Attack3EffectPos;
+
+	UPROPERTY(VisibleAnywhere)
+	USceneComponent* SlamImpact;
 
 	AAIController* AIController;
 

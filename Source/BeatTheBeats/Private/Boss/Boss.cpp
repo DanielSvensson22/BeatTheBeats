@@ -16,6 +16,8 @@ ABoss::ABoss() : Super()
 	Attack3EffectPos = CreateDefaultSubobject<USceneComponent>("EffectPos(Attack3)");
 	Attack3EffectPos->SetupAttachment(GetRootComponent());
 
+	SlamImpact = CreateDefaultSubobject<USceneComponent>("SlamImpactPos");
+	SlamImpact->SetupAttachment(GetRootComponent());
 
 }
 
@@ -68,7 +70,38 @@ void ABoss::SlamAttack()
 	AIController->StopMovement();
 	PlayMontage(AttackMontage, "Attack3");
 
+
+
 	bCanAttack = false;
+}
+
+void ABoss::SlamDamage()
+{
+	// Define impact point and radius
+	FVector ImpactPoint = SlamImpact->GetComponentLocation();  // Adjust based on where the impact should be
+	float ImpactRadius = 500.0f;  // The maximum radius within which damage applies
+	float MinDamage = 20.0f;  // Minimum damage at the edge of the radius
+	float MaxDamage = 100.0f;  // Maximum damage at the impact point
+
+	// Calculate distance between player and impact point
+	float DistanceToPlayer = FVector::Dist(ImpactPoint, Player->GetActorLocation());
+
+	// Check if player is within impact radius
+	if (DistanceToPlayer <= ImpactRadius)
+	{
+		// Calculate damage based on distance (linear falloff)
+		float DamageFalloff = FMath::Clamp(1.0f - (DistanceToPlayer / ImpactRadius), 0.0f, 1.0f);
+		float DamageAmount = FMath::Lerp(MinDamage, MaxDamage, DamageFalloff);
+
+		// Apply damage to player
+		UGameplayStatics::ApplyDamage(Player, DamageAmount, GetController(), this, UDamageType::StaticClass());
+
+		UE_LOG(LogTemp, Warning, TEXT("Player damaged by slam attack! Damage: %f"), DamageAmount);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Player is out of range of slam attack."));
+	}
 }
 
 void ABoss::RayAttack()
@@ -119,6 +152,7 @@ void ABoss::ParticleEffects()
 	{
 	case EBossState::EBS_SlamAttacking:
 		SpawnAttackParticleEffect(AttackSlam, Attack3EffectPos->GetComponentTransform());
+		SlamDamage();
 		break;
 	case EBossState::EBS_RayAttacking:
 		if (USkeletalMeshComponent* SkeletalMeshComponent = Cast<USkeletalMeshComponent>(GetMesh()))
