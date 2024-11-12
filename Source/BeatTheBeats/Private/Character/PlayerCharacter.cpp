@@ -80,6 +80,8 @@ void APlayerCharacter::BeginPlay()
 	}
 	else {
 		BeatHandle = BeatManager->BindFuncToOnBeat(this, &APlayerCharacter::OnBeat);
+
+		PlayAttackMontage(StartAnim, TEXT("Default"), BeatManager->TimeBetweenBeats() * 2);
 	}
 
 	ScoreManager = Cast<AScoreManager>(UGameplayStatics::GetActorOfClass(this, ScoreManagerClass));
@@ -163,6 +165,7 @@ void APlayerCharacter::SetWeaponCollisionEnabled(ECollisionEnabled::Type Collisi
 			EnemyToAttack = nullptr;
 			bClosingDistance = false;
 			bIsAttacking = false;
+			bInAttackAnimation = false;
 		}
 		else {
 			FHitResult result;
@@ -442,7 +445,7 @@ void APlayerCharacter::AddNeutralBlock()
 			bPerfectBlock = false;
 		}
 
-		PlayAttackMontage(BlockAnim, TEXT("Default"), true);
+		PlayAttackMontage(BlockAnim, TEXT("Default"), std::max(BeatManager->GetTimeUntilNextBeat(), BeatManager->TimeBetweenBeats() / 2));
 	}
 }
 
@@ -459,7 +462,7 @@ void APlayerCharacter::AddType1Block()
 			bPerfectBlock = false;
 		}
 
-		PlayAttackMontage(BlockAnim, TEXT("Default"), true);
+		PlayAttackMontage(BlockAnim, TEXT("Default"), std::max(BeatManager->GetTimeUntilNextBeat(), BeatManager->TimeBetweenBeats() / 2));
 	}
 }
 
@@ -476,7 +479,7 @@ void APlayerCharacter::AddType2Block()
 			bPerfectBlock = false;
 		}
 
-		PlayAttackMontage(BlockAnim, TEXT("Default"), true);
+		PlayAttackMontage(BlockAnim, TEXT("Default"), std::max(BeatManager->GetTimeUntilNextBeat(), BeatManager->TimeBetweenBeats() / 2));
 	}
 }
 
@@ -493,7 +496,7 @@ void APlayerCharacter::AddType3Block()
 			bPerfectBlock = false;
 		}
 
-		PlayAttackMontage(BlockAnim, TEXT("Default"), true);
+		PlayAttackMontage(BlockAnim, TEXT("Default"), std::max(BeatManager->GetTimeUntilNextBeat(), BeatManager->TimeBetweenBeats() / 2));
 	}
 }
 
@@ -507,7 +510,7 @@ void APlayerCharacter::DodgeBack()
 
 		DodgeLocation = GetActorLocation() + offset;
 
-		PlayAttackMontage(DodgeBackAnim, TEXT("Default"), true);
+		PlayAttackMontage(DodgeBackAnim, TEXT("Default"), std::max(BeatManager->GetTimeUntilNextBeat(), BeatManager->TimeBetweenBeats() / 2));
 	}
 }
 
@@ -521,7 +524,7 @@ void APlayerCharacter::DodgeLeft()
 
 		DodgeLocation = GetActorLocation() + offset;
 
-		PlayAttackMontage(DodgeLeftAnim, TEXT("Default"), true);
+		PlayAttackMontage(DodgeLeftAnim, TEXT("Default"), std::max(BeatManager->GetTimeUntilNextBeat(), BeatManager->TimeBetweenBeats() / 2));
 	}	
 }
 
@@ -535,7 +538,7 @@ void APlayerCharacter::DodgeRight()
 
 		DodgeLocation = GetActorLocation() + offset;
 
-		PlayAttackMontage(DodgeRightAnim, TEXT("Default"), true);
+		PlayAttackMontage(DodgeRightAnim, TEXT("Default"), std::max(BeatManager->GetTimeUntilNextBeat(), BeatManager->TimeBetweenBeats() / 2));
 	}
 }
 
@@ -574,12 +577,14 @@ void APlayerCharacter::AttackCallback(Attacks AttackType, float MotionValue, flo
 	UE_LOG(LogTemp, Warning, TEXT("%s on Combo step %i in Combo %i"), *attackName, ComboStep, Combo);
 }
 
-void APlayerCharacter::PlayAttackMontage(UAnimMontage* montage, FName SectionName, bool AddTimeBetweenBeats)
+void APlayerCharacter::PlayAttackMontage(UAnimMontage* montage, FName SectionName, float TotalTime)
 {
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 
 	if (AnimInstance != nullptr && montage != nullptr)
 	{
+		bInAttackAnimation = true;
+
 		int32 Section = montage->GetSectionIndex(SectionName);
 
 		float Length = montage->GetSectionLength(Section);
@@ -599,14 +604,7 @@ void APlayerCharacter::PlayAttackMontage(UAnimMontage* montage, FName SectionNam
 			}
 		}
 
-		float PlayRate = 0;
-
-		if (AddTimeBetweenBeats) {
-			PlayRate = Length / (BeatManager->GetTimeUntilNextBeat() + BeatManager->TimeBetweenBeats());
-		}
-		else {
-			PlayRate = Length / BeatManager->GetTimeUntilNextBeat();
-		}
+		float PlayRate = Length / TotalTime;
 
 		AnimInstance->Montage_Play(montage, PlayRate);
 		AnimInstance->Montage_JumpToSection(SectionName, montage);
@@ -708,7 +706,7 @@ void APlayerCharacter::ApplyDamage(float Damage)
 			controller->bEnableClickEvents = true;
 			controller->bEnableMouseOverEvents = true;
 
-			PlayAttackMontage(DeathAnim, TEXT("Default"), true);
+			PlayAttackMontage(DeathAnim, TEXT("Default"), BeatManager->TimeBetweenBeats() + BeatManager->GetTimeUntilNextBeat());
 		}
 	}
 

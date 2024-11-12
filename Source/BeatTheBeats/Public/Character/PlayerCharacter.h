@@ -41,7 +41,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetWeaponCollisionEnabled(ECollisionEnabled::Type CollisionEnable);
 
-	void PlayAttackMontage(UAnimMontage* montage, FName SectionName, bool AddTimeBetweenBeats);
+	void PlayAttackMontage(UAnimMontage* montage, FName SectionName, float TotalTime);
 
 	UFUNCTION(BlueprintPure)
 	FORCEINLINE float GetPlayerHealth() const { return CurrentHealth; }
@@ -55,6 +55,8 @@ public:
 	FORCEINLINE void SetNotifyName(const FString& name) {
 		AttackNotifyName = name;
 	}
+
+	FORCEINLINE bool InAttackAnimation() { return bInAttackAnimation; }
 
 protected:
 	virtual void BeginPlay() override;
@@ -227,6 +229,8 @@ private:
 
 	bool bIsAttacking = false;
 
+	bool bInAttackAnimation = false;
+
 	UPROPERTY(EditDefaultsOnly)
 	float ClosenessForPeffectBlock = 0.7f;
 
@@ -306,6 +310,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Montages")
 	UAnimMontage* DodgeRightAnim;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Montages")
+	UAnimMontage* StartAnim;
 
 	//Debug
 	UPROPERTY(EditAnywhere, Category = "Input")

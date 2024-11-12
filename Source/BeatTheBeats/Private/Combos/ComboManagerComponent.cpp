@@ -35,6 +35,7 @@ void UComboManagerComponent::BeginPlay()
 	}
 	else {
 		BeatManager->BindFuncToOnBeat(this, &UComboManagerComponent::ProcessNextAttack);
+		BeatManager->BindFuncToOnBeat(this, &UComboManagerComponent::ResetTimeOfLastAttack);
 	}
 
 	if (Combos.Num() != ComboObtainedStatus.Num()) {
@@ -57,26 +58,19 @@ void UComboManagerComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 void UComboManagerComponent::AddAttack(Attacks AttackType, float Damage, bool PlayerAddedThisBeat)
 {
-	if (StoredAttacks.size() < 2) {
-		StoredAttacks.emplace(AttackType, Damage, PlayerAddedThisBeat);
+	if (StoredAttacks.size() == 0) {
+		if (BeatManager && player && 
+			(!player->InAttackAnimation() || 
+				(TimeOfLastAttack == 0 || std::abs(BeatManager->GetCurrentTimeSinceLastBeat() - TimeOfLastAttack) > BeatManager->TimeBetweenBeats() / BeatPartBeforeNewAttack))) {
+			StoredAttacks.emplace(AttackType, Damage, false);
+			TimeOfLastAttack = BeatManager->GetCurrentTimeSinceLastBeat();
 
-		if (player) {
-			if (StoredAttacks.size() == 1 && AttackType != Attacks::Attack_Pause) {
-				int combo = FindComboOfType(AttackType);
-				PerformAnimation(AttackType, BeatManager->ClosenessToBeat(), PlayerAddedThisBeat, Combos[combo].GetAnimMontage(Combos[combo].GetNextAttack(CurrentComboStep)));
+			if (AttackType != Attacks::Attack_Pause) {
+				AddAttackAnim(AttackType);
 
-				if (Weapon) {
-					Weapon->SetAttackStatus(Damage, AttackType, BeatManager->ClosenessToBeat() > ClosenessPercentForPerfectBeat);
-				}
-			}
-			else if (AttackType != Attacks::Attack_Pause) {
-				if (UpcomingAttackAnims.size() > 0) {
-					UpcomingAttackAnims.emplace(AttackType, BeatManager->ClosenessToBeat(), true);
-				}
-				else {
-					auto& [pad1, pad2, ShouldNotAttack] = StoredAttacks.front();
-					UpcomingAttackAnims.emplace(AttackType, BeatManager->ClosenessToBeat(), !ShouldNotAttack);
-				}
+				bProcessedThisBeat = false;
+				ProcessNextAttack(BeatManager->GetCurrentTimeSinceLastBeat());
+				bProcessedThisBeat = true;
 			}
 		}
 	}
@@ -84,57 +78,62 @@ void UComboManagerComponent::AddAttack(Attacks AttackType, float Damage, bool Pl
 
 void UComboManagerComponent::ProcessNextAttack(float CurrentTimeSinceLastBeat)
 {
-	if (StoredAttacks.size() > 0) {
-		StoredAttack& nextAttack = StoredAttacks.front();
-		auto& [AttackType, Damage, AddedOnThisBeat] = nextAttack;
+	if (!bProcessedThisBeat) {
+		if (StoredAttacks.size() > 0) {
+			StoredAttack& nextAttack = StoredAttacks.front();
+			auto& [AttackType, Damage, AddedOnThisBeat] = nextAttack;
 
-		if (AddedOnThisBeat) {
-			nextAttack = std::make_tuple(AttackType, Damage, false);
+			if (AddedOnThisBeat) {
+				nextAttack = std::make_tuple(AttackType, Damage, false);
+			}
+			else {
+				StoredAttacks.pop();
+
+				if (StoredAttacks.size() > 0) {
+					StoredAttack& nextNextAttack = StoredAttacks.front();
+					auto& [AttackTypeNext, DamageNext, AddedOnThisBeatNext] = nextNextAttack;
+					nextNextAttack = std::make_tuple(AttackTypeNext, DamageNext, false);
+				}
+
+				bool nextAttackMatchesInput = Combos[CurrentCombo].AttackMatchesNextAttack(AttackType, CurrentComboStep + 1);
+
+				if (!nextAttackMatchesInput) {
+					CurrentCombo = GetNextCombo(AttackType);
+				}
+
+				if (UpcomingAttackAnims.size() > 0) {
+					auto& [AttackAnimType, ClosenessToBeat, ShouldAttack] = UpcomingAttackAnims.front();
+
+					if (ShouldAttack) {
+						UpcomingAttackAnims.pop();
+
+						if (AttackAnimType != Attacks::Attack_Pause) {
+							PerformAnimation(AttackAnimType, ClosenessToBeat, false,
+								Combos[CurrentCombo].GetAnimMontage(Combos[CurrentCombo].GetNextAttack(CurrentComboStep)));
+						}
+
+						if (Weapon) {
+							Weapon->SetAttackStatus(Damage, AttackType, ClosenessToBeat > ClosenessPercentForPerfectBeat);
+						}
+					}
+					else {
+						UpcomingAttackAnims.front() = std::make_tuple(AttackAnimType, ClosenessToBeat, true);
+					}
+				}
+
+				PerformAttack(AttackType);
+			}
 		}
 		else {
-			StoredAttacks.pop();
-
-			if (StoredAttacks.size() > 0) {
-				StoredAttack& nextNextAttack = StoredAttacks.front();
-				auto& [AttackTypeNext, DamageNext, AddedOnThisBeatNext] = nextNextAttack;
-				nextNextAttack = std::make_tuple(AttackTypeNext, DamageNext, false);
+			for (auto& combo : Combos) {
+				combo.ResetCombo();
+				CurrentCombo = 0;
+				CurrentComboStep = -1;
 			}
-
-			bool nextAttackMatchesInput = Combos[CurrentCombo].AttackMatchesNextAttack(AttackType, CurrentComboStep + 1);
-			
-			if (!nextAttackMatchesInput) {
-				CurrentCombo = GetNextCombo(AttackType);
-			}
-
-			if (UpcomingAttackAnims.size() > 0) {
-				auto& [AttackAnimType, ClosenessToBeat, ShouldAttack] = UpcomingAttackAnims.front();
-
-				if (ShouldAttack) {
-					UpcomingAttackAnims.pop();
-					
-					if (AttackAnimType != Attacks::Attack_Pause) {
-						PerformAnimation(AttackAnimType, ClosenessToBeat, false,
-							Combos[CurrentCombo].GetAnimMontage(Combos[CurrentCombo].GetNextAttack(CurrentComboStep + 1)));
-					}
-
-					if (Weapon) {
-						Weapon->SetAttackStatus(Damage, AttackType, ClosenessToBeat > ClosenessPercentForPerfectBeat);
-					}
-				}
-				else {
-					UpcomingAttackAnims.front() = std::make_tuple(AttackAnimType, ClosenessToBeat, true);
-				}
-			}
-			
-			PerformAttack(AttackType);
 		}
 	}
 	else {
-		for (auto& combo : Combos) {
-			combo.ResetCombo();
-			CurrentCombo = 0;
-			CurrentComboStep = -1;
-		}
+		bProcessedThisBeat = false;
 	}
 }
 
@@ -176,10 +175,10 @@ void UComboManagerComponent::PerformAttack(Attacks AttackType)
 void UComboManagerComponent::PerformAnimation(Attacks AttackType, float ClosenessToBeat, bool AddTimeBetweenBeats, UAnimMontage* montage)
 {
 	if (ClosenessToBeat > ClosenessPercentForPerfectBeat) {
-		player->PlayAttackMontage(montage, TEXT("Perfect"), AddTimeBetweenBeats);
+		player->PlayAttackMontage(montage, TEXT("Perfect"), BeatManager->TimeBetweenBeats() * 0.9f);
 	}
 	else {
-		player->PlayAttackMontage(montage, TEXT("Default"), AddTimeBetweenBeats);
+		player->PlayAttackMontage(montage, TEXT("Default"), BeatManager->TimeBetweenBeats() * 0.9f);
 	}
 
 	UE_LOG(LogTemp, Display, TEXT("Animated on combo %i step %i"), CurrentCombo, FMath::Max(CurrentComboStep, 0));

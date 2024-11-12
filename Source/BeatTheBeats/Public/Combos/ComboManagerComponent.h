@@ -9,6 +9,7 @@
 #include <queue>
 #include "ComboConnection.h"
 #include "ComboConnectionArray.h"
+#include "Beats/BeatManager.h"
 #include "ComboManagerComponent.generated.h"
 
 class APlayerCharacter;
@@ -117,6 +118,16 @@ private:
 		return 0;
 	}
 
+	FORCEINLINE void AddAttackAnim(Attacks AttackType) {
+		if (UpcomingAttackAnims.size() < 2) {
+			UpcomingAttackAnims.emplace(AttackType, BeatManager->ClosenessToBeat(), true);
+		}
+	}
+
+	FORCEINLINE void ResetTimeOfLastAttack(float CurrentTimeSinceLastBeat) {
+		TimeOfLastAttack = 0;
+	}
+
 	void PerformAttack(Attacks AttackType);
 
 	void PerformAnimation(Attacks AttackType, float ClosenessToBeat, bool AddTimeBetweenBeats, UAnimMontage* montage);
@@ -154,7 +165,8 @@ private:
 
 	int CurrentCombo = 0;
 
-	class ABeatManager* BeatManager;
+	UPROPERTY()
+	ABeatManager* BeatManager;
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<ABeatManager> BeatManagerClass;
@@ -162,8 +174,15 @@ private:
 	APlayerCharacter* player;
 	AttackCallback callback;
 
+	bool bProcessedThisBeat = false;
+
+	float TimeOfLastAttack = 0;
+
 	UPROPERTY(EditDefaultsOnly)
 	float ClosenessPercentForPerfectBeat = 0.8f;
+
+	UPROPERTY(EditDefaultsOnly)
+	float BeatPartBeforeNewAttack = 5.0f;
 
 	AWeaponBase* Weapon;
 };
