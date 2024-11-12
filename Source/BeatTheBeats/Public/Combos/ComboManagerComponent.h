@@ -23,6 +23,7 @@ class BEATTHEBEATS_API UComboManagerComponent : public UActorComponent
 public:	
 	// Sets default values for this component's properties
 	UComboManagerComponent();
+	~UComboManagerComponent();
 
 protected:
 	// Called when the game starts
@@ -185,4 +186,6 @@ private:
 	float BeatPartBeforeNewAttack = 5.0f;
 
 	AWeaponBase* Weapon;
+
+	TArray<FDelegateHandle> Handles;
 };

@@ -6,6 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "AIController.h"
 #include "Enemy/EnemyBase.h"
+#include <cmath>
 
 UBTTask_GetPlayerPosition::UBTTask_GetPlayerPosition()
 {
@@ -20,6 +21,10 @@ EBTNodeResult::Type UBTTask_GetPlayerPosition::ExecuteTask(UBehaviorTreeComponen
 	AEnemyBase* enemy = Cast<AEnemyBase>(OwnerComp.GetAIOwner()->GetPawn());
 
 	if (player && enemy) {
+		if (std::abs(player->GetActorLocation().Z - enemy->GetActorLocation().Z) > 300) {
+			return EBTNodeResult::Type::Failed;
+		}
+
 		float Dot = player->GetActorForwardVector().Dot(enemy->GetActorForwardVector());
 
 		if (FVector::Dist(player->GetActorLocation(), enemy->GetActorLocation()) < enemy->GetMaxViewDistance() 

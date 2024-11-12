@@ -32,6 +32,8 @@ class BEATTHEBEATS_API APlayerCharacter : public ACharacter
 public:
 	APlayerCharacter();
 
+	~APlayerCharacter();
+
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -218,6 +220,7 @@ private:
 	*/
 	TArray<IncomingAttack> IncomingAttacks;
 
+	UPROPERTY()
 	class ABeatManager* BeatManager;
 
 	UPROPERTY(EditDefaultsOnly)

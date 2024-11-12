@@ -5,7 +5,8 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "AIController.h"
 #include "Kismet/GameplayStatics.h"
-#include "Enemy/MeleeAIController.h"
+#include "Enemy/CrowdHandlingAIController.h"
+#include "Enemy/EnemyBase.h"
 
 UBTTask_SetEnemyFocus::UBTTask_SetEnemyFocus()
 {
@@ -14,13 +15,19 @@ UBTTask_SetEnemyFocus::UBTTask_SetEnemyFocus()
 
 EBTNodeResult::Type UBTTask_SetEnemyFocus::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	AMeleeAIController* controller = Cast<AMeleeAIController>(OwnerComp.GetAIOwner());
+	ACrowdHandlingAIController* controller = Cast<ACrowdHandlingAIController>(OwnerComp.GetAIOwner());
 
 	if (GetSelectedBlackboardKey() == "Focus") {
 		controller->SetFocusState(UGameplayStatics::GetPlayerPawn(this, 0), true);
 	}
 	else {
 		controller->SetFocusState(UGameplayStatics::GetPlayerPawn(this, 0), false);
+
+		AEnemyBase* enemy = Cast<AEnemyBase>(OwnerComp.GetAIOwner()->GetPawn());
+
+		if (enemy) {
+			enemy->ExitQueue();
+		}
 	}
 
 	return EBTNodeResult::Type::Succeeded;

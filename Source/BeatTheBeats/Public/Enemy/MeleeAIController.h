@@ -25,10 +25,6 @@ protected:
 
 public:
 
-	void SetFocusState(AActor* focus, bool ShouldFocus);
-
-public:
-
 	UPROPERTY(VisibleAnywhere)
 	float RandomDistance = 0;
 
@@ -50,6 +46,4 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	FName StartLocationKeyName = "StartLocation";
-
-	bool bHasSetFocus = false;
 };

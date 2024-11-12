@@ -31,9 +31,9 @@ void AEnemyQueue::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	if (CurrentEnemyCount < MaxAttackingEnemies) {
-		if (WaitingEnemies.size() > 0) {
-			AEnemyBase* enemy = WaitingEnemies.front();
-			WaitingEnemies.pop();
+		if (WaitingEnemies.Num() > 0) {
+			AEnemyBase* enemy = WaitingEnemies[0];
+			WaitingEnemies.RemoveAt(0);
 
 			if (enemy->IsAlive()) {
 				enemy->SetAttackState(true, true);
@@ -44,9 +44,9 @@ void AEnemyQueue::Tick(float DeltaTime)
 	}
 
 	if (CurrentRangedEnemyCount < MaxRangedEnemies) {
-		if (WaitingRangedEnemies.size() > 0) {
-			AEnemyBase* enemy = WaitingRangedEnemies.front();
-			WaitingRangedEnemies.pop();
+		if (WaitingRangedEnemies.Num() > 0) {
+			AEnemyBase* enemy = WaitingRangedEnemies[0];
+			WaitingRangedEnemies.RemoveAt(0);
 
 			if (enemy->IsAlive()) {
 				enemy->SetAttackState(true, true);
@@ -59,12 +59,20 @@ void AEnemyQueue::Tick(float DeltaTime)
 
 void AEnemyQueue::AddToQueue(AEnemyBase* Enemy)
 {
-	WaitingEnemies.emplace(Enemy);
+	if (WaitingEnemies.Contains(Enemy)) {
+		return;
+	}
+
+	WaitingEnemies.Emplace(Enemy);
 }
 
 void AEnemyQueue::AddToRangedQueue(AEnemyBase* Enemy)
 {
-	WaitingRangedEnemies.emplace(Enemy);
+	if (WaitingRangedEnemies.Contains(Enemy)) {
+		return;
+	}
+
+	WaitingRangedEnemies.Emplace(Enemy);
 }
 
 void AEnemyQueue::RemoveEnemy(AEnemyBase* Enemy, bool IsMelee)

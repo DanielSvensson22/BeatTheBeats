@@ -56,12 +56,19 @@ void ARangedEnemy::OnBeat(float CurrentTimeSinceLastBeat)
 void ARangedEnemy::Attack()
 {
 	if (CurrentAttack < StandardCombo.AttackCount() - 1) {
-		FVector direction = UGameplayStatics::GetPlayerPawn(this, 0)->GetActorLocation() - GetActorLocation();
-		FRotator rotation = direction.Rotation();
 
-		SetActorRotation(rotation);
+		FHitResult result;
+		FCollisionQueryParams params;
+		params.AddIgnoredActor(this);
 
-		AddLaserBeam(UGameplayStatics::GetPlayerPawn(this, 0)->GetActorLocation());
+		if (GetWorld()->LineTraceSingleByChannel(result, GetActorLocation(), UGameplayStatics::GetPlayerPawn(this, 0)->GetActorLocation(), ECollisionChannel::ECC_Visibility, params)) {
+			FVector direction = result.Location - GetActorLocation();
+			FRotator rotation = direction.Rotation();
+
+			SetActorRotation(rotation);
+
+			AddLaserBeam(result.Location);
+		}
 	}
 	else {
 		DoDamage();
@@ -105,6 +112,9 @@ void ARangedEnemy::DoDamage()
 	if (MuzzleEffect) {
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), MuzzleEffect, ShootPoint->GetComponentLocation(), (-forward).Rotation());
 	}
+
+	ExitQueue();
+	SetAttackState(false, false);
 }
 
 void ARangedEnemy::Tick(float DeltaTime)

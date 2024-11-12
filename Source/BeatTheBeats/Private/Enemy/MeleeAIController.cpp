@@ -20,19 +20,3 @@ void AMeleeAIController::BeginPlay()
 		GetBlackboardComponent()->SetValueAsVector(StartLocationKeyName, GetPawn()->GetActorLocation());
 	}
 }
-
-void AMeleeAIController::SetFocusState(AActor* focus, bool ShouldFocus)
-{
-	if (ShouldFocus) {
-		if (!bHasSetFocus) {
-			SetFocus(focus, EAIFocusPriority::Gameplay);
-			bHasSetFocus = true;
-		}
-	}
-	else {
-		if (bHasSetFocus) {
-			ClearFocus(EAIFocusPriority::Gameplay);
-			bHasSetFocus = false;
-		}
-	}
-}

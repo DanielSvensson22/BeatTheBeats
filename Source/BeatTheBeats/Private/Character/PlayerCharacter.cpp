@@ -61,6 +61,11 @@ APlayerCharacter::APlayerCharacter()
 	QTE = CreateDefaultSubobject<UQTEComponent>(TEXT("QTE Component"));
 }
 
+APlayerCharacter::~APlayerCharacter()
+{
+	BeatManager->UnBindFuncFromOnBeat(BeatHandle);
+}
+
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();

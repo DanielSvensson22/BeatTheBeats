@@ -214,8 +214,7 @@ void AEnemyBase::ApplyDamage(float InitialDamage, Attacks AttackType, bool OnBea
 		if (!bHasDied) {
 			bHasDied = true;
 
-			if (EnemyQueue)
-				EnemyQueue->RemoveEnemy(this, bIsMelee);
+			ExitQueue();
 
 			DetachFromControllerPendingDestroy();
 
@@ -260,6 +259,17 @@ void AEnemyBase::EnterQueue()
 			}
 
 			bHasAddedToQueue = true;
+		}
+	}
+}
+
+void AEnemyBase::ExitQueue()
+{
+	if (bHasAddedToQueue) {
+		bHasAddedToQueue = false;
+
+		if (EnemyQueue) {
+			EnemyQueue->RemoveEnemy(this, bIsMelee);
 		}
 	}
 }

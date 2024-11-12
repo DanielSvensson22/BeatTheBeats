@@ -20,6 +20,13 @@ UComboManagerComponent::UComboManagerComponent()
 	// ...
 }
 
+UComboManagerComponent::~UComboManagerComponent()
+{
+	for (auto& handle : Handles) {
+		BeatManager->UnBindFuncFromOnBeat(handle);
+	}
+}
+
 
 // Called when the game starts
 void UComboManagerComponent::BeginPlay()
@@ -34,8 +41,10 @@ void UComboManagerComponent::BeginPlay()
 		UE_LOG(LogTemp, Error, TEXT("No Beat Manager was found in the scene!"));
 	}
 	else {
-		BeatManager->BindFuncToOnBeat(this, &UComboManagerComponent::ProcessNextAttack);
-		BeatManager->BindFuncToOnBeat(this, &UComboManagerComponent::ResetTimeOfLastAttack);
+		FDelegateHandle h1 = BeatManager->BindFuncToOnBeat(this, &UComboManagerComponent::ProcessNextAttack);
+		FDelegateHandle h2 = BeatManager->BindFuncToOnBeat(this, &UComboManagerComponent::ResetTimeOfLastAttack);
+		Handles.Add(h1);
+		Handles.Add(h2);
 	}
 
 	if (Combos.Num() != ComboObtainedStatus.Num()) {

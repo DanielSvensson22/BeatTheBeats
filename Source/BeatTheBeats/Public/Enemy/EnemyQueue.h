@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include <queue>
 #include "EnemyQueue.generated.h"
 
 class AEnemyBase;
@@ -35,7 +34,7 @@ public:
 private:
 
 	//Melee
-	std::queue<AEnemyBase*> WaitingEnemies;
+	TArray<AEnemyBase*> WaitingEnemies;
 
 	UPROPERTY(EditDefaultsOnly)
 	int MaxAttackingEnemies = 2;
@@ -43,7 +42,7 @@ private:
 	int CurrentEnemyCount = 0;
 
 	//Ranged
-	std::queue<AEnemyBase*> WaitingRangedEnemies;
+	TArray<AEnemyBase*> WaitingRangedEnemies;
 
 	UPROPERTY(EditDefaultsOnly)
 	int MaxRangedEnemies = 2;

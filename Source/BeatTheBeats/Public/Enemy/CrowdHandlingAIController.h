@@ -17,7 +17,12 @@ class BEATTHEBEATS_API ACrowdHandlingAIController : public AAIController
 public:
 	ACrowdHandlingAIController(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
+	void SetFocusState(AActor* focus, bool ShouldFocus);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+private:
+	bool bHasSetFocus = false;
 };

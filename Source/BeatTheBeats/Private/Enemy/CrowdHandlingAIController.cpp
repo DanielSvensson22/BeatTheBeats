@@ -26,3 +26,19 @@ void ACrowdHandlingAIController::BeginPlay()
 		UE_LOG(LogTemp, Error, TEXT("AI controller had no crowd following component!"));
 	}
 }
+
+void ACrowdHandlingAIController::SetFocusState(AActor* focus, bool ShouldFocus)
+{
+	if (ShouldFocus) {
+		if (!bHasSetFocus) {
+			SetFocus(focus, EAIFocusPriority::Gameplay);
+			bHasSetFocus = true;
+		}
+	}
+	else {
+		if (bHasSetFocus) {
+			ClearFocus(EAIFocusPriority::Gameplay);
+			bHasSetFocus = false;
+		}
+	}
+}

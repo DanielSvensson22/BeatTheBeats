@@ -66,6 +66,8 @@ public:
 
 	void EnterQueue();
 
+	void ExitQueue();
+
 	virtual void Parry();
 
 	UFUNCTION(BlueprintPure)
