@@ -17,4 +17,5 @@ class BEATTHEBEATS_API UBBCameraShake : public ULegacyCameraShake
 public:
 
 	UBBCameraShake();
+	UBBCameraShake(float amplitude, float freq);
 };

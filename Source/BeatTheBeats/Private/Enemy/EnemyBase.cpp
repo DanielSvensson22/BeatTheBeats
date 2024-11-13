@@ -11,6 +11,7 @@
 #include "Score/ScoreManager.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
+#include "Camera/BBCameraShake.h"
 
 // Sets default values
 AEnemyBase::AEnemyBase()
@@ -233,6 +234,9 @@ void AEnemyBase::ApplyDamage(float InitialDamage, Attacks AttackType, bool OnBea
 		if (ScoreManager) {
 			ScoreManager->AddPoints(FinalDamage);
 		}
+
+		//UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->StartCameraShake(UBBCameraShake::StaticClass());
+		Hit();
 	}
 }
 
@@ -313,6 +317,11 @@ void AEnemyBase::DoDamage()
 }
 
 void AEnemyBase::Death_Implementation()
+{
+
+}
+
+void AEnemyBase::Hit_Implementation()
 {
 
 }

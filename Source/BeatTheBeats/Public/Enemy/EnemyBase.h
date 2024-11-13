@@ -39,6 +39,9 @@ protected:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "DeathEvent")
 	void Death();
+	
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "HitEvent")
+	void Hit();
 
 public:	
 	// Called every frame
