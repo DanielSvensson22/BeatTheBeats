@@ -42,6 +42,9 @@ protected:
 	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "HitEvent")
 	void Hit();
+	
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PerfectHitEvent")
+	void PerfectHit();
 
 public:	
 	// Called every frame

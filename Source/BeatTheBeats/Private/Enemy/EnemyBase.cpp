@@ -236,7 +236,14 @@ void AEnemyBase::ApplyDamage(float InitialDamage, Attacks AttackType, bool OnBea
 		}
 
 		//UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->StartCameraShake(UBBCameraShake::StaticClass());
-		Hit();
+		if (OnBeat)
+		{
+			PerfectHit();
+		}
+		else
+		{
+			Hit();
+		}
 	}
 }
 
@@ -322,6 +329,10 @@ void AEnemyBase::Death_Implementation()
 }
 
 void AEnemyBase::Hit_Implementation()
+{
+
+}
+void AEnemyBase::PerfectHit_Implementation()
 {
 
 }
