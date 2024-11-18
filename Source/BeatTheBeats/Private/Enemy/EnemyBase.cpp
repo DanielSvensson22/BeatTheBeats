@@ -13,12 +13,19 @@
 #include "NiagaraComponent.h"
 #include "Camera/BBCameraShake.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "Blueprint/UserWidget.h"
+#include "Blueprint/WidgetTree.h"
+#include "Components/TextBlock.h"
+#include <iostream>
+#include <string>
+#include <iomanip>
+#include <sstream>
 
 // Sets default values
 AEnemyBase::AEnemyBase()
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	GetMesh()->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
@@ -38,6 +45,8 @@ AEnemyBase::AEnemyBase()
 void AEnemyBase::BeginPlay()
 {
 	Super::BeginPlay();
+
+	PrimaryActorTick.bCanEverTick = true;
 
 	CurrentHealth = MaxHealth;
 
@@ -81,6 +90,22 @@ void AEnemyBase::BeginPlay()
 	AttackTypeMaterial = GetMesh()->CreateDynamicMaterialInstance(AttackTypeMaterialIndex, GetMesh()->GetMaterial(AttackTypeMaterialIndex));
 
 	SetEffectsColor(EnemyType);
+
+	//Damage indicators:
+	if (EnemyWidget->GetWidget()) {
+		TArray<UWidget*> childWidgets;
+		EnemyWidget->GetWidget()->WidgetTree->GetAllWidgets(childWidgets);
+		for (auto childWidget : childWidgets)
+		{
+			if (UTextBlock* Block = Cast<UTextBlock>(childWidget))
+			{
+				DamageIndicators.Add(Block);
+				StartPositions.Add(Block->GetRenderTransform().Translation);
+				Block->SetIsEnabled(false);
+				Block->SetVisibility(ESlateVisibility::Hidden);
+			}
+		}
+	}
 }
 
 void AEnemyBase::OnBeat(float CurrentTimeSinceLastBeat)
@@ -126,6 +151,30 @@ void AEnemyBase::Attack()
 void AEnemyBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	for (int i = 0; i < UsedDamageIndicators.Num(); i++) {
+		DamageTimers[i] = DamageTimers[i] - DeltaTime;
+
+		UsedDamageIndicators[i]->SetRenderTranslation(UsedDamageIndicators[i]->GetRenderTransform().Translation + DamageIndicatorVelocity * DeltaTime);
+
+		if (DamageTimers[i] <= 0) {
+			UTextBlock* indicator = UsedDamageIndicators[i];
+			FVector2D sp = UsedStartPositions[i];
+			UsedDamageIndicators.RemoveAt(i);
+			UsedStartPositions.RemoveAt(i);
+			DamageTimers.RemoveAt(i);
+
+			indicator->SetIsEnabled(false);
+			indicator->SetVisibility(ESlateVisibility::Hidden);
+
+			DamageIndicators.Add(indicator);
+			StartPositions.Add(sp);
+
+			UE_LOG(LogTemp, Warning, TEXT("Removed damage indicator"));
+
+			i--;
+		}
+	}
 }
 
 // Called to bind functionality to input
@@ -263,6 +312,30 @@ void AEnemyBase::ApplyDamage(float InitialDamage, Attacks AttackType, bool OnBea
 		else
 		{
 			Hit();
+		}
+
+		//SpawnDamageIndicator
+
+		if (DamageIndicators.Num() > 0) {
+			UTextBlock* indicator = DamageIndicators[0];
+			FVector2D sp = StartPositions[0];
+			DamageIndicators.RemoveAt(0);
+			StartPositions.RemoveAt(0);
+			DamageTimers.Add(DamageIndicatorLifetime);
+
+			indicator->SetIsEnabled(true);
+			indicator->SetVisibility(ESlateVisibility::Visible);
+			indicator->SetRenderTranslation(sp);
+
+			std::stringstream stream;
+			stream << std::fixed << std::setprecision(2) << FinalDamage;
+			indicator->SetText(FText::FromString(FString(stream.str().c_str())));
+
+			UsedDamageIndicators.Add(indicator);
+			UsedStartPositions.Add(sp);
+		}
+		else {
+			UE_LOG(LogTemp, Error, TEXT("Not enough damage indicators!"));
 		}
 	}
 }

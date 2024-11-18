@@ -16,6 +16,7 @@ class AScoreManager;
 class UNiagaraSystem;
 class UNiagaraComponent;
 class UMaterialInstanceDynamic;
+class UTextBlock;
 
 UCLASS()
 class BEATTHEBEATS_API AEnemyBase : public ACharacter, public IHitInterface, public ILockOnInterface
@@ -242,4 +243,20 @@ private:
 	FName HighColorName;
 
 	UMaterialInstanceDynamic* AttackTypeMaterial;
+
+	//Damage indicators
+
+	TArray<UTextBlock*> DamageIndicators;
+	TArray<UTextBlock*> UsedDamageIndicators;
+
+	TArray<float> DamageTimers;
+
+	TArray<FVector2D> StartPositions;
+	TArray<FVector2D> UsedStartPositions;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Damage indicators")
+	float DamageIndicatorLifetime = 0.5f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Damage indicators")
+	FVector2D DamageIndicatorVelocity;
 };
