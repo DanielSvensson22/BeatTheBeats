@@ -7,6 +7,8 @@
 #include "Blueprint/WidgetTree.h"
 #include "Components/TextBlock.h"
 #include "Components/RadialSlider.h"
+#include "Misc/Paths.h"
+#include "FileHelpers.h"
 
 // Sets default values
 AScoreManager::AScoreManager()
@@ -108,5 +110,27 @@ void AScoreManager::UpdateUI()
 		CurrentTimeUntilPointsLoss = TimeUntilPointsLoss;
 		bHasLostPoints = false;
 	}
+}
+
+/// <summary>
+/// Gets save file path
+/// Checks if save file directory exists and creates if not
+/// Checks if save file exists and creates if not
+/// </summary>
+/// <returns>A file string with save file path</returns>
+FString AScoreManager::GetSaveFilePath()
+{
+	IPlatformFile& _fileManager = FPlatformFileManager::Get().GetPlatformFile();
+	FString _dir = FPaths::GameAgnosticSavedDir();
+	_dir.Append(TEXT("Save"));
+
+	//If directory doesn't exist, create directory
+	if (!FPaths::DirectoryExists(_dir)) _fileManager.CreateDirectory(*_dir);
+	
+	//If save file doesn't exist, create save file
+	_dir.Append(TEXT("/hiscore.json"));
+	if (!_fileManager.FileExists(*_dir)) FFileHelper::SaveStringToFile((FString)"", *_dir, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), EFileWrite::FILEWRITE_Append);
+	
+	return _dir;
 }
 
