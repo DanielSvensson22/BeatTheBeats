@@ -33,6 +33,10 @@ public:
 	UFUNCTION(BlueprintPure)
 	int GetPoints() const { return (int)Points; }
 
+	//Get the file path for the .json save file
+	UFUNCTION(BlueprintPure)
+	FString GetSaveFilePath();
+
 	void AddPoints(float points);
 
 	void TookDamage();
@@ -45,6 +49,8 @@ private:
 	float Points = 0;
 
 	float CurrentStagePoints = 0;
+
+	FString FilePath;
 
 	UPROPERTY(EditDefaultsOnly)
 	TArray<FScoreStage> ScoreStages;
