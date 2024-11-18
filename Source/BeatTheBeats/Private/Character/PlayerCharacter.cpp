@@ -27,6 +27,7 @@
 #include "NiagaraComponent.h"
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include "Interfaces/LockOnInterface.h"
 
 APlayerCharacter::APlayerCharacter()
@@ -93,6 +94,26 @@ void APlayerCharacter::BeginPlay()
 
 	if (ScoreManager == nullptr) {
 		UE_LOG(LogTemp, Error, TEXT("No Score Manager was found in the scene!"));
+	}
+
+	if (AttackTypeEffect) {
+		AttackTypeEffectComp = UNiagaraFunctionLibrary::SpawnSystemAttached(AttackTypeEffect, GetMesh(), TEXT("pelvis"), 
+											FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::KeepRelativeOffset, false);
+
+		if (AttackTypeEffectComp) {
+			UNiagaraFunctionLibrary::OverrideSystemUserVariableSkeletalMeshComponent(AttackTypeEffectComp, TEXT("Skeletal Mesh"), GetMesh());
+			AttackTypeEffectComp->SetVariableFloat(TEXT("SpawnRate"), SpawnRate);
+			AttackTypeEffectComp->SetVariableLinearColor(TEXT("Color"), NeutralColor);
+		}
+	}
+
+	AttackTypeMaterial = GetMesh()->CreateDynamicMaterialInstance(AttackTypeMaterialIndex, GetMesh()->GetMaterial(AttackTypeMaterialIndex));
+
+	if (AttackTypeMaterial) {
+		AttackTypeMaterial->SetVectorParameterValue(LowColorName, LowNeutralColor);
+		AttackTypeMaterial->SetVectorParameterValue(HighColorName, HighNeutralColor);
+
+		GetMesh()->SetMaterial(AttackTypeMaterialIndex, AttackTypeMaterial);
 	}
 
 	SetNotifyName("Attack Window");
@@ -369,7 +390,17 @@ void APlayerCharacter::AddNeutralAttack()
 			bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
 			ComboManager->AddAttack(Attacks::Attack_Neutral, PlayerDamage, !AddedLastBeat);
 			bIsAttacking = true;
-			UE_LOG(LogTemp, Display, TEXT("Added Neutral Attack to queue."));
+			
+			if (AttackTypeEffectComp) {
+				AttackTypeEffectComp->SetVariableLinearColor(TEXT("Color"), NeutralColor);
+			}
+
+			if (AttackTypeMaterial) {
+				AttackTypeMaterial->SetVectorParameterValue(LowColorName, LowNeutralColor);
+				AttackTypeMaterial->SetVectorParameterValue(HighColorName, HighNeutralColor);
+
+				GetMesh()->SetMaterial(AttackTypeMaterialIndex, AttackTypeMaterial);
+			}
 		}		
 	}
 }
@@ -384,7 +415,17 @@ void APlayerCharacter::AddType1Attack()
 			bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
 			ComboManager->AddAttack(Attacks::Attack_Type1, PlayerDamage, !AddedLastBeat);
 			bIsAttacking = true;
-			UE_LOG(LogTemp, Display, TEXT("Added Type 1 Attack to queue."));
+			
+			if (AttackTypeEffectComp) {
+				AttackTypeEffectComp->SetVariableLinearColor(TEXT("Color"), AttackOneColor);
+			}	
+
+			if (AttackTypeMaterial) {
+				AttackTypeMaterial->SetVectorParameterValue(LowColorName, LowAttack1Color);
+				AttackTypeMaterial->SetVectorParameterValue(HighColorName, HighAttack1Color);
+
+				GetMesh()->SetMaterial(AttackTypeMaterialIndex, AttackTypeMaterial);
+			}
 		}
 	}
 }
@@ -399,7 +440,17 @@ void APlayerCharacter::AddType2Attack()
 			bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
 			ComboManager->AddAttack(Attacks::Attack_Type2, PlayerDamage, !AddedLastBeat);
 			bIsAttacking = true;
-			UE_LOG(LogTemp, Display, TEXT("Added Type 2 Attack to queue."));
+			
+			if (AttackTypeEffectComp) {
+				AttackTypeEffectComp->SetVariableLinearColor(TEXT("Color"), AttackTwoColor);
+			}
+
+			if (AttackTypeMaterial) {
+				AttackTypeMaterial->SetVectorParameterValue(LowColorName, LowAttack2Color);
+				AttackTypeMaterial->SetVectorParameterValue(HighColorName, HighAttack2Color);
+
+				GetMesh()->SetMaterial(AttackTypeMaterialIndex, AttackTypeMaterial);
+			}
 		}
 	}
 }
@@ -414,7 +465,17 @@ void APlayerCharacter::AddType3Attack()
 			bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
 			ComboManager->AddAttack(Attacks::Attack_Type3, PlayerDamage, !AddedLastBeat);
 			bIsAttacking = true;
-			UE_LOG(LogTemp, Display, TEXT("Added Type 3 Attack to queue."));
+			
+			if (AttackTypeEffectComp) {
+				AttackTypeEffectComp->SetVariableLinearColor(TEXT("Color"), AttackThreeColor);
+			}
+
+			if (AttackTypeMaterial) {
+				AttackTypeMaterial->SetVectorParameterValue(LowColorName, LowAttack3Color);
+				AttackTypeMaterial->SetVectorParameterValue(HighColorName, HighAttack3Color);
+
+				GetMesh()->SetMaterial(AttackTypeMaterialIndex, AttackTypeMaterial);
+			}
 		}		
 	}
 }
@@ -704,6 +765,10 @@ void APlayerCharacter::ApplyDamage(float Damage)
 
 			GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 			SetActorTickEnabled(false);
+
+			if (AttackTypeEffectComp) {
+				AttackTypeEffectComp->Deactivate();
+			}
 
 			BeatManager->UnBindFuncFromOnBeat(BeatHandle);
 

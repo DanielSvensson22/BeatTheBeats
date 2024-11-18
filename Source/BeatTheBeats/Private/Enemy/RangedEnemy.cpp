@@ -31,6 +31,34 @@ void ARangedEnemy::BeginPlay()
 {
 	Super::BeginPlay();
 
+	int rand = FMath::RandRange(0, 3);
+
+	switch (rand) {
+		case 0:
+			EnemyType = Attacks::Attack_Neutral;
+			SetEffectsColor(EnemyType);
+			break;
+
+		case 1:
+			EnemyType = Attacks::Attack_Type1;
+			SetEffectsColor(EnemyType);
+			break;
+
+		case 2:
+			EnemyType = Attacks::Attack_Type2;
+			SetEffectsColor(EnemyType);
+			break;
+
+		case 3:
+			EnemyType = Attacks::Attack_Type3;
+			SetEffectsColor(EnemyType);
+			break;
+
+		default:
+			EnemyType = Attacks::Attack_Neutral;
+			SetEffectsColor(EnemyType);
+			break;
+	}
 }
 
 void ARangedEnemy::OnBeat(float CurrentTimeSinceLastBeat)

@@ -12,6 +12,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 #include "Camera/BBCameraShake.h"
+#include "Materials/MaterialInstanceDynamic.h"
 
 // Sets default values
 AEnemyBase::AEnemyBase()
@@ -28,7 +29,7 @@ AEnemyBase::AEnemyBase()
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel3, ECollisionResponse::ECR_Block);
 
 	EnemyWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Enemy Widget"));
-	EnemyWidget->SetWidgetSpace(EWidgetSpace::Screen);
+	EnemyWidget->SetWidgetSpace(EWidgetSpace::World);
 	EnemyWidget->SetupAttachment(RootComponent);
 	EnemyWidget->AddLocalOffset(FVector(0, 0, GetCapsuleComponent()->GetScaledCapsuleHalfHeight()));
 }
@@ -66,6 +67,20 @@ void AEnemyBase::BeginPlay()
 	if (ScoreManager == nullptr) {
 		UE_LOG(LogTemp, Error, TEXT("No Score Manager was found in the scene!"));
 	}
+
+	if (AttackTypeEffect) {
+		AttackTypeEffectComp = UNiagaraFunctionLibrary::SpawnSystemAttached(AttackTypeEffect, GetMesh(), TEXT("pelvis"),
+			FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::KeepRelativeOffset, false);
+
+		if (AttackTypeEffectComp) {
+			UNiagaraFunctionLibrary::OverrideSystemUserVariableSkeletalMeshComponent(AttackTypeEffectComp, TEXT("Skeletal Mesh"), GetMesh());
+			AttackTypeEffectComp->SetVariableFloat(TEXT("SpawnRate"), SpawnRate);
+		}
+	}
+
+	AttackTypeMaterial = GetMesh()->CreateDynamicMaterialInstance(AttackTypeMaterialIndex, GetMesh()->GetMaterial(AttackTypeMaterialIndex));
+
+	SetEffectsColor(EnemyType);
 }
 
 void AEnemyBase::OnBeat(float CurrentTimeSinceLastBeat)
@@ -111,7 +126,6 @@ void AEnemyBase::Attack()
 void AEnemyBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 // Called to bind functionality to input
@@ -222,10 +236,17 @@ void AEnemyBase::ApplyDamage(float InitialDamage, Attacks AttackType, bool OnBea
 			GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 			SetActorTickEnabled(false);
 
-			if (BeatManager)
+			if (BeatManager) {
 				BeatManager->UnBindFuncFromOnBeat(BeatHandle);
+			}
 
 			CurrentAttack = StandardCombo.ResetCombo();
+
+			EnemyWidget->SetVisibility(false);
+
+			if (AttackTypeEffectComp) {
+				AttackTypeEffectComp->Deactivate();
+			}
 
 			Death();
 		}
@@ -235,7 +256,6 @@ void AEnemyBase::ApplyDamage(float InitialDamage, Attacks AttackType, bool OnBea
 			ScoreManager->AddPoints(FinalDamage);
 		}
 
-		//UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->StartCameraShake(UBBCameraShake::StaticClass());
 		if (OnBeat)
 		{
 			PerfectHit();
@@ -321,6 +341,50 @@ void AEnemyBase::Parry()
 void AEnemyBase::DoDamage()
 {
 
+}
+
+void AEnemyBase::SetEffectsColor(Attacks Type)
+{
+	if (AttackTypeEffect && AttackTypeMaterial) {
+		switch (Type) {
+		case Attacks::Attack_Neutral:
+			AttackTypeEffectComp->SetVariableLinearColor(TEXT("Color"), NeutralColor);
+
+			AttackTypeMaterial->SetVectorParameterValue(LowColorName, LowNeutralColor);
+			AttackTypeMaterial->SetVectorParameterValue(HighColorName, HighNeutralColor);
+			break;
+
+		case Attacks::Attack_Type1:
+			AttackTypeEffectComp->SetVariableLinearColor(TEXT("Color"), AttackOneColor);
+
+			AttackTypeMaterial->SetVectorParameterValue(LowColorName, LowAttack1Color);
+			AttackTypeMaterial->SetVectorParameterValue(HighColorName, HighAttack1Color);
+			break;
+
+		case Attacks::Attack_Type2:
+			AttackTypeEffectComp->SetVariableLinearColor(TEXT("Color"), AttackTwoColor);
+
+			AttackTypeMaterial->SetVectorParameterValue(LowColorName, LowAttack2Color);
+			AttackTypeMaterial->SetVectorParameterValue(HighColorName, HighAttack2Color);
+			break;
+
+		case Attacks::Attack_Type3:
+			AttackTypeEffectComp->SetVariableLinearColor(TEXT("Color"), AttackThreeColor);
+
+			AttackTypeMaterial->SetVectorParameterValue(LowColorName, LowAttack3Color);
+			AttackTypeMaterial->SetVectorParameterValue(HighColorName, HighAttack3Color);
+			break;
+
+		default:
+			AttackTypeEffectComp->SetVariableLinearColor(TEXT("Color"), NeutralColor);
+
+			AttackTypeMaterial->SetVectorParameterValue(LowColorName, LowNeutralColor);
+			AttackTypeMaterial->SetVectorParameterValue(HighColorName, HighNeutralColor);
+			break;
+		}
+
+		GetMesh()->SetMaterial(AttackTypeMaterialIndex, AttackTypeMaterial);
+	}
 }
 
 void AEnemyBase::Death_Implementation()
