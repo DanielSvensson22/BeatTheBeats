@@ -122,6 +122,8 @@ public:
 		return Animations[next];
 	}
 
+	FORCEINLINE FText& GetName() { return ComboName; }
+
 private:
 
 	UPROPERTY(EditDefaultsOnly)
@@ -134,4 +136,7 @@ private:
 	TArray<float> MotionValues;
 
 	int CurrentAttack = -1;
+
+	UPROPERTY(EditDefaultsOnly)
+	FText ComboName;
 };

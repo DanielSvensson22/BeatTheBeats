@@ -14,6 +14,8 @@
 
 class APlayerCharacter;
 class AWeaponBase;
+class UTextBlock;
+class UImage;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class BEATTHEBEATS_API UComboManagerComponent : public UActorComponent
@@ -133,6 +135,8 @@ private:
 
 	void PerformAnimation(Attacks AttackType, float ClosenessToBeat, bool AddTimeBetweenBeats, UAnimMontage* montage);
 
+	void SetComboIndicators();
+
 private:
 
 	typedef std::tuple<Attacks, float, bool> StoredAttack;
@@ -188,4 +192,33 @@ private:
 	AWeaponBase* Weapon;
 
 	TArray<FDelegateHandle> Handles;
+
+	//Combo indicators
+	UTextBlock* ComboText;
+
+	TArray<UImage*> ComboImages;
+
+	UPROPERTY(EditDefaultsOnly, Category="Combo indicator")
+	FLinearColor ActiveNeutral;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Combo indicator")
+	FLinearColor DeactivatedNeutral;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Combo indicator")
+	FLinearColor ActiveOne;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Combo indicator")
+	FLinearColor DeactivatedOne;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Combo indicator")
+	FLinearColor ActiveTwo;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Combo indicator")
+	FLinearColor DeactivatedTwo;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Combo indicator")
+	FLinearColor ActiveThree;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Combo indicator")
+	FLinearColor DeactivatedThree;
 };
