@@ -61,6 +61,9 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Effects")
 	void ParticleEffects();
 
+	UFUNCTION(BlueprintCallable, Category = "Sounds")
+	void DeathSound();
+
 	bool CheckIfNeedsToRotate();
 
 public:
@@ -111,6 +114,30 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Montages")
 	TObjectPtr<UAnimMontage> RotateMontage;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	float SlamDamageMin;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	float SlamDamageMax;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	float RayDamage;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Sounds")
+	USoundBase* DeathSoundCue;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Sounds")
+	USoundBase* SlamSoundCue;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Sounds")
+	USoundBase* SlamSoundHitCue;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Sounds")
+	USoundBase* RaySoundCue;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Sounds")
+	USoundBase* RayStartSoundCue;
+
 	APawn* Player;
 
 	UPROPERTY(VisibleAnywhere)
@@ -120,6 +147,8 @@ private:
 	USceneComponent* SlamImpact;
 
 	AAIController* AIController;
+
+	bool PlayingDeathSound = false;
 
 	bool RotateBoss = false;
 

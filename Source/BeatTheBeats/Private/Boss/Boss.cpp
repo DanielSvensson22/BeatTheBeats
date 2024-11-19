@@ -68,6 +68,11 @@ void ABoss::SlamAttack()
 	if (!bCanAttack) return;
 	RotateBoss = false;
 	AIController->StopMovement();
+	if (SlamSoundCue)  // Check if the sound cue is set
+	{
+		// Play the death sound at the boss's location
+		UGameplayStatics::PlaySoundAtLocation(this, SlamSoundCue, GetActorLocation());
+	}
 	PlayMontage(AttackMontage, "Attack3");
 
 
@@ -80,8 +85,6 @@ void ABoss::SlamDamage()
 	// Define impact point and radius
 	FVector ImpactPoint = SlamImpact->GetComponentLocation();  // Adjust based on where the impact should be
 	float ImpactRadius = 500.0f;  // The maximum radius within which damage applies
-	float MinDamage = 20.0f;  // Minimum damage at the edge of the radius
-	float MaxDamage = 100.0f;  // Maximum damage at the impact point
 
 	// Calculate distance between player and impact point
 	float DistanceToPlayer = FVector::Dist(ImpactPoint, Player->GetActorLocation());
@@ -91,7 +94,7 @@ void ABoss::SlamDamage()
 	{
 		// Calculate damage based on distance (linear falloff)
 		float DamageFalloff = FMath::Clamp(1.0f - (DistanceToPlayer / ImpactRadius), 0.0f, 1.0f);
-		float DamageAmount = FMath::Lerp(MinDamage, MaxDamage, DamageFalloff);
+		float DamageAmount = FMath::Lerp(SlamDamageMin, SlamDamageMax, DamageFalloff);
 
 		// Apply damage to player
 		UGameplayStatics::ApplyDamage(Player, DamageAmount, GetController(), this, UDamageType::StaticClass());
@@ -107,6 +110,11 @@ void ABoss::SlamDamage()
 void ABoss::RayAttack()
 {
 	if (!bCanAttack) return;
+	if (RaySoundCue)  // Check if the sound cue is set
+	{
+		// Play the death sound at the boss's location
+		UGameplayStatics::PlaySoundAtLocation(this, RaySoundCue, GetActorLocation());
+	}
 	PlayMontage(AttackMontage, "AttackRanged");
 	bCanAttack = false;
 }
@@ -114,6 +122,13 @@ void ABoss::RayAttack()
 void ABoss::StartRayAttack()
 {
 	if (!bCanAttack) return;
+
+	if (RayStartSoundCue)  // Check if the sound cue is set
+	{
+		// Play the death sound at the boss's location
+		UGameplayStatics::PlaySoundAtLocation(this, RayStartSoundCue, GetActorLocation());
+	}
+
 	AIController->StopMovement();
 	ParticleEffects();
 	BossState = EBossState::EBS_RayAttacking;
@@ -148,11 +163,17 @@ void ABoss::SpawnAttackParticleEffect(UParticleSystem* Particle, const FTransfor
 
 void ABoss::ParticleEffects()
 {
+
 	switch (BossState)
 	{
 	case EBossState::EBS_SlamAttacking:
 		SpawnAttackParticleEffect(AttackSlam, Attack3EffectPos->GetComponentTransform());
 		SlamDamage();
+		if (SlamSoundHitCue)  // Check if the sound cue is set
+		{
+			// Play the death sound at the boss's location
+			UGameplayStatics::PlaySoundAtLocation(this, SlamSoundHitCue, GetActorLocation());
+		}
 		break;
 	case EBossState::EBS_RayAttacking:
 		if (USkeletalMeshComponent* SkeletalMeshComponent = Cast<USkeletalMeshComponent>(GetMesh()))
@@ -193,6 +214,13 @@ void ABoss::ParticleEffects()
 				HitTransform.SetRotation(HitRotation.Quaternion());
 				HitTransform.SetScale3D(FVector(1.0f));
 				SpawnAttackParticleEffect(PrimaryAttackGroundImpact, HitTransform);
+
+				if (HitResult.GetActor() && HitResult.GetActor() == Player)
+				{
+					// Apply damage to player
+					UGameplayStatics::ApplyDamage(Player, RayDamage, GetController(), this, UDamageType::StaticClass());
+				}
+
 			}
 
 		}
@@ -207,6 +235,23 @@ void ABoss::ParticleEffects()
 		}
 		break;
 	}
+}
+
+void ABoss::DeathSound()
+{
+	if (PlayingDeathSound) return;
+	PlayingDeathSound = true;
+
+	if (DeathSoundCue)  // Check if the sound cue is set
+	{
+		// Play the death sound at the boss's location
+		UGameplayStatics::PlaySoundAtLocation(this, DeathSoundCue, GetActorLocation());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("DeathSoundCue is not set!"));
+	}
+
 }
 
 bool ABoss::CheckIfNeedsToRotate()
