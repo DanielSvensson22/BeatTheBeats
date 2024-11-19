@@ -29,6 +29,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Interfaces/LockOnInterface.h"
+#include "Components/AudioComponent.h"
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -60,6 +61,9 @@ APlayerCharacter::APlayerCharacter()
 	ComboManager->BindAttackCallbackFunc(this, &APlayerCharacter::AttackCallback);
 
 	QTE = CreateDefaultSubobject<UQTEComponent>(TEXT("QTE Component"));
+
+	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Sound Player"));
+	AudioComponent->SetupAttachment(RootComponent);
 }
 
 APlayerCharacter::~APlayerCharacter()
@@ -254,42 +258,6 @@ void APlayerCharacter::Look(const FInputActionValue& Value)
 
 void APlayerCharacter::TargetLock()
 {
-	//if (bIsLockingTarget)
-	//{
-	//	ECameraState::ECS_FreeCamera;
-	//	GetCharacterMovement()->bOrientRotationToMovement = true;
-	//	bIsLockingTarget = false;
-	//	TargetLockHitTarget = nullptr;
-	//	bUseControllerRotationYaw = false;
-	//}
-	//else
-	//{
-	//	const FVector Start = GetActorLocation();
-	//	const FRotator CameraRotation = ViewCamera->GetComponentRotation();
-	//	const FVector End = Start + UKismetMathLibrary::GetForwardVector(CameraRotation) * TargetLockTraceRange;
-
-	//	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypesArray; // object types to trace
-	//	ObjectTypesArray.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic));
-
-	//	TArray<AActor*> IgnoreActors; // leave blank if not needed
-
-	//	// IgnoreActors.Add(); // Add actors to ingore here if needed
-
-	//	FHitResult SphereHit;
-
-	//	UKismetSystemLibrary::SphereTraceSingleForObjects(this, Start, End, TargetLockTraceRadius, ObjectTypesArray, false, IgnoreActors, EDrawDebugTrace::ForDuration, SphereHit, true);
-
-	//	TargetLockHitTarget = SphereHit.GetActor();
-
-	//	if (TargetLockHitTarget != nullptr)
-	//	{
-	//		ECameraState::ECS_LockCamera;
-	//		GetCharacterMovement()->bOrientRotationToMovement = false;
-	//		bIsLockingTarget = true;
-	//		bUseControllerRotationYaw = true; // Character look at locked target
-	//	}
-	//}
-
 	if (bIsLockingTarget)
 	{
 		HitArray.Empty();
@@ -343,23 +311,6 @@ void APlayerCharacter::TargetLock()
 
 void APlayerCharacter::SetTargetLockCamera()
 {
-	/*if (TargetLockHitTarget != nullptr)
-	{
-		float Distance = GetDistanceTo(TargetLockHitTarget);
-		FVector LockOffset = TargetLockHitTarget->GetActorUpVector() * Distance * LockOffsetModifier;
-
-		GetController()->SetControlRotation(UKismetMathLibrary::FindLookAtRotation(GetActorLocation() + LockOffset, TargetLockHitTarget->GetActorLocation()));
-
-		if (Distance > TargetLockMaxMoveDistance)
-		{
-			ECameraState::ECS_FreeCamera;
-			GetCharacterMovement()->bOrientRotationToMovement = true;
-			bIsLockingTarget = false;
-			TargetLockHitTarget = nullptr;
-			bUseControllerRotationYaw = false;
-		}
-	}*/
-
 	if (TargetLockHitTarget != nullptr)
 	{
 		ClosestDistance = 100000.f;
@@ -386,7 +337,7 @@ void APlayerCharacter::AddNeutralAttack()
 		QTE->AttemptAttack(Attacks::Attack_Neutral);
 	}
 	else {
-		if (!bIsDodging) {
+		if (!bIsDodging && !bIsBlocking) {
 			bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
 			ComboManager->AddAttack(Attacks::Attack_Neutral, PlayerDamage, !AddedLastBeat);
 			bIsAttacking = true;
@@ -411,7 +362,7 @@ void APlayerCharacter::AddType1Attack()
 		QTE->AttemptAttack(Attacks::Attack_Type1);
 	}
 	else {
-		if (!bIsDodging) {
+		if (!bIsDodging && !bIsBlocking) {
 			bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
 			ComboManager->AddAttack(Attacks::Attack_Type1, PlayerDamage, !AddedLastBeat);
 			bIsAttacking = true;
@@ -436,7 +387,7 @@ void APlayerCharacter::AddType2Attack()
 		QTE->AttemptAttack(Attacks::Attack_Type2);
 	}
 	else {
-		if (!bIsDodging) {
+		if (!bIsDodging && !bIsBlocking) {
 			bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
 			ComboManager->AddAttack(Attacks::Attack_Type2, PlayerDamage, !AddedLastBeat);
 			bIsAttacking = true;
@@ -461,7 +412,7 @@ void APlayerCharacter::AddType3Attack()
 		QTE->AttemptAttack(Attacks::Attack_Type3);
 	}
 	else {
-		if (!bIsDodging) {
+		if (!bIsDodging && !bIsBlocking) {
 			bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
 			ComboManager->AddAttack(Attacks::Attack_Type3, PlayerDamage, !AddedLastBeat);
 			bIsAttacking = true;
@@ -699,6 +650,11 @@ void APlayerCharacter::ProcessIncomingAttacks()
 			if (dot < 0) {
 				Enemy->Parry();
 
+				if (BlockSound) {
+					AudioComponent->SetSound(BlockSound);
+					AudioComponent->Play();
+				}
+
 				UNiagaraComponent* NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAttached(BlockEffect, GetMesh(), TEXT("shield_outer"), 
 															FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::KeepRelativeOffset, true);
 
@@ -777,6 +733,17 @@ void APlayerCharacter::ApplyDamage(float Damage)
 			controller->bEnableMouseOverEvents = true;
 
 			PlayAttackMontage(DeathAnim, TEXT("Default"), BeatManager->TimeBetweenBeats() + BeatManager->GetTimeUntilNextBeat());
+
+			if (DeathSound) {
+				AudioComponent->SetSound(DeathSound);
+				AudioComponent->Play();
+			}
+		}
+	}
+	else {
+		if (HitSound && (!AudioComponent->IsPlaying() || AudioComponent->GetSound() != BlockSound)) {
+			AudioComponent->SetSound(HitSound);
+			AudioComponent->Play();
 		}
 	}
 

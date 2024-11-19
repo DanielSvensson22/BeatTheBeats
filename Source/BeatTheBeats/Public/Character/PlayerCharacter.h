@@ -25,6 +25,7 @@ class UNiagaraSystem;
 class UNiagaraComponent;
 class UMaterialInstanceDynamic;
 class AScoreManager;
+class UAudioComponent;
 
 UCLASS()
 class BEATTHEBEATS_API APlayerCharacter : public ACharacter
@@ -377,6 +378,20 @@ private:
 	FName HighColorName;
 
 	UMaterialInstanceDynamic* AttackTypeMaterial;
+
+	//Sound
+
+	UPROPERTY(VisibleAnywhere)
+	UAudioComponent* AudioComponent;
+
+	UPROPERTY(EditDefaultsOnly, Category="Sound")
+	USoundBase* HitSound;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Sound")
+	USoundBase* DeathSound;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Sound")
+	USoundBase* BlockSound;
 
 	//Debug
 	UPROPERTY(EditAnywhere, Category = "Input")
