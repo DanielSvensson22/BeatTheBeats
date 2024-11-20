@@ -22,7 +22,10 @@ class UAnimMontage;
 class UQTEComponent;
 class ULegacyCameraShake;
 class UNiagaraSystem;
+class UNiagaraComponent;
+class UMaterialInstanceDynamic;
 class AScoreManager;
+class UAudioComponent;
 
 UCLASS()
 class BEATTHEBEATS_API APlayerCharacter : public ACharacter
@@ -316,6 +319,79 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Montages")
 	UAnimMontage* StartAnim;
+
+	//VFX
+
+	UNiagaraComponent* AttackTypeEffectComp;
+
+	UPROPERTY(EditDefaultsOnly, Category = "VFX")
+	UNiagaraSystem* AttackTypeEffect;
+
+	UPROPERTY(EditDefaultsOnly, Category = "VFX")
+	float SpawnRate = 35;
+
+	UPROPERTY(EditDefaultsOnly, Category = "VFX")
+	FLinearColor NeutralColor;
+
+	UPROPERTY(EditDefaultsOnly, Category = "VFX")
+	FLinearColor AttackOneColor;
+
+	UPROPERTY(EditDefaultsOnly, Category = "VFX")
+	FLinearColor AttackTwoColor;
+
+	UPROPERTY(EditDefaultsOnly, Category = "VFX")
+	FLinearColor AttackThreeColor;
+
+	//Material VFX
+
+	UPROPERTY(EditDefaultsOnly, Category = "MaterialVFX")
+	int AttackTypeMaterialIndex;
+
+	UPROPERTY(EditDefaultsOnly, Category = "MaterialVFX")
+	FLinearColor LowNeutralColor;
+
+	UPROPERTY(EditDefaultsOnly, Category = "MaterialVFX")
+	FLinearColor HighNeutralColor;
+
+	UPROPERTY(EditDefaultsOnly, Category = "MaterialVFX")
+	FLinearColor LowAttack1Color;
+
+	UPROPERTY(EditDefaultsOnly, Category = "MaterialVFX")
+	FLinearColor HighAttack1Color;
+
+	UPROPERTY(EditDefaultsOnly, Category = "MaterialVFX")
+	FLinearColor LowAttack2Color;
+
+	UPROPERTY(EditDefaultsOnly, Category = "MaterialVFX")
+	FLinearColor HighAttack2Color;
+
+	UPROPERTY(EditDefaultsOnly, Category = "MaterialVFX")
+	FLinearColor LowAttack3Color;
+
+	UPROPERTY(EditDefaultsOnly, Category = "MaterialVFX")
+	FLinearColor HighAttack3Color;
+
+	UPROPERTY(EditDefaultsOnly, Category = "MaterialVFX")
+	FName LowColorName;
+
+	UPROPERTY(EditDefaultsOnly, Category = "MaterialVFX")
+	FName HighColorName;
+
+	UMaterialInstanceDynamic* AttackTypeMaterial;
+
+	//Sound
+
+	UPROPERTY(VisibleAnywhere)
+	UAudioComponent* AudioComponent;
+
+	UPROPERTY(EditDefaultsOnly, Category="Sound")
+	USoundBase* HitSound;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Sound")
+	USoundBase* DeathSound;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Sound")
+	USoundBase* BlockSound;
 
 	//Debug
 	UPROPERTY(EditAnywhere, Category = "Input")

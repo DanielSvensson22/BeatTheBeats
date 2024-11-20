@@ -12,12 +12,21 @@
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 #include "Camera/BBCameraShake.h"
+#include "Materials/MaterialInstanceDynamic.h"
+#include "Blueprint/UserWidget.h"
+#include "Blueprint/WidgetTree.h"
+#include "Components/TextBlock.h"
+#include <iostream>
+#include <string>
+#include <iomanip>
+#include <sstream>
+#include "Components/AudioComponent.h"
 
 // Sets default values
 AEnemyBase::AEnemyBase()
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	GetMesh()->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
@@ -28,15 +37,20 @@ AEnemyBase::AEnemyBase()
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel3, ECollisionResponse::ECR_Block);
 
 	EnemyWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Enemy Widget"));
-	EnemyWidget->SetWidgetSpace(EWidgetSpace::Screen);
+	EnemyWidget->SetWidgetSpace(EWidgetSpace::World);
 	EnemyWidget->SetupAttachment(RootComponent);
 	EnemyWidget->AddLocalOffset(FVector(0, 0, GetCapsuleComponent()->GetScaledCapsuleHalfHeight()));
+
+	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Sound Player"));
+	AudioComponent->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned
 void AEnemyBase::BeginPlay()
 {
 	Super::BeginPlay();
+
+	PrimaryActorTick.bCanEverTick = true;
 
 	CurrentHealth = MaxHealth;
 
@@ -65,6 +79,36 @@ void AEnemyBase::BeginPlay()
 
 	if (ScoreManager == nullptr) {
 		UE_LOG(LogTemp, Error, TEXT("No Score Manager was found in the scene!"));
+	}
+
+	if (AttackTypeEffect) {
+		AttackTypeEffectComp = UNiagaraFunctionLibrary::SpawnSystemAttached(AttackTypeEffect, GetMesh(), TEXT("pelvis"),
+			FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::KeepRelativeOffset, false);
+
+		if (AttackTypeEffectComp) {
+			UNiagaraFunctionLibrary::OverrideSystemUserVariableSkeletalMeshComponent(AttackTypeEffectComp, TEXT("Skeletal Mesh"), GetMesh());
+			AttackTypeEffectComp->SetVariableFloat(TEXT("SpawnRate"), SpawnRate);
+		}
+	}
+
+	AttackTypeMaterial = GetMesh()->CreateDynamicMaterialInstance(AttackTypeMaterialIndex, GetMesh()->GetMaterial(AttackTypeMaterialIndex));
+
+	SetEffectsColor(EnemyType);
+
+	//Damage indicators:
+	if (EnemyWidget->GetWidget()) {
+		TArray<UWidget*> childWidgets;
+		EnemyWidget->GetWidget()->WidgetTree->GetAllWidgets(childWidgets);
+		for (auto childWidget : childWidgets)
+		{
+			if (UTextBlock* Block = Cast<UTextBlock>(childWidget))
+			{
+				DamageIndicators.Add(Block);
+				StartPositions.Add(Block->GetRenderTransform().Translation);
+				Block->SetIsEnabled(false);
+				Block->SetVisibility(ESlateVisibility::Hidden);
+			}
+		}
 	}
 }
 
@@ -112,6 +156,27 @@ void AEnemyBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	for (int i = 0; i < UsedDamageIndicators.Num(); i++) {
+		DamageTimers[i] = DamageTimers[i] - DeltaTime;
+
+		UsedDamageIndicators[i]->SetRenderTranslation(UsedDamageIndicators[i]->GetRenderTransform().Translation + DamageIndicatorVelocity * DeltaTime);
+
+		if (DamageTimers[i] <= 0) {
+			UTextBlock* indicator = UsedDamageIndicators[i];
+			FVector2D sp = UsedStartPositions[i];
+			UsedDamageIndicators.RemoveAt(i);
+			UsedStartPositions.RemoveAt(i);
+			DamageTimers.RemoveAt(i);
+
+			indicator->SetIsEnabled(false);
+			indicator->SetVisibility(ESlateVisibility::Hidden);
+
+			DamageIndicators.Add(indicator);
+			StartPositions.Add(sp);
+
+			i--;
+		}
+	}
 }
 
 // Called to bind functionality to input
@@ -222,10 +287,22 @@ void AEnemyBase::ApplyDamage(float InitialDamage, Attacks AttackType, bool OnBea
 			GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 			SetActorTickEnabled(false);
 
-			if (BeatManager)
+			if (BeatManager) {
 				BeatManager->UnBindFuncFromOnBeat(BeatHandle);
+			}
 
 			CurrentAttack = StandardCombo.ResetCombo();
+
+			EnemyWidget->SetVisibility(false);
+
+			if (AttackTypeEffectComp) {
+				AttackTypeEffectComp->Deactivate();
+			}
+
+			if (DeathSound) {
+				AudioComponent->SetSound(DeathSound);
+				AudioComponent->Play();
+			}
 
 			Death();
 		}
@@ -235,14 +312,47 @@ void AEnemyBase::ApplyDamage(float InitialDamage, Attacks AttackType, bool OnBea
 			ScoreManager->AddPoints(FinalDamage);
 		}
 
-		//UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->StartCameraShake(UBBCameraShake::StaticClass());
 		if (OnBeat)
 		{
 			PerfectHit();
+
+			if (PerfectHitSound) {
+				AudioComponent->SetSound(PerfectHitSound);
+				AudioComponent->Play();
+			}
 		}
 		else
 		{
 			Hit();
+
+			if (HitSound) {
+				AudioComponent->SetSound(HitSound);
+				AudioComponent->Play();
+			}
+		}
+
+		//SpawnDamageIndicator
+
+		if (DamageIndicators.Num() > 0) {
+			UTextBlock* indicator = DamageIndicators[0];
+			FVector2D sp = StartPositions[0];
+			DamageIndicators.RemoveAt(0);
+			StartPositions.RemoveAt(0);
+			DamageTimers.Add(DamageIndicatorLifetime);
+
+			indicator->SetIsEnabled(true);
+			indicator->SetVisibility(ESlateVisibility::Visible);
+			indicator->SetRenderTranslation(sp);
+
+			std::stringstream stream;
+			stream << std::fixed << std::setprecision(2) << FinalDamage;
+			indicator->SetText(FText::FromString(FString(stream.str().c_str())));
+
+			UsedDamageIndicators.Add(indicator);
+			UsedStartPositions.Add(sp);
+		}
+		else {
+			UE_LOG(LogTemp, Error, TEXT("Not enough damage indicators!"));
 		}
 	}
 }
@@ -321,6 +431,50 @@ void AEnemyBase::Parry()
 void AEnemyBase::DoDamage()
 {
 
+}
+
+void AEnemyBase::SetEffectsColor(Attacks Type)
+{
+	if (AttackTypeEffect && AttackTypeMaterial) {
+		switch (Type) {
+		case Attacks::Attack_Neutral:
+			AttackTypeEffectComp->SetVariableLinearColor(TEXT("Color"), NeutralColor);
+
+			AttackTypeMaterial->SetVectorParameterValue(LowColorName, LowNeutralColor);
+			AttackTypeMaterial->SetVectorParameterValue(HighColorName, HighNeutralColor);
+			break;
+
+		case Attacks::Attack_Type1:
+			AttackTypeEffectComp->SetVariableLinearColor(TEXT("Color"), AttackOneColor);
+
+			AttackTypeMaterial->SetVectorParameterValue(LowColorName, LowAttack1Color);
+			AttackTypeMaterial->SetVectorParameterValue(HighColorName, HighAttack1Color);
+			break;
+
+		case Attacks::Attack_Type2:
+			AttackTypeEffectComp->SetVariableLinearColor(TEXT("Color"), AttackTwoColor);
+
+			AttackTypeMaterial->SetVectorParameterValue(LowColorName, LowAttack2Color);
+			AttackTypeMaterial->SetVectorParameterValue(HighColorName, HighAttack2Color);
+			break;
+
+		case Attacks::Attack_Type3:
+			AttackTypeEffectComp->SetVariableLinearColor(TEXT("Color"), AttackThreeColor);
+
+			AttackTypeMaterial->SetVectorParameterValue(LowColorName, LowAttack3Color);
+			AttackTypeMaterial->SetVectorParameterValue(HighColorName, HighAttack3Color);
+			break;
+
+		default:
+			AttackTypeEffectComp->SetVariableLinearColor(TEXT("Color"), NeutralColor);
+
+			AttackTypeMaterial->SetVectorParameterValue(LowColorName, LowNeutralColor);
+			AttackTypeMaterial->SetVectorParameterValue(HighColorName, HighNeutralColor);
+			break;
+		}
+
+		GetMesh()->SetMaterial(AttackTypeMaterialIndex, AttackTypeMaterial);
+	}
 }
 
 void AEnemyBase::Death_Implementation()

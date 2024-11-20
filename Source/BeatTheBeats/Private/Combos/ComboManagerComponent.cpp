@@ -8,7 +8,12 @@
 #include <tuple>
 #include <queue>
 #include "Character/PlayerCharacter.h"
+#include "Character/BeatTheBeatsPlayerController.h"
 #include "Weapons/WeaponBase.h"
+#include "Blueprint/UserWidget.h"
+#include "Blueprint/WidgetTree.h"
+#include "Components/TextBlock.h"
+#include "Components/Image.h"
 
 // Sets default values for this component's properties
 UComboManagerComponent::UComboManagerComponent()
@@ -54,6 +59,38 @@ void UComboManagerComponent::BeginPlay()
 	if (ComboConnectionsList.Num() != Combos.Num()) {
 		UE_LOG(LogTemp, Error, TEXT("Not every combo has a combo connections list!"));
 	}
+
+	if (player && player->GetController()) {
+		if (ABeatTheBeatsPlayerController* controller = Cast<ABeatTheBeatsPlayerController>(player->GetController())) {
+			ComboText = Cast<UTextBlock>(controller->GetHUD()->WidgetTree->FindWidget(TEXT("ComboText")));
+
+			UImage* indicator1 = Cast<UImage>(controller->GetHUD()->WidgetTree->FindWidget(TEXT("ComboImage1")));
+
+			if (indicator1) {
+				ComboImages.Add(indicator1);
+			}
+
+			UImage* indicator2 = Cast<UImage>(controller->GetHUD()->WidgetTree->FindWidget(TEXT("ComboImage2")));
+
+			if (indicator2) {
+				ComboImages.Add(indicator2);
+			}
+
+			UImage* indicator3 = Cast<UImage>(controller->GetHUD()->WidgetTree->FindWidget(TEXT("ComboImage3")));
+
+			if (indicator3) {
+				ComboImages.Add(indicator3);
+			}
+
+			UImage* indicator4 = Cast<UImage>(controller->GetHUD()->WidgetTree->FindWidget(TEXT("ComboImage4")));
+
+			if (indicator4) {
+				ComboImages.Add(indicator4);
+			}
+		}
+	}
+
+	SetComboIndicators();
 }
 
 
@@ -131,6 +168,8 @@ void UComboManagerComponent::ProcessNextAttack(float CurrentTimeSinceLastBeat)
 				}
 
 				PerformAttack(AttackType);
+
+				SetComboIndicators();
 			}
 		}
 		else {
@@ -139,6 +178,8 @@ void UComboManagerComponent::ProcessNextAttack(float CurrentTimeSinceLastBeat)
 				CurrentCombo = 0;
 				CurrentComboStep = -1;
 			}
+
+			SetComboIndicators();
 		}
 	}
 	else {
@@ -191,5 +232,65 @@ void UComboManagerComponent::PerformAnimation(Attacks AttackType, float Closenes
 	}
 
 	UE_LOG(LogTemp, Display, TEXT("Animated on combo %i step %i"), CurrentCombo, FMath::Max(CurrentComboStep, 0));
+}
+
+void UComboManagerComponent::SetComboIndicators()
+{
+	if (ComboText) {
+		ComboText->SetText(Combos[CurrentCombo].GetName());
+	}
+
+	for (int i = 0; i < ComboImages.Num(); i++) {
+		if (i <= CurrentComboStep) {
+			ComboImages[i]->SetRenderScale(FVector2D(1, 1));
+			
+			switch (Combos[CurrentCombo].GetAttackType(i)) {
+			case Attacks::Attack_Neutral:
+				ComboImages[i]->SetBrushTintColor(ActiveNeutral);
+				break;
+
+			case Attacks::Attack_Type1:
+				ComboImages[i]->SetBrushTintColor(ActiveOne);
+				break;
+
+			case Attacks::Attack_Type2:
+				ComboImages[i]->SetBrushTintColor(ActiveTwo);
+				break;
+
+			case Attacks::Attack_Type3:
+				ComboImages[i]->SetBrushTintColor(ActiveThree);
+				break;
+
+			default:
+				ComboImages[i]->SetBrushTintColor(ActiveNeutral);
+				break;
+			}
+		}
+		else {
+			ComboImages[i]->SetRenderScale(FVector2D(0.5f, 0.5f));
+
+			switch (Combos[CurrentCombo].GetAttackType(i)) {
+			case Attacks::Attack_Neutral:
+				ComboImages[i]->SetBrushTintColor(DeactivatedNeutral);
+				break;
+
+			case Attacks::Attack_Type1:
+				ComboImages[i]->SetBrushTintColor(DeactivatedOne);
+				break;
+
+			case Attacks::Attack_Type2:
+				ComboImages[i]->SetBrushTintColor(DeactivatedTwo);
+				break;
+
+			case Attacks::Attack_Type3:
+				ComboImages[i]->SetBrushTintColor(DeactivatedThree);
+				break;
+
+			default:
+				ComboImages[i]->SetBrushTintColor(DeactivatedNeutral);
+				break;
+			}
+		}
+	}
 }
 
