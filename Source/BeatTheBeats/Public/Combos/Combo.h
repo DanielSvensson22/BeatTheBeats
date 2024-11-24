@@ -5,15 +5,17 @@
 #include "CoreMinimal.h"
 #include "Animation/AnimationAsset.h"
 #include "GenericPlatform/GenericPlatform.h"
-#include "QTEDescription.h"
 #include "Combo.generated.h"
 
 UENUM(BlueprintType)
-enum class ComboEffect : uint8 {
-	None = 0,
-	Special1 = 1,
-	Special2 = 2,
-	Special3 = 3
+enum class Attacks : uint8 {
+	Attack_Neutral = 0,
+	Attack_Type1 = 1,
+	Attack_Type2 = 2,
+	Attack_Type3 = 3,
+	Attack_Pause = 4,
+
+	Attack_NONE UMETA(Hidden)
 };
 
 /**
@@ -122,18 +124,6 @@ public:
 
 	FORCEINLINE FText& GetName() { return ComboName; }
 
-	FORCEINLINE bool HasQTE() {
-		return QTEDescription.Num() > 0;
-	}
-
-	FORCEINLINE TArray<FQTEDescription>* GetQTEDescription() {
-		return &QTEDescription;
-	}
-
-	FORCEINLINE ComboEffect GetComboEffect() {
-		return ComboBonus;
-	}
-
 private:
 
 	UPROPERTY(EditDefaultsOnly)
@@ -149,10 +139,4 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	FText ComboName;
-
-	UPROPERTY(EditDefaultsOnly)
-	TArray<FQTEDescription> QTEDescription;
-
-	UPROPERTY(EditDefaultsOnly)
-	ComboEffect ComboBonus;
 };

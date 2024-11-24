@@ -32,7 +32,7 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
-	typedef void (APlayerCharacter::* AttackCallback)(TArray<FQTEDescription>*, ComboEffect);
+	typedef void (APlayerCharacter::* AttackCallback)(Attacks, float, float, int, int);
 
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;

@@ -203,9 +203,8 @@ void UComboManagerComponent::PerformAttack(Attacks AttackType)
 	CurrentComboStep = Combos[CurrentCombo].NextAttack(CurrentComboStep);
 
 	if (player) {
-		if (Combos[CurrentCombo].HasQTE() && CurrentComboStep == Combos[CurrentCombo].AttackCount() - 1) {
-			(player->*callback)(Combos[CurrentCombo].GetQTEDescription(), Combos[CurrentCombo].GetComboEffect());
-		}
+		(player->*callback)(AttackType, Combos[CurrentCombo].GetMotionValue(CurrentComboStep),
+			Combos[CurrentCombo].GetAnimLength(CurrentComboStep), CurrentCombo, CurrentComboStep);
 	}
 
 	if (StoredAttacks.size() == 0) {

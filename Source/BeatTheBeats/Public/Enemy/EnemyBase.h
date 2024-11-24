@@ -17,7 +17,6 @@ class UNiagaraSystem;
 class UNiagaraComponent;
 class UMaterialInstanceDynamic;
 class UTextBlock;
-class UAudioComponent;
 
 UCLASS()
 class BEATTHEBEATS_API AEnemyBase : public ACharacter, public IHitInterface, public ILockOnInterface
@@ -133,18 +132,8 @@ protected:
 	/**
 	* Sounds
 	*/
-
-	UPROPERTY(VisibleAnywhere)
-	UAudioComponent* AudioComponent;
-
 	UPROPERTY(EditAnywhere, Category = "Sounds")
 	USoundBase* HitSound; // No need forward declaring
-
-	UPROPERTY(EditAnywhere, Category = "Sounds")
-	USoundBase* PerfectHitSound;
-
-	UPROPERTY(EditAnywhere, Category = "Sounds")
-	USoundBase* DeathSound;
 
 	/**
 	* Particles

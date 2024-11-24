@@ -3,18 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Combo.h"
 #include "QTEDescription.generated.h"
-
-UENUM(BlueprintType)
-enum class Attacks : uint8 {
-	Attack_Neutral = 0,
-	Attack_Type1 = 1,
-	Attack_Type2 = 2,
-	Attack_Type3 = 3,
-	Attack_Pause = 4,
-
-	Attack_NONE UMETA(Hidden)
-};
 
 /**
  * 
@@ -32,9 +22,6 @@ public:
 	FORCEINLINE Attacks GetAttack() { return Attack; }
 	FORCEINLINE float GetBeatTimeDivisor() { return BeatTimeDivisor; }
 	FORCEINLINE FVector2D GetOffsetRange() { return OffsetRange; }
-	FORCEINLINE bool IsRandom() { return bIsRandom; }
-
-	void SetAttack(Attacks attack);
 
 private:
 
@@ -46,7 +33,4 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	FVector2D OffsetRange;
-
-	UPROPERTY(EditDefaultsOnly)
-	bool bIsRandom = false;
 };

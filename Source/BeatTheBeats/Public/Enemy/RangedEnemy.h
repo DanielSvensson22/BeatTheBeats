@@ -67,12 +67,4 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	float FleeDistance = 100;
-
-	//Sounds
-
-	UPROPERTY(EditAnywhere, Category = "Sounds")
-	USoundBase* ChargeUpSound;
-
-	UPROPERTY(EditAnywhere, Category = "Sounds")
-	USoundBase* ShootSound;
 };
