@@ -164,12 +164,6 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(DodgeBackAction, ETriggerEvent::Started, this, &APlayerCharacter::DodgeBack);
 		EnhancedInputComponent->BindAction(DodgeLeftAction, ETriggerEvent::Started, this, &APlayerCharacter::DodgeLeft);
 		EnhancedInputComponent->BindAction(DodgeRightAction, ETriggerEvent::Started, this, &APlayerCharacter::DodgeRight);
-
-		//Debug
-		EnhancedInputComponent->BindAction(QTEAction, ETriggerEvent::Started, this, &APlayerCharacter::EnterQTE);
-		EnhancedInputComponent->BindAction(QTEAction, ETriggerEvent::Completed, this, &APlayerCharacter::ExitQTE);
-		EnhancedInputComponent->BindAction(CameraShakeAction, ETriggerEvent::Started, this, &APlayerCharacter::CameraShake);
-		EnhancedInputComponent->BindAction(ParticleAction, ETriggerEvent::Started, this, &APlayerCharacter::SpawnParticle);
 	}
 }
 
@@ -559,39 +553,14 @@ void APlayerCharacter::DodgeRight()
 	}
 }
 
-void APlayerCharacter::AttackCallback(Attacks AttackType, float MotionValue, float AnimLength, int Combo, int ComboStep)
+void APlayerCharacter::AttackCallback(TArray<FQTEDescription>* qte, ComboEffect effect)
 {
-	//To Do: Add damage functionality...
-	FString attackName;
+	CurrentQTEDescription = qte;
+	CurrentComboEffect = effect;
 
-	switch (AttackType) {
-	case Attacks::Attack_Neutral:
-		attackName = "Landed Neutral Attack";
-		
-		break;
+	FTimerHandle handle;
 
-	case Attacks::Attack_Type1:
-		attackName = "Landed Type 1 Attack";
-		
-		break;
-
-	case Attacks::Attack_Type2:
-		attackName = "Landed Type 2 Attack";
-		break;
-
-	case Attacks::Attack_Type3:
-		attackName = "Landed Type 3 Attack";
-		break;
-
-	case Attacks::Attack_Pause:
-		attackName = "Paused";
-		break;
-
-	default:
-		UE_LOG(LogTemp, Error, TEXT("Attack type not implemented!"));
-	}
-
-	UE_LOG(LogTemp, Warning, TEXT("%s on Combo step %i in Combo %i"), *attackName, ComboStep, Combo);
+	GetWorldTimerManager().SetTimer(handle, this, &APlayerCharacter::EnterQTE, BeatManager->TimeBetweenBeats(), false);
 }
 
 void APlayerCharacter::PlayAttackMontage(UAnimMontage* montage, FName SectionName, float TotalTime)
@@ -683,7 +652,7 @@ void APlayerCharacter::ProcessIncomingAttacks()
 void APlayerCharacter::EnterQTE()
 {
 	if (QTE) {
-		QTE->StartQTE(&DebugQTEDescription);
+		QTE->StartQTE(CurrentQTEDescription, CurrentComboEffect);
 		bInQTE = true;
 	}
 }
@@ -691,7 +660,7 @@ void APlayerCharacter::EnterQTE()
 void APlayerCharacter::ExitQTE()
 {
 	if (QTE) {
-		QTE->EndQTE();
+		CurrentQTEDescription = nullptr;
 		bInQTE = false;
 	}
 }

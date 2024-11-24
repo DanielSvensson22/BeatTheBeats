@@ -63,6 +63,9 @@ public:
 
 	FORCEINLINE bool InAttackAnimation() { return bInAttackAnimation; }
 
+	void EnterQTE();
+	void ExitQTE();
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -152,15 +155,12 @@ protected:
 	void ReloadLevel();
 
 private:
-	void AttackCallback(Attacks AttackType, float MotionValue, float AnimLength, int Combo, int ComboStep);
+	void AttackCallback(TArray<FQTEDescription>* qte, ComboEffect effect);
 	void SetTargetLockCamera();
 
 	void OnBeat(float CurrentTimeSinceLastBeat);
 
 	void ProcessIncomingAttacks();
-
-	void EnterQTE();
-	void ExitQTE();
 
 	void ApplyDamage(float Damage);
 
@@ -282,6 +282,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	float MinClosingDistance = 50;
+
+	TArray<FQTEDescription>* CurrentQTEDescription;
+	ComboEffect CurrentComboEffect;
 
 	//Dodging
 
