@@ -4,6 +4,7 @@
 #include "Character/QTEComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Character/BeatTheBeatsPlayerController.h"
+#include "Character/PlayerCharacter.h"
 #include "Beats/BeatManager.h"
 #include "Blueprint/UserWidget.h"
 #include "Blueprint/WidgetTree.h"
@@ -31,6 +32,12 @@ void UQTEComponent::BeginPlay()
 	
 	if (controller) {
 		Widget = controller->GetHUD();
+
+		player = Cast<APlayerCharacter>(controller->GetPawn());
+
+		if (player == nullptr) {
+			UE_LOG(LogTemp, Error, TEXT("QTE Component could not access player character!"));
+		}
 	}
 
 	if (Widget == nullptr) {
@@ -41,11 +48,14 @@ void UQTEComponent::BeginPlay()
 
 		AttackCircle = Cast<UImage>(Widget->WidgetTree->FindWidget(TEXT("QTECircle")));
 
+		MinClosenessIndicator = Cast<UImage>(Widget->WidgetTree->FindWidget(TEXT("QTELeewayCircle")));
+
 		if (AttackIndicator == nullptr) {
 			UE_LOG(LogTemp, Error, TEXT("QTEImage was not found on widget!"));
 		}
 		else {
 			StartPos = AttackIndicator->GetRenderTransform().Translation;
+			AttackIndicator->SetBrushTintColor(FLinearColor::Black);
 			AttackIndicator->SetIsEnabled(false);
 			AttackIndicator->SetVisibility(ESlateVisibility::Hidden);
 		}
@@ -56,6 +66,14 @@ void UQTEComponent::BeginPlay()
 		else {
 			AttackCircle->SetIsEnabled(false);
 			AttackCircle->SetVisibility(ESlateVisibility::Hidden);
+		}
+
+		if (MinClosenessIndicator == nullptr) {
+			UE_LOG(LogTemp, Error, TEXT("QTELeewayCircle was not found on widget!"));
+		}
+		else {
+			MinClosenessIndicator->SetIsEnabled(false);
+			MinClosenessIndicator->SetVisibility(ESlateVisibility::Hidden);
 		}
 	}
 
@@ -87,9 +105,10 @@ void UQTEComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 	}
 }
 
-void UQTEComponent::StartQTE(TArray<FQTEDescription>* qte)
+void UQTEComponent::StartQTE(TArray<FQTEDescription>* qte, ComboEffect effect)
 {
 	CurrentQTE = qte;
+	CurrentComboEffect = effect;
 
 	UGameplayStatics::SetGlobalTimeDilation(this, 0.01f);
 	CurrentTimeStep = 0;
@@ -99,8 +118,10 @@ void UQTEComponent::StartQTE(TArray<FQTEDescription>* qte)
 
 	AttackIndicator->SetIsEnabled(true);
 	AttackCircle->SetIsEnabled(true);
+	MinClosenessIndicator->SetIsEnabled(true);
 	AttackIndicator->SetVisibility(ESlateVisibility::Visible);
 	AttackCircle->SetVisibility(ESlateVisibility::Visible);
+	MinClosenessIndicator->SetVisibility(ESlateVisibility::Visible);
 
 	UpdateWidgetIndicators(0);
 
@@ -111,7 +132,7 @@ void UQTEComponent::AttemptAttack(Attacks Attack)
 {
 	FQTEDescription& desc = (*CurrentQTE)[CurrentQTEStep];
 
-	if (CurrentTimeStep / BeatManager->TimeBetweenBeats() > 0.9) {
+	if (CurrentTimeStep / (BeatManager->TimeBetweenBeats() / (*CurrentQTE)[CurrentQTEStep].GetBeatTimeDivisor()) > MinClosenessToBeat) {
 		if (Attack == desc.GetAttack()) {
 			if (CurrentQTEStep < (*CurrentQTE).Num() - 1) {
 				CurrentQTEStep++;
@@ -120,8 +141,26 @@ void UQTEComponent::AttemptAttack(Attacks Attack)
 				UpdateWidgetIndicators(CurrentQTEStep);
 			}
 			else {
-				// To do: Add successful qte effect.
-				UE_LOG(LogTemp, Warning, TEXT("QTE was successfull!"));
+				
+				if (CurrentComboEffect != ComboEffect::None) {
+					//Add special attacks.
+					switch (CurrentComboEffect) {
+					case ComboEffect::Special1:
+						break;
+
+					case ComboEffect::Special2:
+						break;
+
+					case ComboEffect::Special3:
+						break;
+
+					default:
+						break;
+					}
+				}
+
+				CurrentQTE = nullptr;
+
 				EndQTE();
 			}
 		}
@@ -139,10 +178,23 @@ void UQTEComponent::EndQTE()
 	UGameplayStatics::SetGlobalTimeDilation(this, 1);
 	bIsActive = false;
 
+	if (CurrentQTE) {
+		//Do better attack.
+	}
+
 	AttackIndicator->SetIsEnabled(false);
 	AttackCircle->SetIsEnabled(false);
+	MinClosenessIndicator->SetIsEnabled(false);
 	AttackIndicator->SetVisibility(ESlateVisibility::Hidden);
 	AttackCircle->SetVisibility(ESlateVisibility::Hidden);
+	MinClosenessIndicator->SetVisibility(ESlateVisibility::Hidden);
+
+	CurrentComboEffect = ComboEffect::None;
+	CurrentQTE = nullptr;
+
+	if (player) {
+		player->ExitQTE();
+	}
 
 	UE_LOG(LogTemp, Display, TEXT("Ended QTE"));
 }
@@ -151,31 +203,64 @@ void UQTEComponent::UpdateWidgetIndicators(int index)
 {
 	FQTEDescription& desc = (*CurrentQTE)[index];
 
-	switch (desc.GetAttack()) {
+	Attacks attack = desc.GetAttack();
+
+	if (desc.IsRandom()) {
+		int rand = FMath::RandRange(0, 3);
+
+		switch (rand) {
+		case 0:
+			attack = Attacks::Attack_Neutral;
+			break;
+
+		case 1:
+			attack = Attacks::Attack_Type1;
+			break;
+
+		case 2:
+			attack = Attacks::Attack_Type2;
+			break;
+
+		case 3:
+			attack = Attacks::Attack_Type3;
+			break;
+		}
+
+		desc.SetAttack(attack);
+	}
+
+	switch (attack) {
 	case Attacks::Attack_Neutral:
-		AttackIndicator->SetBrushTintColor(NeutralColor);
+		MinClosenessIndicator->SetBrushTintColor(NeutralColor);
 		break;
 
 	case Attacks::Attack_Type1:
-		AttackIndicator->SetBrushTintColor(Attack1Color);
+		MinClosenessIndicator->SetBrushTintColor(Attack1Color);
 		break;
 
 	case Attacks::Attack_Type2:
-		AttackIndicator->SetBrushTintColor(Attack2Color);
+		MinClosenessIndicator->SetBrushTintColor(Attack2Color);
 		break;
 
 	case Attacks::Attack_Type3:
-		AttackIndicator->SetBrushTintColor(Attack3Color);
+		MinClosenessIndicator->SetBrushTintColor(Attack3Color);
 		break;
 
 	default:
-		AttackIndicator->SetBrushTintColor(NeutralColor);
+		MinClosenessIndicator->SetBrushTintColor(NeutralColor);
 		break;
 	}
 
-	AttackIndicator->SetRenderTranslation(StartPos + FVector2D(FMath::RandRange(-desc.GetOffsetRange().X, desc.GetOffsetRange().X), FMath::RandRange(-desc.GetOffsetRange().Y, desc.GetOffsetRange().Y)));
+	FVector2D RandStart = StartPos + FVector2D(FMath::RandRange(-desc.GetOffsetRange().X, desc.GetOffsetRange().X),
+												FMath::RandRange(-desc.GetOffsetRange().Y, desc.GetOffsetRange().Y));
+
+	AttackIndicator->SetRenderTranslation(RandStart);
+	MinClosenessIndicator->SetRenderTranslation(RandStart);
 	AttackCircle->SetRenderTranslation(AttackIndicator->GetRenderTransform().Translation);
 
-	AttackIndicator->SetRenderScale(FVector2D(BeatManager->GetIndicatorScale(MaxCircleScale, MinCircleScale, BeatManager->TimeBetweenBeats() / desc.GetBeatTimeDivisor())));
+	FVector2D scale = FVector2D(BeatManager->GetIndicatorScale(MaxCircleScale, MinCircleScale, BeatManager->TimeBetweenBeats() / desc.GetBeatTimeDivisor()));
+
+	AttackIndicator->SetRenderScale(scale);
+	MinClosenessIndicator->SetRenderScale(scale / MinClosenessToBeat);
 }
 

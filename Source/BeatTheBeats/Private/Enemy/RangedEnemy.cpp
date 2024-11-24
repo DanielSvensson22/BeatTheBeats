@@ -8,6 +8,7 @@
 #include "Beats/BeatManager.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
+#include "Components/AudioComponent.h"
 
 ARangedEnemy::ARangedEnemy() : Super()
 {
@@ -97,9 +98,21 @@ void ARangedEnemy::Attack()
 
 			AddLaserBeam(result.Location);
 		}
+
+		if (CurrentAttack == StandardCombo.AttackCount() - 2) {
+			if (ChargeUpSound) {
+				AudioComponent->SetSound(ChargeUpSound);
+				AudioComponent->Play();
+			}
+		}
 	}
 	else {
 		DoDamage();
+
+		if (ShootSound) {
+			AudioComponent->SetSound(ShootSound);
+			AudioComponent->Play();
+		}
 	}
 }
 
