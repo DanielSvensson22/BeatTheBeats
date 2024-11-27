@@ -1,11 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
+#include "Components/SphereComponent.h"
+#include "Boss/Bullet.h"
 #include "Boss/Boss.h"
 #include "Components\CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Animation/AnimMontage.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "GameFramework/ProjectileMovementComponent.h"
 #include "AIController.h"
 
 ABoss::ABoss() : Super()
@@ -53,6 +55,7 @@ void ABoss::OnBeat(float CurrentTimeSinceLastBeat)
 		SlamAttack();
 		break;
 	case EBossState::EBS_BulletAttacking:
+		BUlletAttack();
 		break;
 	case EBossState::EBS_StartRayAttacking:
 		StartRayAttack();
@@ -119,6 +122,44 @@ void ABoss::RayAttack()
 	bCanAttack = false;
 }
 
+void ABoss::BUlletAttack()
+{
+	if (!bCanAttack) return;
+	PlayMontage(AttackMontage, "Attack1");
+
+	AIController->StopMovement();
+	ParticleEffects();
+	bCanAttack = false;
+}
+
+void ABoss::SpawnBullet()
+{
+	if (!BulletClass || !Player) return;
+
+	// Spawn location and rotation
+	FVector SpawnLocation = GetMesh()->GetSocketLocation("MuzzleCenter");  // Assuming a socket on the boss's hand
+	FRotator SpawnRotation = (Player->GetActorLocation() - SpawnLocation).Rotation();
+
+	// Spawn the bullet
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	ABullet* SpawnedBullet = GetWorld()->SpawnActor<ABullet>(BulletClass, SpawnLocation, SpawnRotation, SpawnParams);
+
+	if (SpawnedBullet)
+	{
+		// Set velocity towards the player
+		FVector Direction = (Player->GetActorLocation() - SpawnLocation).GetSafeNormal();
+		SpawnedBullet->ProjectileMovement->Velocity = Direction * SpawnedBullet->ProjectileMovement->InitialSpeed; 
+		SpawnedBullet->Boss = this;
+		SpawnedBullet->Player = Player;
+	}
+}
+
+void ABoss::ApplyBulletDamage()
+{
+	UGameplayStatics::ApplyDamage(Player, BulletDamage, GetController(), this, UDamageType::StaticClass());
+}
+
 void ABoss::StartRayAttack()
 {
 	if (!bCanAttack) return;
@@ -166,6 +207,30 @@ void ABoss::ParticleEffects()
 
 	switch (BossState)
 	{
+	case EBossState::EBS_BulletAttacking:
+		if (USkeletalMeshComponent* SkeletalMeshComponent = Cast<USkeletalMeshComponent>(GetMesh()))
+		{
+			if (bCanAttack)
+			{
+					UGameplayStatics::SpawnEmitterAttached( 
+						BulletSpawnEffect,         // The particle system to spawn 
+						GetMesh(),              // The mesh to attach to 
+						FName("MuzzleCenter"),             // The socket name 
+						FVector::ZeroVector,    // Location offset (relative to socket)
+						FRotator::ZeroRotator,  // Rotation offset (relative to socket) 
+						EAttachLocation::SnapToTarget, // Snap to the socket's transform 
+						true                    // Auto-destroy the particle system 
+					);
+			}
+			else 
+			{
+				FTransform Transform = SkeletalMeshComponent->GetSocketTransform(FName("MuzzleCenter")); 
+				SpawnAttackParticleEffect(PrimaryAttackMuzzle, Transform); 
+
+				SpawnBullet();
+			}
+		}
+		break;
 	case EBossState::EBS_SlamAttacking:
 		SpawnAttackParticleEffect(AttackSlam, Attack3EffectPos->GetComponentTransform());
 		SlamDamage();
@@ -437,11 +502,19 @@ void ABoss::Tick(float DeltaTime)
 			bCanAttack = true;
 			BossState = EBossState::EBS_SlamAttacking;
 		}
-		else if (Distance > AttackRange * 3 && BeatCounter == 1 && CanShoot)
+		else if (Distance > AttackRange * 1.5f && Distance < AttackRange * 3.5 && BeatCounter == 2 && CanShoot)
+		{
+			bCanAttack = true;
+			BossState = EBossState::EBS_BulletAttacking;
+		}
+		else if (Distance > AttackRange * 3.5 && BeatCounter == 1 && CanShoot)
 		{
 			bCanAttack = true;
 			BossState = EBossState::EBS_StartRayAttacking;
 		}
+
+		break;
+	case EBossState::EBS_BulletAttacking:
 
 		break;
 	case EBossState::EBS_StartChasing:

@@ -25,6 +25,7 @@ enum class EBossState : uint8
 class AAIController;
 class UAnimMontage;
 class USkeletalMeshComponent;
+class ABullet;
 
 UCLASS()
 class BEATTHEBEATS_API ABoss : public AEnemyBase
@@ -35,6 +36,9 @@ public:
 	ABoss();
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+
+	void ApplyBulletDamage();
 
 protected:
 	virtual void BeginPlay() override;
@@ -47,13 +51,15 @@ protected:
 
 	void RayAttack();
 
+	void BUlletAttack();
+
 	void StartRayAttack();
 
 	void PlayMontage(UAnimMontage* Montage, FName Section);
 
 	virtual void DoDamage() override;
 
-
+	void SpawnBullet();
 
 	void SpawnAttackParticleEffect(UParticleSystem* Particle, const FTransform& SpawnTransform);
 
@@ -96,6 +102,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
 	UParticleSystem* FallingResidualEffect;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
+	UParticleSystem* BulletSpawnEffect;
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat") 
+	TSubclassOf<ABullet> BulletClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn")
 	bool SpawnFromSky;
@@ -122,6 +134,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 	float RayDamage;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	float BulletDamage;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Sounds")
 	USoundBase* DeathSoundCue;
