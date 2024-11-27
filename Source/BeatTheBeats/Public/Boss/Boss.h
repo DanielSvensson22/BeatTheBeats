@@ -37,6 +37,9 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	// Scene swapping function
+	UFUNCTION(BlueprintCallable, Category = "Boss")
+	void SwapSceneOnDeath();
 
 	void ApplyBulletDamage();
 
@@ -73,6 +76,10 @@ protected:
 	bool CheckIfNeedsToRotate();
 
 public:
+
+	// The level to load on death (assignable in the editor)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Death")
+	TSoftObjectPtr<UWorld> LevelToLoadOnDeath;
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
@@ -153,6 +160,7 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Sounds")
 	USoundBase* RayStartSoundCue;
 
+
 	APawn* Player;
 
 	UPROPERTY(VisibleAnywhere)
@@ -180,5 +188,6 @@ private:
 public:
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE bool IsSpawning() const { return BossState == EBossState::EBS_Falling; };
+
 
 };

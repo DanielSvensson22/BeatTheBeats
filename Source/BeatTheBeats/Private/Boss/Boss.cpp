@@ -155,6 +155,27 @@ void ABoss::SpawnBullet()
 	}
 }
 
+void ABoss::SwapSceneOnDeath()
+{
+	if (LevelToLoadOnDeath.IsNull())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("LevelToLoad is not set!"));
+		return;
+	}
+
+	// Resolve the soft reference and convert it to FName
+	FName LevelName(*LevelToLoadOnDeath.GetLongPackageName());
+	if (!LevelName.IsNone())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Loading Level: %s"), *LevelName.ToString());
+		UGameplayStatics::OpenLevel(this, LevelName);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Invalid LevelToLoad!"));
+	}
+}
+
 void ABoss::ApplyBulletDamage()
 {
 	UGameplayStatics::ApplyDamage(Player, BulletDamage, GetController(), this, UDamageType::StaticClass());
