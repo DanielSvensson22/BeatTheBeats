@@ -13,5 +13,5 @@ class BEATTHEBEATS_API UBPMCalculator : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 	
 public:
-	UFUNCTION(BlueprintCallable) static float BPMDetector(USoundWave* SoundWave);
+	UFUNCTION(BlueprintCallable) static float BPMDetector(USoundWave* SoundWave, float RMSMultiplier);
 };

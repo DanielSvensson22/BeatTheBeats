@@ -1,7 +1,7 @@
 #include "Beats/BPMCalculator.h"
 #include "Sound/SoundWave.h"
 
-float UBPMCalculator::BPMDetector(USoundWave* SoundWave)
+float UBPMCalculator::BPMDetector(USoundWave* SoundWave, float RMSMultiplier)
 {
     if (!SoundWave || !SoundWave->GetResourceData()) {
         UE_LOG(LogTemp, Warning, TEXT("Failed to load File"));
@@ -35,7 +35,7 @@ float UBPMCalculator::BPMDetector(USoundWave* SoundWave)
         RMS += FMath::Pow(NormalizedSamples[i], 2);
     }
     RMS = FMath::Sqrt(RMS / NumSamples);
-    float PeakThreshold = RMS * 1.01f; // Tune this multiplier as needed
+    float PeakThreshold = RMS * RMSMultiplier; // Tune this multiplier as needed
 
     // Enhanced Peak Detection
     TArray<int32> PeakPos;
