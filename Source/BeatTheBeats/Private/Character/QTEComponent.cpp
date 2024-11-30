@@ -93,7 +93,7 @@ void UQTEComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 	// ...
 
 	if (bIsActive) {
-		CurrentTimeStep += DeltaTime / UGameplayStatics::GetGlobalTimeDilation(this) * TimeStepMultiplier;
+		CurrentTimeStep += DeltaTime / UGameplayStatics::GetGlobalTimeDilation(this) * TimeStepMultiplier * SpeedIncrease;
 
 		if (CurrentTimeStep > BeatManager->TimeBetweenBeats() / (*CurrentQTE)[CurrentQTEStep].GetBeatTimeDivisor()) {
 			EndQTE();
@@ -113,6 +113,10 @@ void UQTEComponent::StartQTE(TArray<FQTEDescription>* qte, ComboEffect effect)
 	UGameplayStatics::SetGlobalTimeDilation(this, 0.01f);
 	CurrentTimeStep = 0;
 	CurrentQTEStep = 0;
+
+	if (CurrentComboEffect != ComboEffect::Special2) {
+		SpeedIncrease = 1;
+	}
 
 	bIsActive = true;
 
@@ -143,18 +147,22 @@ void UQTEComponent::AttemptAttack(Attacks Attack)
 			else {
 				
 				if (CurrentComboEffect != ComboEffect::None) {
-					//Add special attacks.
+					
 					switch (CurrentComboEffect) {
 					case ComboEffect::Special1:
+						player->Special1();
 						break;
 
 					case ComboEffect::Special2:
+						player->Special2();
 						break;
 
 					case ComboEffect::Special3:
+						player->Special3();
 						break;
 
 					default:
+						player->Special1();
 						break;
 					}
 				}
@@ -179,7 +187,7 @@ void UQTEComponent::EndQTE()
 	bIsActive = false;
 
 	if (CurrentQTE) {
-		//Do better attack.
+		player->FailedSpecial();
 	}
 
 	AttackIndicator->SetIsEnabled(false);
@@ -197,6 +205,11 @@ void UQTEComponent::EndQTE()
 	}
 
 	UE_LOG(LogTemp, Display, TEXT("Ended QTE"));
+}
+
+void UQTEComponent::AddSpeed(float speed)
+{
+	SpeedIncrease += speed;
 }
 
 void UQTEComponent::UpdateWidgetIndicators(int index)

@@ -36,6 +36,8 @@ public:
 
 	void EndQTE();
 
+	void AddSpeed(float speed);
+
 private:
 
 	void UpdateWidgetIndicators(int index);
@@ -90,4 +92,6 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	float MinClosenessToBeat = 0.85f;
+
+	float SpeedIncrease = 1;
 };

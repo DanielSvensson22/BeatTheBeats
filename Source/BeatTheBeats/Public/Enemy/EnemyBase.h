@@ -62,6 +62,8 @@ public:
 
 	virtual void ApplyDamage(float Damage, Attacks AttackType, bool OnBeat, FVector HitLocation) override;
 
+	virtual void ApplyPushBack(float Force) override;
+
 	virtual bool GetCanAttack();
 
 	FORCEINLINE float GetMaxAttackDistance() { return MaxAttackDistance; }
@@ -270,4 +272,13 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Damage indicators")
 	FVector2D DamageIndicatorVelocity;
+
+	//Push back
+
+	float PushbackSpeed;
+
+	UPROPERTY(EditDefaultsOnly)
+	float PushbackDuration = 0.5f;
+
+	float PushbackTimeLeft = 0;
 };

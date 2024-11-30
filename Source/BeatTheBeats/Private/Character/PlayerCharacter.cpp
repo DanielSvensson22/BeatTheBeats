@@ -190,6 +190,13 @@ void APlayerCharacter::SetWeaponCollisionEnabled(ECollisionEnabled::Type Collisi
 			bClosingDistance = false;
 			bIsAttacking = false;
 			bInAttackAnimation = false;
+			bIsBlocking = false;
+			bIsDodging = false;
+
+			if (bSpecial2Active) {
+				bSpecial2Active = false;
+				QTE->StartQTE(&Special2QTE, ComboEffect::Special2);
+			}
 		}
 		else {
 			FHitResult result;
@@ -609,6 +616,7 @@ void APlayerCharacter::ProcessIncomingAttacks()
 	if (bIsDodging) {
 		IncomingAttacks.Empty();
 		bIsBlocking = false;
+		bIsDodging = false;
 		return;
 	}
 
@@ -663,6 +671,35 @@ void APlayerCharacter::ExitQTE()
 		CurrentQTEDescription = nullptr;
 		bInQTE = false;
 	}
+}
+
+void APlayerCharacter::FailedSpecial()
+{
+	Weapon->SetAttackStatus(FailedSpecialDamage, Attacks::Attack_Guaranteed, true);
+	PlayAttackMontage(FailedSpecialAnim, TEXT("Default"), BeatManager->GetTimeUntilNextBeat() + BeatManager->TimeBetweenBeats());
+	bIsDodging = true;
+}
+
+void APlayerCharacter::Special1()
+{
+	Weapon->SetAttackStatus(Special1Damage, Attacks::Attack_Guaranteed, true);
+	PlayAttackMontage(Special1Anim, TEXT("Default"), BeatManager->GetTimeUntilNextBeat() + BeatManager->TimeBetweenBeats() * 3);
+	bIsDodging = true;
+}
+
+void APlayerCharacter::Special2()
+{
+	Weapon->SetAttackStatus(Special2Damage, Attacks::Attack_Guaranteed, true);
+	PlayAttackMontage(Special2Anim, TEXT("Default"), BeatManager->GetTimeUntilNextBeat() + BeatManager->TimeBetweenBeats() * 2);
+	bIsDodging = true;
+	bSpecial2Active = true;
+}
+
+void APlayerCharacter::Special3()
+{
+	Weapon->SetAttackStatus(Special3Damage, Attacks::Attack_Guaranteed, true);
+	PlayAttackMontage(Special3Anim, TEXT("Default"), BeatManager->GetTimeUntilNextBeat() + BeatManager->TimeBetweenBeats());
+	bIsDodging = true;
 }
 
 void APlayerCharacter::ApplyDamage(float Damage)
@@ -745,7 +782,8 @@ void APlayerCharacter::PerformDodge(float DeltaTime)
 			bIsDodging = false;
 		}
 
-		SetActorLocation(FMath::VInterpConstantTo(GetActorLocation(), DodgeLocation, DeltaTime, DodgeSpeed));
+		FHitResult result;
+		SetActorLocation(FMath::VInterpConstantTo(GetActorLocation(), DodgeLocation, DeltaTime, DodgeSpeed), true, &result, ETeleportType::TeleportPhysics);
 	}
 }
 

@@ -66,6 +66,13 @@ public:
 	void EnterQTE();
 	void ExitQTE();
 
+	void FailedSpecial();
+	void Special1();
+	void Special2();
+	void Special3();
+
+	FORCEINLINE AWeaponBase* GetWeapon() { return Weapon; }
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -286,6 +293,28 @@ private:
 	TArray<FQTEDescription>* CurrentQTEDescription;
 	ComboEffect CurrentComboEffect;
 
+	//Specials
+
+	UPROPERTY(EditDefaultsOnly, Category="Specials")
+	float FailedSpecialDamage = 30;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Specials")
+	float Special1Damage = 60;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Specials")
+	float Special2Damage = 50;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Specials")
+	float Special3Damage = 50;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Specials")
+	float Special2QTESpeedIncrease = 0.5f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Specials")
+	TArray<FQTEDescription> Special2QTE;
+
+	bool bSpecial2Active = false;
+
 	//Dodging
 
 	bool bIsDodging = false;
@@ -322,6 +351,18 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Montages")
 	UAnimMontage* StartAnim;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Montages")
+	UAnimMontage* FailedSpecialAnim;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Montages")
+	UAnimMontage* Special1Anim;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Montages")
+	UAnimMontage* Special2Anim;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Montages")
+	UAnimMontage* Special3Anim;
 
 	//VFX
 

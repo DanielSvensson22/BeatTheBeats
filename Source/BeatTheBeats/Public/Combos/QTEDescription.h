@@ -12,6 +12,7 @@ enum class Attacks : uint8 {
 	Attack_Type2 = 2,
 	Attack_Type3 = 3,
 	Attack_Pause = 4,
+	Attack_Guaranteed = 5,
 
 	Attack_NONE UMETA(Hidden)
 };

@@ -177,6 +177,13 @@ void AEnemyBase::Tick(float DeltaTime)
 			i--;
 		}
 	}
+
+	if (PushbackTimeLeft > 0) {
+		PushbackTimeLeft -= DeltaTime;
+
+		FHitResult result;
+		SetActorLocation(GetActorLocation() + PushbackSpeed * DeltaTime * (-GetActorForwardVector()), true, &result, ETeleportType::TeleportPhysics);
+	}
 }
 
 // Called to bind functionality to input
@@ -243,29 +250,34 @@ void AEnemyBase::ApplyDamage(float InitialDamage, Attacks AttackType, bool OnBea
 {
 	float FinalDamage = InitialDamage;
 
-	if (AttackType == Attacks::Attack_Neutral) {
-		//Change nothing.
-	}
-	else if (AttackType == EnemyType) {
-		FinalDamage *= OptimalAttackMultiplier;
+	if (AttackType == Attacks::Attack_Guaranteed) {
+		CurrentHealth = FMath::Clamp(CurrentHealth - FinalDamage, 0, MaxHealth);
 	}
 	else {
-		FinalDamage /= OptimalAttackMultiplier;
-	}
+		if (AttackType == Attacks::Attack_Neutral) {
+			//Change nothing.
+		}
+		else if (AttackType == EnemyType) {
+			FinalDamage *= OptimalAttackMultiplier;
+		}
+		else {
+			FinalDamage /= OptimalAttackMultiplier;
+		}
 
-	if (OnBeat) {
-		FinalDamage *= OptimalAttackMultiplier;
-	}
-	else {
-		FinalDamage /= OptimalAttackMultiplier;
-	}
+		if (OnBeat) {
+			FinalDamage *= OptimalAttackMultiplier;
+		}
+		else {
+			FinalDamage /= OptimalAttackMultiplier;
+		}
 
-	CurrentHealth = FMath::Clamp(CurrentHealth - FinalDamage, 0, MaxHealth);
+		CurrentHealth = FMath::Clamp(CurrentHealth - FinalDamage, 0, MaxHealth);
+	}
 
 	if (GetHitEffect) {
 		UNiagaraComponent* NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, GetHitEffect, HitLocation, GetActorRotation(), FVector::OneVector, true);
 
-		if (OnBeat && AttackType == EnemyType) {
+		if ((OnBeat && AttackType == EnemyType) || AttackType == Attacks::Attack_Guaranteed) {
 			NiagaraComp->SetVariableLinearColor(TEXT("Color"), FLinearColor::Red);
 		}
 		else if (OnBeat || AttackType == EnemyType) {
@@ -355,6 +367,12 @@ void AEnemyBase::ApplyDamage(float InitialDamage, Attacks AttackType, bool OnBea
 			UE_LOG(LogTemp, Error, TEXT("Not enough damage indicators!"));
 		}
 	}
+}
+
+void AEnemyBase::ApplyPushBack(float Force)
+{
+	PushbackSpeed = Force;
+	PushbackTimeLeft = PushbackDuration;
 }
 
 bool AEnemyBase::GetCanAttack()
