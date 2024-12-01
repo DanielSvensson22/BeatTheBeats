@@ -17,6 +17,7 @@ class UNiagaraSystem;
 class UNiagaraComponent;
 class UMaterialInstanceDynamic;
 class UTextBlock;
+class UAudioComponent;
 
 UCLASS()
 class BEATTHEBEATS_API AEnemyBase : public ACharacter, public IHitInterface, public ILockOnInterface
@@ -41,15 +42,15 @@ protected:
 	void PlayHitReactMontage(const FName& SectionName);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "DeathEvent")
-	void Death();
-	
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "HitEvent")
-	void Hit();
-	
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PerfectHitEvent")
-	void PerfectHit();
+		void Death();
 
-public:	
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "HitEvent")
+		void Hit();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PerfectHitEvent")
+		void PerfectHit();
+
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -61,13 +62,15 @@ public:
 
 	virtual void ApplyDamage(float Damage, Attacks AttackType, bool OnBeat, FVector HitLocation) override;
 
+	virtual void ApplyPushBack(float Force) override;
+
 	virtual bool GetCanAttack();
 
 	FORCEINLINE float GetMaxAttackDistance() { return MaxAttackDistance; }
 	FORCEINLINE bool GetCanChasePlayer() { return bCanChasePlayer; }
 
 	UFUNCTION(BlueprintPure)
-	FORCEINLINE bool IsAlive() { return CurrentHealth > 0; }
+		FORCEINLINE bool IsAlive() { return CurrentHealth > 0; }
 
 	FORCEINLINE Attacks GetEnemyType() { return EnemyType; }
 
@@ -80,10 +83,10 @@ public:
 	virtual void Parry();
 
 	UFUNCTION(BlueprintPure)
-	FORCEINLINE float GetHealthPercent() const { return CurrentHealth / MaxHealth; }
+		FORCEINLINE float GetHealthPercent() const { return CurrentHealth / MaxHealth; }
 
 	UFUNCTION(BlueprintPure)
-	FORCEINLINE float GetPerformAttackPercent() const { return (float)(CurrentAttack + 1) / StandardCombo.AttackCount(); }
+		FORCEINLINE float GetPerformAttackPercent() const { return (float)(CurrentAttack + 1) / StandardCombo.AttackCount(); }
 
 	FORCEINLINE bool GetIsStunned() { return bIsStunned; }
 
@@ -94,55 +97,65 @@ protected:
 	class ABeatManager* BeatManager;
 
 	UPROPERTY(EditDefaultsOnly)
-	FCombo StandardCombo;
+		FCombo StandardCombo;
 
 	UPROPERTY(EditDefaultsOnly)
-	Attacks EnemyType;
+		Attacks EnemyType;
 
 	int CurrentAttack;
 
 	bool bCanAttack = false;
 
 	UPROPERTY(EditAnywhere)
-	float MaxHealth = 100;
+		float MaxHealth = 100;
 
 	UPROPERTY(VisibleAnywhere)
-	float CurrentHealth = 100;
+		float CurrentHealth = 100;
 
 	bool bHasDied = false;
 
 	UPROPERTY(EditDefaultsOnly)
-	float AttackRange = 100;
+		float AttackRange = 100;
 
 	UPROPERTY(EditDefaultsOnly)
-	float Damage = 10;
+		float Damage = 10;
 
 	UPROPERTY(VisibleAnywhere)
-	bool bIsMelee = true;
+		bool bIsMelee = true;
 
 	UPROPERTY(VisibleAnywhere)
-	bool bIsStunned = false;
+		bool bIsStunned = false;
 
 	/**
 	* Animation Montages
 	*/
 	UPROPERTY(EditDefaultsOnly, Category = "Montages")
-	UAnimMontage* HitReactMontage;
+		UAnimMontage* HitReactMontage;
 
 	/**
 	* Sounds
 	*/
+
+	UPROPERTY(VisibleAnywhere)
+		UAudioComponent* AudioComponent;
+
 	UPROPERTY(EditAnywhere, Category = "Sounds")
-	USoundBase* HitSound; // No need forward declaring
+		USoundBase* HitSound; // No need forward declaring
+
+	UPROPERTY(EditAnywhere, Category = "Sounds")
+		USoundBase* PerfectHitSound;
+
+	UPROPERTY(EditAnywhere, Category = "Sounds")
+		USoundBase* DeathSound;
 
 	/**
 	* Particles
 	*/
 	UPROPERTY(EditAnywhere, Category = "VisualEffects")
-	UParticleSystem* HitParticles; // No need forward declaring
+		UParticleSystem* HitParticles; // No need forward declaring
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	UWidgetComponent* EnemyWidget;
+		UWidgetComponent* EnemyWidget;
 
 protected:
 
@@ -153,17 +166,17 @@ protected:
 private:
 
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<ABeatManager> BeatManagerClass;
+		TSubclassOf<ABeatManager> BeatManagerClass;
 
 	FDelegateHandle BeatHandle;
 
 	APawn* Player;
 
 	UPROPERTY(EditDefaultsOnly)
-	float MaxAttackDistance = 100;
+		float MaxAttackDistance = 100;
 
 	UPROPERTY(EditDefaultsOnly)
-	float MaxViewDistance = 2000;
+		float MaxViewDistance = 2000;
 
 	bool bCanChasePlayer = false;
 
@@ -172,75 +185,75 @@ private:
 	AEnemyQueue* EnemyQueue;
 
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<AEnemyQueue> EnemyQueueClass;
+		TSubclassOf<AEnemyQueue> EnemyQueueClass;
 
 	UPROPERTY(EditDefaultsOnly)
-	float OptimalAttackMultiplier = 2;
+		float OptimalAttackMultiplier = 2;
 
 	AScoreManager* ScoreManager;
 
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<AScoreManager> ScoreManagerClass;
+		TSubclassOf<AScoreManager> ScoreManagerClass;
 
 	UPROPERTY(EditDefaultsOnly)
-	UNiagaraSystem* GetHitEffect;
+		UNiagaraSystem* GetHitEffect;
 
 	//VFX
 
 	UNiagaraComponent* AttackTypeEffectComp;
 
 	UPROPERTY(EditDefaultsOnly, Category = "VFX")
-	UNiagaraSystem* AttackTypeEffect;
+		UNiagaraSystem* AttackTypeEffect;
 
 	UPROPERTY(EditDefaultsOnly, Category = "VFX")
-	float SpawnRate = 35;
+		float SpawnRate = 35;
 
 	UPROPERTY(EditDefaultsOnly, Category = "VFX")
-	FLinearColor NeutralColor;
+		FLinearColor NeutralColor;
 
 	UPROPERTY(EditDefaultsOnly, Category = "VFX")
-	FLinearColor AttackOneColor;
+		FLinearColor AttackOneColor;
 
 	UPROPERTY(EditDefaultsOnly, Category = "VFX")
-	FLinearColor AttackTwoColor;
+		FLinearColor AttackTwoColor;
 
 	UPROPERTY(EditDefaultsOnly, Category = "VFX")
-	FLinearColor AttackThreeColor;
+		FLinearColor AttackThreeColor;
 
 	//Material VFX
 
 	UPROPERTY(EditDefaultsOnly, Category = "MaterialVFX")
-	int AttackTypeMaterialIndex;
+		int AttackTypeMaterialIndex;
 
 	UPROPERTY(EditDefaultsOnly, Category = "MaterialVFX")
-	FLinearColor LowNeutralColor;
+		FLinearColor LowNeutralColor;
 
 	UPROPERTY(EditDefaultsOnly, Category = "MaterialVFX")
-	FLinearColor HighNeutralColor;
+		FLinearColor HighNeutralColor;
 
 	UPROPERTY(EditDefaultsOnly, Category = "MaterialVFX")
-	FLinearColor LowAttack1Color;
+		FLinearColor LowAttack1Color;
 
 	UPROPERTY(EditDefaultsOnly, Category = "MaterialVFX")
-	FLinearColor HighAttack1Color;
+		FLinearColor HighAttack1Color;
 
 	UPROPERTY(EditDefaultsOnly, Category = "MaterialVFX")
-	FLinearColor LowAttack2Color;
+		FLinearColor LowAttack2Color;
 
 	UPROPERTY(EditDefaultsOnly, Category = "MaterialVFX")
-	FLinearColor HighAttack2Color;
+		FLinearColor HighAttack2Color;
 
 	UPROPERTY(EditDefaultsOnly, Category = "MaterialVFX")
-	FLinearColor LowAttack3Color;
+		FLinearColor LowAttack3Color;
 
 	UPROPERTY(EditDefaultsOnly, Category = "MaterialVFX")
-	FLinearColor HighAttack3Color;
+		FLinearColor HighAttack3Color;
 
 	UPROPERTY(EditDefaultsOnly, Category = "MaterialVFX")
-	FName LowColorName;
+		FName LowColorName;
 
 	UPROPERTY(EditDefaultsOnly, Category = "MaterialVFX")
-	FName HighColorName;
+		FName HighColorName;
 
 	UMaterialInstanceDynamic* AttackTypeMaterial;
 
@@ -255,8 +268,17 @@ private:
 	TArray<FVector2D> UsedStartPositions;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Damage indicators")
-	float DamageIndicatorLifetime = 0.5f;
+		float DamageIndicatorLifetime = 0.5f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Damage indicators")
-	FVector2D DamageIndicatorVelocity;
+		FVector2D DamageIndicatorVelocity;
+
+	//Push back
+
+	float PushbackSpeed;
+
+	UPROPERTY(EditDefaultsOnly)
+		float PushbackDuration = 0.5f;
+
+	float PushbackTimeLeft = 0;
 };

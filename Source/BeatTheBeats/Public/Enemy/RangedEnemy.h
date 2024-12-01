@@ -9,13 +9,13 @@
 class UNiagaraSystem;
 
 /**
- * 
+ *
  */
 UCLASS()
 class BEATTHEBEATS_API ARangedEnemy : public AEnemyBase
 {
 	GENERATED_BODY()
-	
+
 public:
 	// Sets default values for this character's properties
 	ARangedEnemy();
@@ -48,23 +48,31 @@ private:
 private:
 
 	UPROPERTY(VisibleAnywhere)
-	USceneComponent* ShootPoint;
+		USceneComponent* ShootPoint;
 
 	UPROPERTY(EditDefaultsOnly)
-	UParticleSystem* HitEffect;
+		UParticleSystem* HitEffect;
 
 	UPROPERTY(EditDefaultsOnly)
-	UParticleSystem* MuzzleEffect;
+		UParticleSystem* MuzzleEffect;
 
 	UPROPERTY(EditDefaultsOnly)
-	UNiagaraSystem* LaserBeam;
+		UNiagaraSystem* LaserBeam;
 
 	UPROPERTY(EditDefaultsOnly)
-	float CloseQuarterDistance = 200;
+		float CloseQuarterDistance = 200;
 
 	UPROPERTY(EditDefaultsOnly)
-	float LaserWidth = 1;
+		float LaserWidth = 1;
 
 	UPROPERTY(EditDefaultsOnly)
-	float FleeDistance = 100;
+		float FleeDistance = 100;
+
+	//Sounds
+
+	UPROPERTY(EditAnywhere, Category = "Sounds")
+		USoundBase* ChargeUpSound;
+
+	UPROPERTY(EditAnywhere, Category = "Sounds")
+		USoundBase* ShootSound;
 };

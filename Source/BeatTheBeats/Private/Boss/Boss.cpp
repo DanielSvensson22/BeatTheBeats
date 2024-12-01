@@ -1,8 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
+#include "Boss/Boss.h"
 #include "Components/SphereComponent.h"
 #include "Boss/Bullet.h"
-#include "Boss/Boss.h"
 #include "Components\CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Animation/AnimMontage.h"

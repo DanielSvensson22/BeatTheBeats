@@ -14,3 +14,7 @@ FQTEDescription::FQTEDescription(Attacks attack, float beatTimeDivisor, FVector2
 FQTEDescription::~FQTEDescription()
 {
 }
+
+void FQTEDescription::SetAttack(Attacks attack) {
+	Attack = attack;
+}

@@ -29,6 +29,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Interfaces/LockOnInterface.h"
+#include "Components/AudioComponent.h"
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -60,6 +61,9 @@ APlayerCharacter::APlayerCharacter()
 	ComboManager->BindAttackCallbackFunc(this, &APlayerCharacter::AttackCallback);
 
 	QTE = CreateDefaultSubobject<UQTEComponent>(TEXT("QTE Component"));
+
+	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Sound Player"));
+	AudioComponent->SetupAttachment(RootComponent);
 }
 
 APlayerCharacter::~APlayerCharacter()
@@ -70,7 +74,7 @@ APlayerCharacter::~APlayerCharacter()
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	Weapon = GetWorld()->SpawnActor<AWeaponBase>(WeaponClass);
 	Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("RightHandSocket"));
 	Weapon->SetOwner(this);
@@ -97,8 +101,8 @@ void APlayerCharacter::BeginPlay()
 	}
 
 	if (AttackTypeEffect) {
-		AttackTypeEffectComp = UNiagaraFunctionLibrary::SpawnSystemAttached(AttackTypeEffect, GetMesh(), TEXT("pelvis"), 
-											FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::KeepRelativeOffset, false);
+		AttackTypeEffectComp = UNiagaraFunctionLibrary::SpawnSystemAttached(AttackTypeEffect, GetMesh(), TEXT("pelvis"),
+			FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::KeepRelativeOffset, false);
 
 		if (AttackTypeEffectComp) {
 			UNiagaraFunctionLibrary::OverrideSystemUserVariableSkeletalMeshComponent(AttackTypeEffectComp, TEXT("Skeletal Mesh"), GetMesh());
@@ -160,12 +164,6 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(DodgeBackAction, ETriggerEvent::Started, this, &APlayerCharacter::DodgeBack);
 		EnhancedInputComponent->BindAction(DodgeLeftAction, ETriggerEvent::Started, this, &APlayerCharacter::DodgeLeft);
 		EnhancedInputComponent->BindAction(DodgeRightAction, ETriggerEvent::Started, this, &APlayerCharacter::DodgeRight);
-
-		//Debug
-		EnhancedInputComponent->BindAction(QTEAction, ETriggerEvent::Started, this, &APlayerCharacter::EnterQTE);
-		EnhancedInputComponent->BindAction(QTEAction, ETriggerEvent::Completed, this, &APlayerCharacter::ExitQTE);
-		EnhancedInputComponent->BindAction(CameraShakeAction, ETriggerEvent::Started, this, &APlayerCharacter::CameraShake);
-		EnhancedInputComponent->BindAction(ParticleAction, ETriggerEvent::Started, this, &APlayerCharacter::SpawnParticle);
 	}
 }
 
@@ -192,6 +190,16 @@ void APlayerCharacter::SetWeaponCollisionEnabled(ECollisionEnabled::Type Collisi
 			bClosingDistance = false;
 			bIsAttacking = false;
 			bInAttackAnimation = false;
+			bIsBlocking = false;
+			bIsDodging = false;
+
+			if (bSpecial2Active) {
+				bSpecial2Active = false;
+				QTE->AddSpeed(Special2QTESpeedIncrease);
+				QTE->StartQTE(&Special2QTE, ComboEffect::ExtraSpecial2);
+				QTE->ResetTime();
+				bInQTE = true;
+			}
 		}
 		else {
 			FHitResult result;
@@ -199,7 +207,7 @@ void APlayerCharacter::SetWeaponCollisionEnabled(ECollisionEnabled::Type Collisi
 			params.AddIgnoredActor(this);
 			params.AddIgnoredActor(Weapon);
 
-			if (GetWorld()->LineTraceSingleByChannel(result, GetActorLocation(), 
+			if (GetWorld()->LineTraceSingleByChannel(result, GetActorLocation(),
 				GetActorLocation() + GetActorForwardVector() * MaxClosingDistance, ECollisionChannel::ECC_GameTraceChannel3, params)) {
 
 				EnemyToAttack = Cast<AEnemyBase>(result.GetActor());
@@ -254,42 +262,6 @@ void APlayerCharacter::Look(const FInputActionValue& Value)
 
 void APlayerCharacter::TargetLock()
 {
-	//if (bIsLockingTarget)
-	//{
-	//	ECameraState::ECS_FreeCamera;
-	//	GetCharacterMovement()->bOrientRotationToMovement = true;
-	//	bIsLockingTarget = false;
-	//	TargetLockHitTarget = nullptr;
-	//	bUseControllerRotationYaw = false;
-	//}
-	//else
-	//{
-	//	const FVector Start = GetActorLocation();
-	//	const FRotator CameraRotation = ViewCamera->GetComponentRotation();
-	//	const FVector End = Start + UKismetMathLibrary::GetForwardVector(CameraRotation) * TargetLockTraceRange;
-
-	//	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypesArray; // object types to trace
-	//	ObjectTypesArray.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic));
-
-	//	TArray<AActor*> IgnoreActors; // leave blank if not needed
-
-	//	// IgnoreActors.Add(); // Add actors to ingore here if needed
-
-	//	FHitResult SphereHit;
-
-	//	UKismetSystemLibrary::SphereTraceSingleForObjects(this, Start, End, TargetLockTraceRadius, ObjectTypesArray, false, IgnoreActors, EDrawDebugTrace::ForDuration, SphereHit, true);
-
-	//	TargetLockHitTarget = SphereHit.GetActor();
-
-	//	if (TargetLockHitTarget != nullptr)
-	//	{
-	//		ECameraState::ECS_LockCamera;
-	//		GetCharacterMovement()->bOrientRotationToMovement = false;
-	//		bIsLockingTarget = true;
-	//		bUseControllerRotationYaw = true; // Character look at locked target
-	//	}
-	//}
-
 	if (bIsLockingTarget)
 	{
 		HitArray.Empty();
@@ -343,23 +315,6 @@ void APlayerCharacter::TargetLock()
 
 void APlayerCharacter::SetTargetLockCamera()
 {
-	/*if (TargetLockHitTarget != nullptr)
-	{
-		float Distance = GetDistanceTo(TargetLockHitTarget);
-		FVector LockOffset = TargetLockHitTarget->GetActorUpVector() * Distance * LockOffsetModifier;
-
-		GetController()->SetControlRotation(UKismetMathLibrary::FindLookAtRotation(GetActorLocation() + LockOffset, TargetLockHitTarget->GetActorLocation()));
-
-		if (Distance > TargetLockMaxMoveDistance)
-		{
-			ECameraState::ECS_FreeCamera;
-			GetCharacterMovement()->bOrientRotationToMovement = true;
-			bIsLockingTarget = false;
-			TargetLockHitTarget = nullptr;
-			bUseControllerRotationYaw = false;
-		}
-	}*/
-
 	if (TargetLockHitTarget != nullptr)
 	{
 		ClosestDistance = 100000.f;
@@ -386,11 +341,11 @@ void APlayerCharacter::AddNeutralAttack()
 		QTE->AttemptAttack(Attacks::Attack_Neutral);
 	}
 	else {
-		if (!bIsDodging) {
+		if (!bIsDodging && !bIsBlocking) {
 			bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
 			ComboManager->AddAttack(Attacks::Attack_Neutral, PlayerDamage, !AddedLastBeat);
 			bIsAttacking = true;
-			
+
 			if (AttackTypeEffectComp) {
 				AttackTypeEffectComp->SetVariableLinearColor(TEXT("Color"), NeutralColor);
 			}
@@ -401,7 +356,7 @@ void APlayerCharacter::AddNeutralAttack()
 
 				GetMesh()->SetMaterial(AttackTypeMaterialIndex, AttackTypeMaterial);
 			}
-		}		
+		}
 	}
 }
 
@@ -411,14 +366,14 @@ void APlayerCharacter::AddType1Attack()
 		QTE->AttemptAttack(Attacks::Attack_Type1);
 	}
 	else {
-		if (!bIsDodging) {
+		if (!bIsDodging && !bIsBlocking) {
 			bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
 			ComboManager->AddAttack(Attacks::Attack_Type1, PlayerDamage, !AddedLastBeat);
 			bIsAttacking = true;
-			
+
 			if (AttackTypeEffectComp) {
 				AttackTypeEffectComp->SetVariableLinearColor(TEXT("Color"), AttackOneColor);
-			}	
+			}
 
 			if (AttackTypeMaterial) {
 				AttackTypeMaterial->SetVectorParameterValue(LowColorName, LowAttack1Color);
@@ -436,11 +391,11 @@ void APlayerCharacter::AddType2Attack()
 		QTE->AttemptAttack(Attacks::Attack_Type2);
 	}
 	else {
-		if (!bIsDodging) {
+		if (!bIsDodging && !bIsBlocking) {
 			bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
 			ComboManager->AddAttack(Attacks::Attack_Type2, PlayerDamage, !AddedLastBeat);
 			bIsAttacking = true;
-			
+
 			if (AttackTypeEffectComp) {
 				AttackTypeEffectComp->SetVariableLinearColor(TEXT("Color"), AttackTwoColor);
 			}
@@ -461,11 +416,11 @@ void APlayerCharacter::AddType3Attack()
 		QTE->AttemptAttack(Attacks::Attack_Type3);
 	}
 	else {
-		if (!bIsDodging) {
+		if (!bIsDodging && !bIsBlocking) {
 			bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
 			ComboManager->AddAttack(Attacks::Attack_Type3, PlayerDamage, !AddedLastBeat);
 			bIsAttacking = true;
-			
+
 			if (AttackTypeEffectComp) {
 				AttackTypeEffectComp->SetVariableLinearColor(TEXT("Color"), AttackThreeColor);
 			}
@@ -476,7 +431,7 @@ void APlayerCharacter::AddType3Attack()
 
 				GetMesh()->SetMaterial(AttackTypeMaterialIndex, AttackTypeMaterial);
 			}
-		}		
+		}
 	}
 }
 
@@ -591,7 +546,7 @@ void APlayerCharacter::DodgeLeft()
 		DodgeLocation = GetActorLocation() + offset;
 
 		PlayAttackMontage(DodgeLeftAnim, TEXT("Default"), std::max(BeatManager->GetTimeUntilNextBeat(), BeatManager->TimeBetweenBeats() / 2));
-	}	
+	}
 }
 
 void APlayerCharacter::DodgeRight()
@@ -608,39 +563,14 @@ void APlayerCharacter::DodgeRight()
 	}
 }
 
-void APlayerCharacter::AttackCallback(Attacks AttackType, float MotionValue, float AnimLength, int Combo, int ComboStep)
+void APlayerCharacter::AttackCallback(TArray<FQTEDescription>* qte, ComboEffect effect)
 {
-	//To Do: Add damage functionality...
-	FString attackName;
+	CurrentQTEDescription = qte;
+	CurrentComboEffect = effect;
 
-	switch (AttackType) {
-	case Attacks::Attack_Neutral:
-		attackName = "Landed Neutral Attack";
-		
-		break;
+	FTimerHandle handle;
 
-	case Attacks::Attack_Type1:
-		attackName = "Landed Type 1 Attack";
-		
-		break;
-
-	case Attacks::Attack_Type2:
-		attackName = "Landed Type 2 Attack";
-		break;
-
-	case Attacks::Attack_Type3:
-		attackName = "Landed Type 3 Attack";
-		break;
-
-	case Attacks::Attack_Pause:
-		attackName = "Paused";
-		break;
-
-	default:
-		UE_LOG(LogTemp, Error, TEXT("Attack type not implemented!"));
-	}
-
-	UE_LOG(LogTemp, Warning, TEXT("%s on Combo step %i in Combo %i"), *attackName, ComboStep, Combo);
+	GetWorldTimerManager().SetTimer(handle, this, &APlayerCharacter::EnterQTE, BeatManager->TimeBetweenBeats(), false);
 }
 
 void APlayerCharacter::PlayAttackMontage(UAnimMontage* montage, FName SectionName, float TotalTime)
@@ -661,7 +591,7 @@ void APlayerCharacter::PlayAttackMontage(UAnimMontage* montage, FName SectionNam
 		montage->GetSectionStartAndEndTime(Section, Start, End);
 
 		montage->GetAnimNotifies(Start, End, false, Notifies);
-		
+
 
 		for (auto& Notify : Notifies) {
 			if (Notify->NotifyName == AttackNotifyName) {
@@ -689,6 +619,7 @@ void APlayerCharacter::ProcessIncomingAttacks()
 	if (bIsDodging) {
 		IncomingAttacks.Empty();
 		bIsBlocking = false;
+		bIsDodging = false;
 		return;
 	}
 
@@ -699,8 +630,13 @@ void APlayerCharacter::ProcessIncomingAttacks()
 			if (dot < 0) {
 				Enemy->Parry();
 
-				UNiagaraComponent* NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAttached(BlockEffect, GetMesh(), TEXT("shield_outer"), 
-															FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::KeepRelativeOffset, true);
+				if (BlockSound) {
+					AudioComponent->SetSound(BlockSound);
+					AudioComponent->Play();
+				}
+
+				UNiagaraComponent* NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAttached(BlockEffect, GetMesh(), TEXT("shield_outer"),
+					FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::KeepRelativeOffset, true);
 
 				if (!bPerfectBlock) {
 					ApplyDamage(Damage / 2);
@@ -717,7 +653,7 @@ void APlayerCharacter::ProcessIncomingAttacks()
 		else {
 			ApplyDamage(Damage);
 		}
-		
+
 	}
 
 	IncomingAttacks.Empty();
@@ -727,7 +663,7 @@ void APlayerCharacter::ProcessIncomingAttacks()
 void APlayerCharacter::EnterQTE()
 {
 	if (QTE) {
-		QTE->StartQTE(&DebugQTEDescription);
+		QTE->StartQTE(CurrentQTEDescription, CurrentComboEffect);
 		bInQTE = true;
 	}
 }
@@ -735,9 +671,38 @@ void APlayerCharacter::EnterQTE()
 void APlayerCharacter::ExitQTE()
 {
 	if (QTE) {
-		QTE->EndQTE();
+		CurrentQTEDescription = nullptr;
 		bInQTE = false;
 	}
+}
+
+void APlayerCharacter::FailedSpecial()
+{
+	Weapon->SetAttackStatus(FailedSpecialDamage, Attacks::Attack_Guaranteed, true);
+	PlayAttackMontage(FailedSpecialAnim, TEXT("Default"), BeatManager->GetTimeUntilNextBeat() + BeatManager->TimeBetweenBeats());
+	bIsDodging = true;
+}
+
+void APlayerCharacter::Special1()
+{
+	Weapon->SetAttackStatus(Special1Damage, Attacks::Attack_Guaranteed, true);
+	PlayAttackMontage(Special1Anim, TEXT("Default"), BeatManager->GetTimeUntilNextBeat() + BeatManager->TimeBetweenBeats() * 3);
+	bIsDodging = true;
+}
+
+void APlayerCharacter::Special2()
+{
+	Weapon->SetAttackStatus(Special2Damage, Attacks::Attack_Guaranteed, true);
+	PlayAttackMontage(Special2Anim, TEXT("Default"), BeatManager->GetTimeUntilNextBeat() + BeatManager->TimeBetweenBeats() * 2);
+	bIsDodging = true;
+	bSpecial2Active = true;
+}
+
+void APlayerCharacter::Special3()
+{
+	Weapon->SetAttackStatus(Special3Damage, Attacks::Attack_Guaranteed, true);
+	PlayAttackMontage(Special3Anim, TEXT("Default"), BeatManager->GetTimeUntilNextBeat() + BeatManager->TimeBetweenBeats());
+	bIsDodging = true;
 }
 
 void APlayerCharacter::ApplyDamage(float Damage)
@@ -753,7 +718,7 @@ void APlayerCharacter::ApplyDamage(float Damage)
 	if (!IsAlive()) {
 		if (!bHasDied) {
 			bHasDied = true;
-
+			OnDeath();
 			UE_LOG(LogTemp, Warning, TEXT("Player died!"));
 
 			ABeatTheBeatsPlayerController* controller = Cast<ABeatTheBeatsPlayerController>(GetController());
@@ -777,6 +742,17 @@ void APlayerCharacter::ApplyDamage(float Damage)
 			controller->bEnableMouseOverEvents = true;
 
 			PlayAttackMontage(DeathAnim, TEXT("Default"), BeatManager->TimeBetweenBeats() + BeatManager->GetTimeUntilNextBeat());
+
+			if (DeathSound) {
+				AudioComponent->SetSound(DeathSound);
+				AudioComponent->Play();
+			}
+		}
+	}
+	else {
+		if (HitSound && (!AudioComponent->IsPlaying() || AudioComponent->GetSound() != BlockSound)) {
+			AudioComponent->SetSound(HitSound);
+			AudioComponent->Play();
 		}
 	}
 
@@ -809,11 +785,12 @@ void APlayerCharacter::PerformDodge(float DeltaTime)
 			bIsDodging = false;
 		}
 
-		SetActorLocation(FMath::VInterpConstantTo(GetActorLocation(), DodgeLocation, DeltaTime, DodgeSpeed));
+		FHitResult result;
+		SetActorLocation(FMath::VInterpConstantTo(GetActorLocation(), DodgeLocation, DeltaTime, DodgeSpeed), true, &result, ETeleportType::TeleportPhysics);
 	}
 }
 
-void APlayerCharacter::ReloadLevel_Implementation()
+void APlayerCharacter::OnDeath_Implementation()
 {
 
 }

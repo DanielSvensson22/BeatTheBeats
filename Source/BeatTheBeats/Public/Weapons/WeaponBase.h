@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "../Combos/Combo.h"
+#include "../Combos/QTEProjectile.h"
 #include "WeaponBase.generated.h"
 
 class UBoxComponent;
@@ -19,6 +20,8 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	void SetAttackStatus(float Damage, Attacks AttackType, bool OnBeat);
+
+	void SpawnProjectile(TSubclassOf<AQTEProjectile> projectile, FVector position, FRotator rotation);
 
 	// Actors to Ignore during an Overlaping Event
 	TArray<AActor*> IgnoreActors;
@@ -51,6 +54,12 @@ private:
 	FVector BoxTraceHalfSize = FVector(7.5f, 7.5f, 7.5f);
 
 	ETraceTypeQuery QueryType;
+
+	UPROPERTY()
+	class ABeatManager* BeatManager;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<ABeatManager> BeatManagerClass;
 
 public:
 	FORCEINLINE TObjectPtr<UBoxComponent> GetWeaponBox() const { return WeaponBox; }

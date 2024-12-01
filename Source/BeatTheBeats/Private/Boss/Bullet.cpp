@@ -1,9 +1,8 @@
-
+#include "Boss/Bullet.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Boss\Boss.h"
-#include "Boss/Bullet.h"
 
 ABullet::ABullet()
 {

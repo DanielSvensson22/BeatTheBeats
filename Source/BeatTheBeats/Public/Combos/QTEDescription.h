@@ -3,11 +3,22 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Combo.h"
 #include "QTEDescription.generated.h"
 
+UENUM(BlueprintType)
+enum class Attacks : uint8 {
+	Attack_Neutral = 0,
+	Attack_Type1 = 1,
+	Attack_Type2 = 2,
+	Attack_Type3 = 3,
+	Attack_Pause = 4,
+	Attack_Guaranteed = 5,
+
+	Attack_NONE UMETA(Hidden)
+};
+
 /**
- * 
+ *
  */
 USTRUCT(BlueprintType)
 struct BEATTHEBEATS_API FQTEDescription
@@ -22,15 +33,21 @@ public:
 	FORCEINLINE Attacks GetAttack() { return Attack; }
 	FORCEINLINE float GetBeatTimeDivisor() { return BeatTimeDivisor; }
 	FORCEINLINE FVector2D GetOffsetRange() { return OffsetRange; }
+	FORCEINLINE bool IsRandom() { return bIsRandom; }
+
+	void SetAttack(Attacks attack);
 
 private:
 
 	UPROPERTY(EditDefaultsOnly)
-	Attacks Attack;
+		Attacks Attack;
 
 	UPROPERTY(EditDefaultsOnly)
-	float BeatTimeDivisor = 1.0f;
+		float BeatTimeDivisor = 1.0f;
 
 	UPROPERTY(EditDefaultsOnly)
-	FVector2D OffsetRange;
+		FVector2D OffsetRange;
+
+	UPROPERTY(EditDefaultsOnly)
+		bool bIsRandom = false;
 };

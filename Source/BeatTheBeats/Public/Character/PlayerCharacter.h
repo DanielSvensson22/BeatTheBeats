@@ -25,6 +25,7 @@ class UNiagaraSystem;
 class UNiagaraComponent;
 class UMaterialInstanceDynamic;
 class AScoreManager;
+class UAudioComponent;
 
 UCLASS()
 class BEATTHEBEATS_API APlayerCharacter : public ACharacter
@@ -43,18 +44,18 @@ public:
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
 	UFUNCTION(BlueprintCallable)
-	void SetWeaponCollisionEnabled(ECollisionEnabled::Type CollisionEnable);
+		void SetWeaponCollisionEnabled(ECollisionEnabled::Type CollisionEnable);
 
 	void PlayAttackMontage(UAnimMontage* montage, FName SectionName, float TotalTime);
 
 	UFUNCTION(BlueprintPure)
-	FORCEINLINE float GetPlayerHealth() const { return CurrentHealth; }
+		FORCEINLINE float GetPlayerHealth() const { return CurrentHealth; }
 
 	UFUNCTION(BlueprintPure)
-	FORCEINLINE float GetMaxPlayerHealth() const { return MaxHealth; }
+		FORCEINLINE float GetMaxPlayerHealth() const { return MaxHealth; }
 
 	UFUNCTION(BlueprintPure)
-	FORCEINLINE bool IsAlive() const { return CurrentHealth > 0; }
+		FORCEINLINE bool IsAlive() const { return CurrentHealth > 0; }
 
 	FORCEINLINE void SetNotifyName(const FString& name) {
 		AttackNotifyName = name;
@@ -62,66 +63,76 @@ public:
 
 	FORCEINLINE bool InAttackAnimation() { return bInAttackAnimation; }
 
+	void EnterQTE();
+	void ExitQTE();
+
+	void FailedSpecial();
+	void Special1();
+	void Special2();
+	void Special3();
+
+	FORCEINLINE AWeaponBase* GetWeapon() { return Weapon; }
+
 protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UComboManagerComponent> ComboManager;
+		TObjectPtr<UComboManagerComponent> ComboManager;
 
 	/**
 	* InputActions
 	*/
 	UPROPERTY(EditAnywhere, Category = "Input")
-	TObjectPtr<UInputAction> MovementAction;
+		TObjectPtr<UInputAction> MovementAction;
 
 	UPROPERTY(EditAnywhere, Category = "Input")
-	TObjectPtr<UInputAction> LookAction;
+		TObjectPtr<UInputAction> LookAction;
 
 	UPROPERTY(EditAnywhere, Category = "Input")
-	TObjectPtr<UInputAction> TargetLockAction;
+		TObjectPtr<UInputAction> TargetLockAction;
 
 	UPROPERTY(EditAnywhere, Category = "Input")
-	TObjectPtr<UInputAction> NeautralAttackAction;
+		TObjectPtr<UInputAction> NeautralAttackAction;
 
 	UPROPERTY(EditAnywhere, Category = "Input")
-	TObjectPtr<UInputAction> Type1AttackAction;
+		TObjectPtr<UInputAction> Type1AttackAction;
 
 	UPROPERTY(EditAnywhere, Category = "Input")
-	TObjectPtr<UInputAction> Type2AttackAction;
+		TObjectPtr<UInputAction> Type2AttackAction;
 
 	UPROPERTY(EditAnywhere, Category = "Input")
-	TObjectPtr<UInputAction> Type3AttackAction;
+		TObjectPtr<UInputAction> Type3AttackAction;
 
 	UPROPERTY(EditAnywhere, Category = "Input")
-	TObjectPtr<UInputAction> NeautralBlockAction;
+		TObjectPtr<UInputAction> NeautralBlockAction;
 
 	UPROPERTY(EditAnywhere, Category = "Input")
-	TObjectPtr<UInputAction> Type1BlockAction;
+		TObjectPtr<UInputAction> Type1BlockAction;
 
 	UPROPERTY(EditAnywhere, Category = "Input")
-	TObjectPtr<UInputAction> Type2BlockAction;
+		TObjectPtr<UInputAction> Type2BlockAction;
 
 	UPROPERTY(EditAnywhere, Category = "Input")
-	TObjectPtr<UInputAction> Type3BlockAction;
+		TObjectPtr<UInputAction> Type3BlockAction;
 
 	UPROPERTY(EditAnywhere, Category = "Input")
-	TObjectPtr<UInputAction> CameraShakeAction;
-	
-	UPROPERTY(EditAnywhere, Category = "Input")
-	TObjectPtr<UInputAction> ParticleAction;
+		TObjectPtr<UInputAction> CameraShakeAction;
 
 	UPROPERTY(EditAnywhere, Category = "Input")
-	TObjectPtr<UInputAction> DodgeBackAction;
+		TObjectPtr<UInputAction> ParticleAction;
 
 	UPROPERTY(EditAnywhere, Category = "Input")
-	TObjectPtr<UInputAction> DodgeLeftAction;
+		TObjectPtr<UInputAction> DodgeBackAction;
 
 	UPROPERTY(EditAnywhere, Category = "Input")
-	TObjectPtr<UInputAction> DodgeRightAction;
-	
+		TObjectPtr<UInputAction> DodgeLeftAction;
+
+	UPROPERTY(EditAnywhere, Category = "Input")
+		TObjectPtr<UInputAction> DodgeRightAction;
+
 	//Effects
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
-	UNiagaraSystem* TempParticleEffect;
+		UNiagaraSystem* TempParticleEffect;
 
 	/**
 	* Callbacks for input
@@ -147,19 +158,16 @@ protected:
 	void CameraShake();
 	void SpawnParticle();
 
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Reload")
-	void ReloadLevel();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "OnDeath")
+		void OnDeath();
 
 private:
-	void AttackCallback(Attacks AttackType, float MotionValue, float AnimLength, int Combo, int ComboStep);
+	void AttackCallback(TArray<FQTEDescription>* qte, ComboEffect effect);
 	void SetTargetLockCamera();
 
 	void OnBeat(float CurrentTimeSinceLastBeat);
 
 	void ProcessIncomingAttacks();
-
-	void EnterQTE();
-	void ExitQTE();
 
 	void ApplyDamage(float Damage);
 
@@ -174,10 +182,10 @@ private:
 	* Weapon Components
 	*/
 	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<AWeaponBase> Weapon;
+		TObjectPtr<AWeaponBase> Weapon;
 
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<AWeaponBase> WeaponClass;
+		TSubclassOf<AWeaponBase> WeaponClass;
 
 	/**
 	* Camera Components
@@ -185,13 +193,13 @@ private:
 	ECameraState CameraState = ECameraState::ECS_FreeCamera;
 
 	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<USpringArmComponent> CameraBoom;
+		TObjectPtr<USpringArmComponent> CameraBoom;
 
 	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UCameraComponent> ViewCamera;
+		TObjectPtr<UCameraComponent> ViewCamera;
 
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UCameraShakeBase> CameraShakeClass;
+		TSubclassOf<UCameraShakeBase> CameraShakeClass;
 
 	/**
 	* Target Lock Components
@@ -200,22 +208,22 @@ private:
 	float ClosestDistance = 100000.f;
 
 	UPROPERTY(VisibleAnywhere, Category = "Target Lock")
-	TObjectPtr<AActor> TargetLockHitTarget;
+		TObjectPtr<AActor> TargetLockHitTarget;
 
 	UPROPERTY(VisibleAnywhere, Category = "Target Lock")
-	bool bIsLockingTarget = false;
+		bool bIsLockingTarget = false;
 
 	UPROPERTY(EditAnywhere, Category = "Target Lock")
-	float LockOffsetModifier;
+		float LockOffsetModifier;
 
 	UPROPERTY(EditAnywhere, Category = "Target Lock")
-	float TargetLockTraceRange;
+		float TargetLockTraceRange;
 
 	UPROPERTY(EditAnywhere, Category = "Target Lock")
-	float TargetLockTraceRadius;
+		float TargetLockTraceRadius;
 
 	UPROPERTY(EditAnywhere, Category = "Target Lock")
-	float TargetLockMaxMoveDistance; // Max distance between target and player before auto disable
+		float TargetLockMaxMoveDistance; // Max distance between target and player before auto disable
 
 	/**
 	* Combat Components
@@ -223,10 +231,10 @@ private:
 	TArray<IncomingAttack> IncomingAttacks;
 
 	UPROPERTY()
-	class ABeatManager* BeatManager;
+		class ABeatManager* BeatManager;
 
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<ABeatManager> BeatManagerClass;
+		TSubclassOf<ABeatManager> BeatManagerClass;
 
 	FDelegateHandle BeatHandle;
 
@@ -237,7 +245,7 @@ private:
 	bool bInAttackAnimation = false;
 
 	UPROPERTY(EditDefaultsOnly)
-	float ClosenessForPeffectBlock = 0.7f;
+		float ClosenessForPeffectBlock = 0.7f;
 
 	bool bPerfectBlock = false;
 
@@ -246,41 +254,66 @@ private:
 	float CurrentHealth;
 
 	UPROPERTY(EditDefaultsOnly)
-	float MaxHealth = 100;
+		float MaxHealth = 100;
 
 	bool bHasDied = false;
 
 	UPROPERTY(EditDefaultsOnly)
-	float PlayerDamage = 10;
+		float PlayerDamage = 10;
 
 	bool bMovedThisTick = false;
 
 	UPROPERTY(EditDefaultsOnly)
-	float RotationSpeed = 10;
+		float RotationSpeed = 10;
 
 	AScoreManager* ScoreManager;
 
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<AScoreManager> ScoreManagerClass;
+		TSubclassOf<AScoreManager> ScoreManagerClass;
 
 	UPROPERTY(VisibleAnywhere)
-	UQTEComponent* QTE;
+		UQTEComponent* QTE;
 
 	UPROPERTY(EditDefaultsOnly)
-	UNiagaraSystem* BlockEffect;
+		UNiagaraSystem* BlockEffect;
 
 	bool bClosingDistance = false;
 
 	UPROPERTY(EditDefaultsOnly)
-	float ClosingDistanceSpeed = 1.0f;
+		float ClosingDistanceSpeed = 1.0f;
 
 	AEnemyBase* EnemyToAttack;
 
 	UPROPERTY(EditDefaultsOnly)
-	float MaxClosingDistance = 200;
+		float MaxClosingDistance = 200;
 
 	UPROPERTY(EditDefaultsOnly)
-	float MinClosingDistance = 50;
+		float MinClosingDistance = 50;
+
+	TArray<FQTEDescription>* CurrentQTEDescription;
+	ComboEffect CurrentComboEffect;
+
+	//Specials
+
+	UPROPERTY(EditDefaultsOnly, Category = "Specials")
+		float FailedSpecialDamage = 30;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Specials")
+		float Special1Damage = 60;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Specials")
+		float Special2Damage = 50;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Specials")
+		float Special3Damage = 50;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Specials")
+		float Special2QTESpeedIncrease = 0.5f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Specials")
+		TArray<FQTEDescription> Special2QTE;
+
+	bool bSpecial2Active = false;
 
 	//Dodging
 
@@ -289,101 +322,127 @@ private:
 	FVector DodgeLocation;
 
 	UPROPERTY(EditDefaultsOnly)
-	float DodgeDistance = 100;
+		float DodgeDistance = 100;
 
 	UPROPERTY(EditDefaultsOnly)
-	float DodgeSpeed = 100;
+		float DodgeSpeed = 100;
 
 	UPROPERTY(EditDefaultsOnly)
-	float InvincibilityDuration = 0.2f;
+		float InvincibilityDuration = 0.2f;
 
 	float TimeUntilInvincibilityEnds;
 
 	//Montages
 
 	UPROPERTY(EditDefaultsOnly, Category = "Montages")
-	UAnimMontage* DeathAnim;
+		UAnimMontage* DeathAnim;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Montages")
-	UAnimMontage* BlockAnim;
+		UAnimMontage* BlockAnim;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Montages")
-	UAnimMontage* DodgeBackAnim;
+		UAnimMontage* DodgeBackAnim;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Montages")
-	UAnimMontage* DodgeLeftAnim;
+		UAnimMontage* DodgeLeftAnim;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Montages")
-	UAnimMontage* DodgeRightAnim;
+		UAnimMontage* DodgeRightAnim;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Montages")
-	UAnimMontage* StartAnim;
+		UAnimMontage* StartAnim;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Montages")
+		UAnimMontage* FailedSpecialAnim;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Montages")
+		UAnimMontage* Special1Anim;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Montages")
+		UAnimMontage* Special2Anim;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Montages")
+		UAnimMontage* Special3Anim;
 
 	//VFX
 
 	UNiagaraComponent* AttackTypeEffectComp;
 
 	UPROPERTY(EditDefaultsOnly, Category = "VFX")
-	UNiagaraSystem* AttackTypeEffect;
+		UNiagaraSystem* AttackTypeEffect;
 
 	UPROPERTY(EditDefaultsOnly, Category = "VFX")
-	float SpawnRate = 35;
+		float SpawnRate = 35;
 
 	UPROPERTY(EditDefaultsOnly, Category = "VFX")
-	FLinearColor NeutralColor;
+		FLinearColor NeutralColor;
 
 	UPROPERTY(EditDefaultsOnly, Category = "VFX")
-	FLinearColor AttackOneColor;
+		FLinearColor AttackOneColor;
 
 	UPROPERTY(EditDefaultsOnly, Category = "VFX")
-	FLinearColor AttackTwoColor;
+		FLinearColor AttackTwoColor;
 
 	UPROPERTY(EditDefaultsOnly, Category = "VFX")
-	FLinearColor AttackThreeColor;
+		FLinearColor AttackThreeColor;
 
 	//Material VFX
 
 	UPROPERTY(EditDefaultsOnly, Category = "MaterialVFX")
-	int AttackTypeMaterialIndex;
+		int AttackTypeMaterialIndex;
 
 	UPROPERTY(EditDefaultsOnly, Category = "MaterialVFX")
-	FLinearColor LowNeutralColor;
+		FLinearColor LowNeutralColor;
 
 	UPROPERTY(EditDefaultsOnly, Category = "MaterialVFX")
-	FLinearColor HighNeutralColor;
+		FLinearColor HighNeutralColor;
 
 	UPROPERTY(EditDefaultsOnly, Category = "MaterialVFX")
-	FLinearColor LowAttack1Color;
+		FLinearColor LowAttack1Color;
 
 	UPROPERTY(EditDefaultsOnly, Category = "MaterialVFX")
-	FLinearColor HighAttack1Color;
+		FLinearColor HighAttack1Color;
 
 	UPROPERTY(EditDefaultsOnly, Category = "MaterialVFX")
-	FLinearColor LowAttack2Color;
+		FLinearColor LowAttack2Color;
 
 	UPROPERTY(EditDefaultsOnly, Category = "MaterialVFX")
-	FLinearColor HighAttack2Color;
+		FLinearColor HighAttack2Color;
 
 	UPROPERTY(EditDefaultsOnly, Category = "MaterialVFX")
-	FLinearColor LowAttack3Color;
+		FLinearColor LowAttack3Color;
 
 	UPROPERTY(EditDefaultsOnly, Category = "MaterialVFX")
-	FLinearColor HighAttack3Color;
+		FLinearColor HighAttack3Color;
 
 	UPROPERTY(EditDefaultsOnly, Category = "MaterialVFX")
-	FName LowColorName;
+		FName LowColorName;
 
 	UPROPERTY(EditDefaultsOnly, Category = "MaterialVFX")
-	FName HighColorName;
+		FName HighColorName;
 
 	UMaterialInstanceDynamic* AttackTypeMaterial;
 
+	//Sound
+
+	UPROPERTY(VisibleAnywhere)
+		UAudioComponent* AudioComponent;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Sound")
+		USoundBase* HitSound;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Sound")
+		USoundBase* DeathSound;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Sound")
+		USoundBase* BlockSound;
+
 	//Debug
 	UPROPERTY(EditAnywhere, Category = "Input")
-	TObjectPtr<UInputAction> QTEAction;
+		TObjectPtr<UInputAction> QTEAction;
 
 	UPROPERTY(EditDefaultsOnly)
-	TArray<FQTEDescription> DebugQTEDescription;
+		TArray<FQTEDescription> DebugQTEDescription;
 
 	bool bInQTE = false;
 
@@ -394,5 +453,5 @@ public:
 	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 
 	UFUNCTION(BlueprintPure)
-	FORCEINLINE bool GetIsLockingTarget() const { return bIsLockingTarget; }
+		FORCEINLINE bool GetIsLockingTarget() const { return bIsLockingTarget; }
 };

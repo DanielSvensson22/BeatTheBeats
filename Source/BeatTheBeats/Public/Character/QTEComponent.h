@@ -11,13 +11,14 @@
 #include "QTEComponent.generated.h"
 
 class UImage;
+class APlayerCharacter;
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class BEATTHEBEATS_API UQTEComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:	
+public:
 	// Sets default values for this component's properties
 	UQTEComponent();
 
@@ -25,15 +26,21 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-public:	
+public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	void StartQTE(TArray<FQTEDescription>* qte);
+	void StartQTE(TArray<FQTEDescription>* qte, ComboEffect effect);
 
 	void AttemptAttack(Attacks Attack);
 
 	void EndQTE();
+
+	void AddSpeed(float speed);
+
+	FORCEINLINE void ResetTime() {
+		CurrentTimeStep = 0;
+	}
 
 private:
 
@@ -49,36 +56,46 @@ private:
 
 	TArray<FQTEDescription>* CurrentQTE;
 
+	ComboEffect CurrentComboEffect;
+
 	bool bIsActive = false;
 
 	class ABeatManager* BeatManager;
 
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<ABeatManager> BeatManagerClass;
+		TSubclassOf<ABeatManager> BeatManagerClass;
+
+	APlayerCharacter* player;
 
 	UImage* AttackIndicator;
 	UImage* AttackCircle;
+	UImage* MinClosenessIndicator;
 
 	FVector2D StartPos;
 
 	UPROPERTY(EditDefaultsOnly)
-	FLinearColor NeutralColor;
+		FLinearColor NeutralColor;
 
 	UPROPERTY(EditDefaultsOnly)
-	FLinearColor Attack1Color;
+		FLinearColor Attack1Color;
 
 	UPROPERTY(EditDefaultsOnly)
-	FLinearColor Attack2Color;
+		FLinearColor Attack2Color;
 
 	UPROPERTY(EditDefaultsOnly)
-	FLinearColor Attack3Color;
+		FLinearColor Attack3Color;
 
 	UPROPERTY(EditDefaultsOnly)
-	float MaxCircleScale = 2;
+		float MaxCircleScale = 2;
 
 	UPROPERTY(EditDefaultsOnly)
-	float MinCircleScale = 0.5f;
+		float MinCircleScale = 0.5f;
 
 	UPROPERTY(EditDefaultsOnly)
-	float TimeStepMultiplier = 1;
+		float TimeStepMultiplier = 1;
+
+	UPROPERTY(EditDefaultsOnly)
+		float MinClosenessToBeat = 0.85f;
+
+	float SpeedIncrease = 1;
 };
