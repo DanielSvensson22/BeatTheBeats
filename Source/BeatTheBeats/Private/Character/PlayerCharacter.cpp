@@ -195,7 +195,10 @@ void APlayerCharacter::SetWeaponCollisionEnabled(ECollisionEnabled::Type Collisi
 
 			if (bSpecial2Active) {
 				bSpecial2Active = false;
-				QTE->StartQTE(&Special2QTE, ComboEffect::Special2);
+				QTE->AddSpeed(Special2QTESpeedIncrease);
+				QTE->StartQTE(&Special2QTE, ComboEffect::ExtraSpecial2);
+				QTE->ResetTime();
+				bInQTE = true;
 			}
 		}
 		else {

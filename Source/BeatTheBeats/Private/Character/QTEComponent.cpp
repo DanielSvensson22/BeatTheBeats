@@ -99,8 +99,8 @@ void UQTEComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 			EndQTE();
 		}
 
-		if (AttackCircle) {
-			AttackCircle->SetRenderScale(FVector2D(BeatManager->GetIndicatorScale(MaxCircleScale, MinCircleScale, CurrentTimeStep)));
+		if (AttackCircle && CurrentQTE) {
+			AttackCircle->SetRenderScale(FVector2D(BeatManager->GetIndicatorScale(MaxCircleScale, MinCircleScale, CurrentTimeStep * (*CurrentQTE)[CurrentQTEStep].GetBeatTimeDivisor())));
 		}
 	}
 }
@@ -114,7 +114,7 @@ void UQTEComponent::StartQTE(TArray<FQTEDescription>* qte, ComboEffect effect)
 	CurrentTimeStep = 0;
 	CurrentQTEStep = 0;
 
-	if (CurrentComboEffect != ComboEffect::Special2) {
+	if (CurrentComboEffect != ComboEffect::ExtraSpecial2) {
 		SpeedIncrease = 1;
 	}
 
@@ -161,6 +161,10 @@ void UQTEComponent::AttemptAttack(Attacks Attack)
 						player->Special3();
 						break;
 
+					case ComboEffect::ExtraSpecial2:
+						player->Special2();
+						break;
+
 					default:
 						player->Special1();
 						break;
@@ -186,7 +190,7 @@ void UQTEComponent::EndQTE()
 	UGameplayStatics::SetGlobalTimeDilation(this, 1);
 	bIsActive = false;
 
-	if (CurrentQTE) {
+	if (CurrentQTE && CurrentComboEffect != ComboEffect::ExtraSpecial2) {
 		player->FailedSpecial();
 	}
 
@@ -271,7 +275,7 @@ void UQTEComponent::UpdateWidgetIndicators(int index)
 	MinClosenessIndicator->SetRenderTranslation(RandStart);
 	AttackCircle->SetRenderTranslation(AttackIndicator->GetRenderTransform().Translation);
 
-	FVector2D scale = FVector2D(BeatManager->GetIndicatorScale(MaxCircleScale, MinCircleScale, BeatManager->TimeBetweenBeats() / desc.GetBeatTimeDivisor()));
+	FVector2D scale = FVector2D(BeatManager->GetIndicatorScale(MaxCircleScale, MinCircleScale, BeatManager->TimeBetweenBeats()));
 
 	AttackIndicator->SetRenderScale(scale);
 	MinClosenessIndicator->SetRenderScale(scale / MinClosenessToBeat);

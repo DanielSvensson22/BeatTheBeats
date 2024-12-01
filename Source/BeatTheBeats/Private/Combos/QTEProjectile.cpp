@@ -58,6 +58,10 @@ void AQTEProjectile::SetAttackValues(float damage, Attacks attackType, float Lif
 	FHitResult result;
 	SetActorLocation(StartPosition, true, &result, ETeleportType::TeleportPhysics);
 
+	if (RotationOffset != 0) {
+		SetActorRotation(GetActorRotation() + FRotator(0, RotationOffset, 0));
+	}
+
 	FTimerHandle handle;
 	GetWorldTimerManager().SetTimer(handle, this, &AQTEProjectile::Kill, LifeTime * LifeMultiplier, false);
 }

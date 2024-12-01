@@ -38,6 +38,10 @@ public:
 
 	void AddSpeed(float speed);
 
+	FORCEINLINE void ResetTime() {
+		CurrentTimeStep = 0;
+	}
+
 private:
 
 	void UpdateWidgetIndicators(int index);

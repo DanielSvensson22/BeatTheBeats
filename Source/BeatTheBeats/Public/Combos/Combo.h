@@ -13,7 +13,8 @@ enum class ComboEffect : uint8 {
 	None = 0,
 	Special1 = 1,
 	Special2 = 2,
-	Special3 = 3
+	Special3 = 3,
+	ExtraSpecial2 = 4,
 };
 
 /**

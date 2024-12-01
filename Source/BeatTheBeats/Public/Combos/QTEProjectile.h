@@ -75,6 +75,9 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	float LifeMultiplier = 1;
 
+	UPROPERTY(EditDefaultsOnly)
+	float RotationOffset = 0;
+
 	float Damage;
 
 	Attacks AttackType;
