@@ -5,7 +5,10 @@
 #include "Character/PlayerCharacter.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/GameplayStatics.h"
 #include "Interfaces/HitInterface.h"
+#include "Combos/QTEProjectile.h"
+#include "Beats/BeatManager.h"
 
 AWeaponBase::AWeaponBase()
 {
@@ -34,6 +37,11 @@ void AWeaponBase::BeginPlay()
 	
 	WeaponBox->OnComponentBeginOverlap.AddDynamic(this, &AWeaponBase::OnBoxOverlap);
 
+	BeatManager = Cast<ABeatManager>(UGameplayStatics::GetActorOfClass(this, BeatManagerClass));
+
+	if (BeatManager == nullptr) {
+		UE_LOG(LogTemp, Error, TEXT("No Beat Manager was found in the scene!"));
+	}
 }
 
 void AWeaponBase::Tick(float DeltaTime)
@@ -47,6 +55,15 @@ void AWeaponBase::SetAttackStatus(float Damage, Attacks AttackType, bool OnBeat)
 	CurrentDamage = Damage;
 	CurrentAttackType = AttackType;
 	CurrentlyOnBeat = OnBeat;
+}
+
+void AWeaponBase::SpawnProjectile(TSubclassOf<AQTEProjectile> projectile, FVector position, FRotator rotation)
+{
+	AQTEProjectile* bullet = GetWorld()->SpawnActor<AQTEProjectile>(projectile, FVector(0, 0, 100000), FRotator(0, rotation.Yaw, 0));
+
+	if (bullet && BeatManager) {
+		bullet->SetAttackValues(CurrentDamage, CurrentAttackType, BeatManager->GetTimeUntilNextBeat() + BeatManager->TimeBetweenBeats(), position);
+	}
 }
 
 void AWeaponBase::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

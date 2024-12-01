@@ -25,6 +25,7 @@ class UNiagaraSystem;
 class UNiagaraComponent;
 class UMaterialInstanceDynamic;
 class AScoreManager;
+class UAudioComponent;
 
 UCLASS()
 class BEATTHEBEATS_API APlayerCharacter : public ACharacter
@@ -61,6 +62,16 @@ public:
 	}
 
 	FORCEINLINE bool InAttackAnimation() { return bInAttackAnimation; }
+
+	void EnterQTE();
+	void ExitQTE();
+
+	void FailedSpecial();
+	void Special1();
+	void Special2();
+	void Special3();
+
+	FORCEINLINE AWeaponBase* GetWeapon() { return Weapon; }
 
 protected:
 	virtual void BeginPlay() override;
@@ -151,15 +162,12 @@ protected:
 	void ReloadLevel();
 
 private:
-	void AttackCallback(Attacks AttackType, float MotionValue, float AnimLength, int Combo, int ComboStep);
+	void AttackCallback(TArray<FQTEDescription>* qte, ComboEffect effect);
 	void SetTargetLockCamera();
 
 	void OnBeat(float CurrentTimeSinceLastBeat);
 
 	void ProcessIncomingAttacks();
-
-	void EnterQTE();
-	void ExitQTE();
 
 	void ApplyDamage(float Damage);
 
@@ -282,6 +290,31 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	float MinClosingDistance = 50;
 
+	TArray<FQTEDescription>* CurrentQTEDescription;
+	ComboEffect CurrentComboEffect;
+
+	//Specials
+
+	UPROPERTY(EditDefaultsOnly, Category="Specials")
+	float FailedSpecialDamage = 30;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Specials")
+	float Special1Damage = 60;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Specials")
+	float Special2Damage = 50;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Specials")
+	float Special3Damage = 50;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Specials")
+	float Special2QTESpeedIncrease = 0.5f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Specials")
+	TArray<FQTEDescription> Special2QTE;
+
+	bool bSpecial2Active = false;
+
 	//Dodging
 
 	bool bIsDodging = false;
@@ -318,6 +351,18 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Montages")
 	UAnimMontage* StartAnim;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Montages")
+	UAnimMontage* FailedSpecialAnim;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Montages")
+	UAnimMontage* Special1Anim;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Montages")
+	UAnimMontage* Special2Anim;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Montages")
+	UAnimMontage* Special3Anim;
 
 	//VFX
 
@@ -377,6 +422,20 @@ private:
 	FName HighColorName;
 
 	UMaterialInstanceDynamic* AttackTypeMaterial;
+
+	//Sound
+
+	UPROPERTY(VisibleAnywhere)
+	UAudioComponent* AudioComponent;
+
+	UPROPERTY(EditDefaultsOnly, Category="Sound")
+	USoundBase* HitSound;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Sound")
+	USoundBase* DeathSound;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Sound")
+	USoundBase* BlockSound;
 
 	//Debug
 	UPROPERTY(EditAnywhere, Category = "Input")
