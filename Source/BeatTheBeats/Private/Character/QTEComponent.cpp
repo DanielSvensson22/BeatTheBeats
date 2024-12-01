@@ -29,7 +29,7 @@ void UQTEComponent::BeginPlay()
 	// ...
 
 	ABeatTheBeatsPlayerController* controller = Cast<ABeatTheBeatsPlayerController>(GetOwner()->GetInstigatorController());
-	
+
 	if (controller) {
 		Widget = controller->GetHUD();
 
@@ -145,9 +145,9 @@ void UQTEComponent::AttemptAttack(Attacks Attack)
 				UpdateWidgetIndicators(CurrentQTEStep);
 			}
 			else {
-				
+
 				if (CurrentComboEffect != ComboEffect::None) {
-					
+
 					switch (CurrentComboEffect) {
 					case ComboEffect::Special1:
 						player->Special1();
@@ -269,7 +269,7 @@ void UQTEComponent::UpdateWidgetIndicators(int index)
 	}
 
 	FVector2D RandStart = StartPos + FVector2D(FMath::RandRange(-desc.GetOffsetRange().X, desc.GetOffsetRange().X),
-												FMath::RandRange(-desc.GetOffsetRange().Y, desc.GetOffsetRange().Y));
+		FMath::RandRange(-desc.GetOffsetRange().Y, desc.GetOffsetRange().Y));
 
 	AttackIndicator->SetRenderTranslation(RandStart);
 	MinClosenessIndicator->SetRenderTranslation(RandStart);
@@ -280,4 +280,3 @@ void UQTEComponent::UpdateWidgetIndicators(int index)
 	AttackIndicator->SetRenderScale(scale);
 	MinClosenessIndicator->SetRenderScale(scale / MinClosenessToBeat);
 }
-

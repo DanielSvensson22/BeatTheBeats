@@ -20,6 +20,7 @@
 #include <string>
 #include <iomanip>
 #include <sstream>
+#include "Components/AudioComponent.h"
 
 // Sets default values
 AEnemyBase::AEnemyBase()
@@ -39,6 +40,9 @@ AEnemyBase::AEnemyBase()
 	EnemyWidget->SetWidgetSpace(EWidgetSpace::World);
 	EnemyWidget->SetupAttachment(RootComponent);
 	EnemyWidget->AddLocalOffset(FVector(0, 0, GetCapsuleComponent()->GetScaledCapsuleHalfHeight()));
+
+	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Sound Player"));
+	AudioComponent->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned
@@ -170,8 +174,6 @@ void AEnemyBase::Tick(float DeltaTime)
 			DamageIndicators.Add(indicator);
 			StartPositions.Add(sp);
 
-			UE_LOG(LogTemp, Warning, TEXT("Removed damage indicator"));
-
 			i--;
 		}
 	}
@@ -284,7 +286,7 @@ void AEnemyBase::ApplyDamage(float InitialDamage, Attacks AttackType, bool OnBea
 		else {
 			NiagaraComp->SetVariableLinearColor(TEXT("Color"), FLinearColor::Blue);
 		}
-	}	
+	}
 
 	if (!IsAlive()) {
 		if (!bHasDied) {
@@ -309,6 +311,11 @@ void AEnemyBase::ApplyDamage(float InitialDamage, Attacks AttackType, bool OnBea
 				AttackTypeEffectComp->Deactivate();
 			}
 
+			if (DeathSound) {
+				AudioComponent->SetSound(DeathSound);
+				AudioComponent->Play();
+			}
+
 			Death();
 		}
 	}
@@ -320,10 +327,20 @@ void AEnemyBase::ApplyDamage(float InitialDamage, Attacks AttackType, bool OnBea
 		if (OnBeat)
 		{
 			PerfectHit();
+
+			if (PerfectHitSound) {
+				AudioComponent->SetSound(PerfectHitSound);
+				AudioComponent->Play();
+			}
 		}
 		else
 		{
 			Hit();
+
+			if (HitSound) {
+				AudioComponent->SetSound(HitSound);
+				AudioComponent->Play();
+			}
 		}
 
 		//SpawnDamageIndicator
@@ -491,4 +508,3 @@ void AEnemyBase::PerfectHit_Implementation()
 {
 
 }
-

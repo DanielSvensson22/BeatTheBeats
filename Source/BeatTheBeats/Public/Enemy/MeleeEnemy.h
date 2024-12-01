@@ -1,4 +1,4 @@
- //Fill out your copyright notice in the Description page of Project Settings.
+//Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -7,13 +7,13 @@
 #include "MeleeEnemy.generated.h"
 
 /**
- * 
+ *
  */
 UCLASS()
 class BEATTHEBEATS_API AMeleeEnemy : public AEnemyBase
 {
 	GENERATED_BODY()
-	
+
 public:
 	// Sets default values for this character's properties
 	AMeleeEnemy();
@@ -44,25 +44,25 @@ public:
 private:
 
 	UPROPERTY(VisibleAnywhere)
-	USceneComponent* AttackPoint;
+		USceneComponent* AttackPoint;
 
 	UPROPERTY(EditDefaultsOnly)
-	UParticleSystem* HitEffect;
+		UParticleSystem* HitEffect;
 
 	float LastDistanceToPlayer;
 
 	UPROPERTY(EditDefaultsOnly)
-	float MinStalkDistance = 300;
+		float MinStalkDistance = 300;
 
 	UPROPERTY(EditDefaultsOnly)
-	float MaxStalkDistance = 1500;
+		float MaxStalkDistance = 1500;
 
 	UPROPERTY(EditDefaultsOnly)
-	float StalkSpeed = 10;
+		float StalkSpeed = 10;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Montages")
-	UAnimMontage* ReadyAttackAnim;
+		UAnimMontage* ReadyAttackAnim;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Montages")
-	UAnimMontage* AttackAnim;
+		UAnimMontage* AttackAnim;
 };

@@ -18,7 +18,7 @@ enum class Attacks : uint8 {
 };
 
 /**
- * 
+ *
  */
 USTRUCT(BlueprintType)
 struct BEATTHEBEATS_API FQTEDescription
@@ -40,14 +40,14 @@ public:
 private:
 
 	UPROPERTY(EditDefaultsOnly)
-	Attacks Attack;
+		Attacks Attack;
 
 	UPROPERTY(EditDefaultsOnly)
-	float BeatTimeDivisor = 1.0f;
+		float BeatTimeDivisor = 1.0f;
 
 	UPROPERTY(EditDefaultsOnly)
-	FVector2D OffsetRange;
+		FVector2D OffsetRange;
 
 	UPROPERTY(EditDefaultsOnly)
-	bool bIsRandom = false;
+		bool bIsRandom = false;
 };

@@ -17,12 +17,12 @@ class AWeaponBase;
 class UTextBlock;
 class UImage;
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class BEATTHEBEATS_API UComboManagerComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:	
+public:
 	// Sets default values for this component's properties
 	UComboManagerComponent();
 	~UComboManagerComponent();
@@ -31,8 +31,8 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-public:	
-	typedef void (APlayerCharacter::* AttackCallback)(Attacks, float, float, int, int);
+public:
+	typedef void (APlayerCharacter::* AttackCallback)(TArray<FQTEDescription>*, ComboEffect);
 
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -71,7 +71,7 @@ private:
 			if (ResetComboStep) {
 				CurrentComboStep = -1;
 			}
-			
+
 			return BaseNeutralCombo;
 			break;
 
@@ -142,25 +142,25 @@ private:
 	typedef std::tuple<Attacks, float, bool> StoredAttack;
 
 	UPROPERTY(EditDefaultsOnly)
-	TArray<FCombo> Combos;
+		TArray<FCombo> Combos;
 
 	UPROPERTY(EditDefaultsOnly)
-	TArray<bool> ComboObtainedStatus;
+		TArray<bool> ComboObtainedStatus;
 
 	UPROPERTY(EditDefaultsOnly)
-	TArray<FComboConnectionArray> ComboConnectionsList;
+		TArray<FComboConnectionArray> ComboConnectionsList;
 
 	UPROPERTY(EditDefaultsOnly)
-	int BaseNeutralCombo;
+		int BaseNeutralCombo;
 
 	UPROPERTY(EditDefaultsOnly)
-	int BaseAttack1Combo;
+		int BaseAttack1Combo;
 
 	UPROPERTY(EditDefaultsOnly)
-	int BaseAttack2Combo;
+		int BaseAttack2Combo;
 
 	UPROPERTY(EditDefaultsOnly)
-	int BaseAttack3Combo;
+		int BaseAttack3Combo;
 
 	std::queue<StoredAttack> StoredAttacks;
 
@@ -171,10 +171,10 @@ private:
 	int CurrentCombo = 0;
 
 	UPROPERTY()
-	ABeatManager* BeatManager;
+		ABeatManager* BeatManager;
 
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<ABeatManager> BeatManagerClass;
+		TSubclassOf<ABeatManager> BeatManagerClass;
 
 	APlayerCharacter* player;
 	AttackCallback callback;
@@ -184,10 +184,10 @@ private:
 	float TimeOfLastAttack = 0;
 
 	UPROPERTY(EditDefaultsOnly)
-	float ClosenessPercentForPerfectBeat = 0.8f;
+		float ClosenessPercentForPerfectBeat = 0.8f;
 
 	UPROPERTY(EditDefaultsOnly)
-	float BeatPartBeforeNewAttack = 5.0f;
+		float BeatPartBeforeNewAttack = 5.0f;
 
 	AWeaponBase* Weapon;
 
@@ -198,27 +198,27 @@ private:
 
 	TArray<UImage*> ComboImages;
 
-	UPROPERTY(EditDefaultsOnly, Category="Combo indicator")
-	FLinearColor ActiveNeutral;
+	UPROPERTY(EditDefaultsOnly, Category = "Combo indicator")
+		FLinearColor ActiveNeutral;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Combo indicator")
-	FLinearColor DeactivatedNeutral;
+		FLinearColor DeactivatedNeutral;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Combo indicator")
-	FLinearColor ActiveOne;
+		FLinearColor ActiveOne;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Combo indicator")
-	FLinearColor DeactivatedOne;
+		FLinearColor DeactivatedOne;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Combo indicator")
-	FLinearColor ActiveTwo;
+		FLinearColor ActiveTwo;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Combo indicator")
-	FLinearColor DeactivatedTwo;
+		FLinearColor DeactivatedTwo;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Combo indicator")
-	FLinearColor ActiveThree;
+		FLinearColor ActiveThree;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Combo indicator")
-	FLinearColor DeactivatedThree;
+		FLinearColor DeactivatedThree;
 };

@@ -72,7 +72,7 @@ void AMeleeEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 }
 
 void AMeleeEnemy::OnBeat(float CurrentTimeSinceLastBeat)
-{	
+{
 	if (bIsStunned) {
 		CurrentAttack = StandardCombo.ResetCombo();
 		bIsStunned = false;
@@ -85,7 +85,7 @@ void AMeleeEnemy::OnBeat(float CurrentTimeSinceLastBeat)
 			CurrentAttack = StandardCombo.ResetCombo();
 		}
 
-		if (CurrentAttack > -1) {			
+		if (CurrentAttack > -1) {
 			Attack();
 		}
 	}

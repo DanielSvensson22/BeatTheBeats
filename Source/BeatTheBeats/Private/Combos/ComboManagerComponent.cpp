@@ -39,7 +39,7 @@ void UComboManagerComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// ...
-	
+
 	BeatManager = Cast<ABeatManager>(UGameplayStatics::GetActorOfClass(this, BeatManagerClass));
 
 	if (BeatManager == nullptr) {
@@ -105,8 +105,8 @@ void UComboManagerComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 void UComboManagerComponent::AddAttack(Attacks AttackType, float Damage, bool PlayerAddedThisBeat)
 {
 	if (StoredAttacks.size() == 0) {
-		if (BeatManager && player && 
-			(!player->InAttackAnimation() || 
+		if (BeatManager && player &&
+			(!player->InAttackAnimation() ||
 				(TimeOfLastAttack == 0 || std::abs(BeatManager->GetCurrentTimeSinceLastBeat() - TimeOfLastAttack) > BeatManager->TimeBetweenBeats() / BeatPartBeforeNewAttack))) {
 			StoredAttacks.emplace(AttackType, Damage, false);
 			TimeOfLastAttack = BeatManager->GetCurrentTimeSinceLastBeat();
@@ -203,8 +203,9 @@ void UComboManagerComponent::PerformAttack(Attacks AttackType)
 	CurrentComboStep = Combos[CurrentCombo].NextAttack(CurrentComboStep);
 
 	if (player) {
-		(player->*callback)(AttackType, Combos[CurrentCombo].GetMotionValue(CurrentComboStep),
-			Combos[CurrentCombo].GetAnimLength(CurrentComboStep), CurrentCombo, CurrentComboStep);
+		if (Combos[CurrentCombo].HasQTE() && CurrentComboStep == Combos[CurrentCombo].AttackCount() - 1) {
+			(player->*callback)(Combos[CurrentCombo].GetQTEDescription(), Combos[CurrentCombo].GetComboEffect());
+		}
 	}
 
 	if (StoredAttacks.size() == 0) {
@@ -243,7 +244,7 @@ void UComboManagerComponent::SetComboIndicators()
 	for (int i = 0; i < ComboImages.Num(); i++) {
 		if (i <= CurrentComboStep) {
 			ComboImages[i]->SetRenderScale(FVector2D(1, 1));
-			
+
 			switch (Combos[CurrentCombo].GetAttackType(i)) {
 			case Attacks::Attack_Neutral:
 				ComboImages[i]->SetBrushTintColor(ActiveNeutral);
@@ -293,4 +294,3 @@ void UComboManagerComponent::SetComboIndicators()
 		}
 	}
 }
-
