@@ -718,7 +718,7 @@ void APlayerCharacter::ApplyDamage(float Damage)
 	if (!IsAlive()) {
 		if (!bHasDied) {
 			bHasDied = true;
-
+			OnDeath();
 			UE_LOG(LogTemp, Warning, TEXT("Player died!"));
 
 			ABeatTheBeatsPlayerController* controller = Cast<ABeatTheBeatsPlayerController>(GetController());
@@ -790,7 +790,7 @@ void APlayerCharacter::PerformDodge(float DeltaTime)
 	}
 }
 
-void APlayerCharacter::ReloadLevel_Implementation()
+void APlayerCharacter::OnDeath_Implementation()
 {
 
 }

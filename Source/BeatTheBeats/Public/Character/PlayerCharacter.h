@@ -158,8 +158,8 @@ protected:
 	void CameraShake();
 	void SpawnParticle();
 
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Reload")
-		void ReloadLevel();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "OnDeath")
+		void OnDeath();
 
 private:
 	void AttackCallback(TArray<FQTEDescription>* qte, ComboEffect effect);
