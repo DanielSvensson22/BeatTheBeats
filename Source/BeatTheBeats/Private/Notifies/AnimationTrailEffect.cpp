@@ -6,8 +6,10 @@
 
 UAnimationTrailEffect::UAnimationTrailEffect(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
+#if WITH_EDITOR
 	NotifyColor = FColor::Cyan;
 	bShouldFireInEditor = true;
+#endif
 
 	SocketName = TEXT("root");
 }

@@ -26,11 +26,11 @@ public:
 private:
 
 	UPROPERTY(EditDefaultsOnly)
-	FLinearColor StageColor;
+	FLinearColor StageColor = FLinearColor::Black;
 
 	UPROPERTY(EditDefaultsOnly)
 	FString StageIndicator;
 
 	UPROPERTY(EditDefaultsOnly)
-	float PointsNeeded;
+	float PointsNeeded = 0;
 };

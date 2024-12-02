@@ -26,11 +26,11 @@ public:
 private:
 
 	UPROPERTY(EditDefaultsOnly)
-	Attacks AttackWhichConnects;
+	Attacks AttackWhichConnects = Attacks::Attack_Neutral;
 
 	UPROPERTY(EditDefaultsOnly)
-	int FromComboStep;
+	int FromComboStep = 0;
 
 	UPROPERTY(EditDefaultsOnly)
-	int ToCombo;
+	int ToCombo = 0;
 };

@@ -8,7 +8,7 @@
 #include "Components/TextBlock.h"
 #include "Components/RadialSlider.h"
 #include "Misc/Paths.h"
-#include "FileHelpers.h"
+#include "Misc/FileHelper.h"
 
 // Sets default values
 AScoreManager::AScoreManager()

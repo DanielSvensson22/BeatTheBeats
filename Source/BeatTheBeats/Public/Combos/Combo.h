@@ -155,5 +155,5 @@ private:
 	TArray<FQTEDescription> QTEDescription;
 
 	UPROPERTY(EditDefaultsOnly)
-	ComboEffect ComboBonus;
+	ComboEffect ComboBonus = ComboEffect::None;
 };

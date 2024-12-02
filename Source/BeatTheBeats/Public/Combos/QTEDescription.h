@@ -40,14 +40,14 @@ public:
 private:
 
 	UPROPERTY(EditDefaultsOnly)
-		Attacks Attack;
+	Attacks Attack = Attacks::Attack_Neutral;
 
 	UPROPERTY(EditDefaultsOnly)
-		float BeatTimeDivisor = 1.0f;
+	float BeatTimeDivisor = 1.0f;
 
 	UPROPERTY(EditDefaultsOnly)
-		FVector2D OffsetRange;
+	FVector2D OffsetRange = FVector2D::ZeroVector;
 
 	UPROPERTY(EditDefaultsOnly)
-		bool bIsRandom = false;
+	bool bIsRandom = false;
 };

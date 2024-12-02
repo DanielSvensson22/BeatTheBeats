@@ -8,8 +8,10 @@
 
 UQTENotify::UQTENotify(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
+#if WITH_EDITOR
 	bShouldFireInEditor = false;
 	NotifyColor = FColor::Green;
+#endif
 }
 
 void UQTENotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) {

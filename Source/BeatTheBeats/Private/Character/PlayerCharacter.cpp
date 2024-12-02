@@ -3,6 +3,7 @@
 
 #include "Character/PlayerCharacter.h"
 #include "Character/BeatTheBeatsPlayerController.h"
+#include "GameFramework/Controller.h"
 #include "GameFramework\SpringArmComponent.h"
 #include "GameFramework\CharacterMovementComponent.h"
 #include "Camera/CameraComponent.h"
@@ -527,11 +528,13 @@ void APlayerCharacter::DodgeBack()
 		bIsDodging = true;
 		TimeUntilInvincibilityEnds = InvincibilityDuration;
 
-		FVector offset = GetActorForwardVector() * -1 * DodgeDistance;
+		FVector offset = UKismetMathLibrary::GetForwardVector(GetController()->GetControlRotation()) * -1 * DodgeDistance;
 
 		DodgeLocation = GetActorLocation() + offset;
 
 		PlayAttackMontage(DodgeBackAnim, TEXT("Default"), std::max(BeatManager->GetTimeUntilNextBeat(), BeatManager->TimeBetweenBeats() / 2));
+
+		GetMovementComponent()->Velocity = FVector::ZeroVector;
 	}
 }
 
@@ -541,11 +544,13 @@ void APlayerCharacter::DodgeLeft()
 		bIsDodging = true;
 		TimeUntilInvincibilityEnds = InvincibilityDuration;
 
-		FVector offset = GetActorRightVector() * -1 * DodgeDistance;
+		FVector offset = UKismetMathLibrary::GetRightVector(GetController()->GetControlRotation()) * -1 * DodgeDistance;
 
 		DodgeLocation = GetActorLocation() + offset;
 
 		PlayAttackMontage(DodgeLeftAnim, TEXT("Default"), std::max(BeatManager->GetTimeUntilNextBeat(), BeatManager->TimeBetweenBeats() / 2));
+
+		GetMovementComponent()->Velocity = FVector::ZeroVector;
 	}
 }
 
@@ -555,11 +560,13 @@ void APlayerCharacter::DodgeRight()
 		bIsDodging = true;
 		TimeUntilInvincibilityEnds = InvincibilityDuration;
 
-		FVector offset = GetActorRightVector() * DodgeDistance;
+		FVector offset = UKismetMathLibrary::GetRightVector(GetController()->GetControlRotation()) * DodgeDistance;
 
 		DodgeLocation = GetActorLocation() + offset;
 
 		PlayAttackMontage(DodgeRightAnim, TEXT("Default"), std::max(BeatManager->GetTimeUntilNextBeat(), BeatManager->TimeBetweenBeats() / 2));
+
+		GetMovementComponent()->Velocity = FVector::ZeroVector;
 	}
 }
 
@@ -619,7 +626,6 @@ void APlayerCharacter::ProcessIncomingAttacks()
 	if (bIsDodging) {
 		IncomingAttacks.Empty();
 		bIsBlocking = false;
-		bIsDodging = false;
 		return;
 	}
 

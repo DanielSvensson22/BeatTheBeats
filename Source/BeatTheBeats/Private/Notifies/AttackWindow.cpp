@@ -7,8 +7,11 @@
 
 UAttackWindow::UAttackWindow(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
+#if WITH_EDITOR
 	NotifyColor = FColor::Red;
 	bShouldFireInEditor = false;
+#endif
+
 	bIsNativeBranchingPoint = true;
 }
 
