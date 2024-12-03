@@ -67,7 +67,7 @@ public:
 
 		}
 		else {
-			UE_LOG(LogTemp, Error, TEXT("Could not remove function from Beat Manager!"));
+			//UE_LOG(LogTemp, Error, TEXT("Could not remove function from Beat Manager!"));
 		}
 	}
 
