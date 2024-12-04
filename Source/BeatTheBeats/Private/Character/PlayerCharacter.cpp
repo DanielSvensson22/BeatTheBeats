@@ -79,12 +79,15 @@ void APlayerCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	Weapon = GetWorld()->SpawnActor<AWeaponBase>(WeaponClass);
-	Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("RightHandSocket"));
-	Weapon->SetOwner(this);
 
-	if (ComboManager) {
-		ComboManager->SetWeapon(Weapon);
-	}
+	if (Weapon) {
+		Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("RightHandSocket"));
+		Weapon->SetOwner(this);
+
+		if (ComboManager) {
+			ComboManager->SetWeapon(Weapon);
+		}
+	}	
 
 	CurrentHealth = MaxHealth;
 

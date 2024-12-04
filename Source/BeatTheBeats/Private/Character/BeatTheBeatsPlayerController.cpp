@@ -19,26 +19,7 @@ void ABeatTheBeatsPlayerController::BeginPlay()
 		Subsystem->AddMappingContext(DefaultMappingContext, 0);
 	}
 
-	HUD = CreateWidget(this, HudClass);
-
-	if (HUD) {
-		HUD->AddToViewport();
-	}
-
-	BeatManager = Cast<ABeatManager>(UGameplayStatics::GetActorOfClass(this, BeatManagerClass));
-
-	if (BeatManager == nullptr) {
-		UE_LOG(LogTemp, Error, TEXT("No Beat Manager was found in the scene!"));
-	}
-
-	ScoreManager = Cast<AScoreManager>(UGameplayStatics::GetActorOfClass(this, ScoreManagerClass));
-
-	if (ScoreManager == nullptr) {
-		UE_LOG(LogTemp, Error, TEXT("No Score Manager was found in the scene!"));
-	}
-	else {
-		ScoreManager->SetupScoreManager(HUD);
-	}
+	ForceInit();
 }
 
 void ABeatTheBeatsPlayerController::GameOver()
@@ -47,5 +28,33 @@ void ABeatTheBeatsPlayerController::GameOver()
 
 	if (GameOverScreen) {
 		GameOverScreen->AddToViewport();
+	}
+}
+
+void ABeatTheBeatsPlayerController::ForceInit()
+{
+	if (!bHasBeenInitialized) {
+		bHasBeenInitialized = true;
+
+		HUD = CreateWidget(this, HudClass);
+
+		if (HUD) {
+			HUD->AddToViewport();
+		}
+
+		BeatManager = Cast<ABeatManager>(UGameplayStatics::GetActorOfClass(this, BeatManagerClass));
+
+		if (BeatManager == nullptr) {
+			UE_LOG(LogTemp, Error, TEXT("No Beat Manager was found in the scene!"));
+		}
+
+		ScoreManager = Cast<AScoreManager>(UGameplayStatics::GetActorOfClass(this, ScoreManagerClass));
+
+		if (ScoreManager == nullptr) {
+			UE_LOG(LogTemp, Error, TEXT("No Score Manager was found in the scene!"));
+		}
+		else {
+			ScoreManager->SetupScoreManager(HUD);
+		}
 	}
 }

@@ -64,31 +64,35 @@ void UComboManagerComponent::BeginPlay()
 
 	if (player && player->GetController()) {
 		if (ABeatTheBeatsPlayerController* controller = Cast<ABeatTheBeatsPlayerController>(player->GetController())) {
-			ComboText = Cast<UTextBlock>(controller->GetHUD()->WidgetTree->FindWidget(TEXT("ComboText")));
 
-			UImage* indicator1 = Cast<UImage>(controller->GetHUD()->WidgetTree->FindWidget(TEXT("ComboImage1")));
+			controller->ForceInit();
+			if (controller->GetHUD()) {
+				ComboText = Cast<UTextBlock>(controller->GetHUD()->WidgetTree->FindWidget(TEXT("ComboText")));
 
-			if (indicator1) {
-				ComboImages.Add(indicator1);
-			}
+				UImage* indicator1 = Cast<UImage>(controller->GetHUD()->WidgetTree->FindWidget(TEXT("ComboImage1")));
 
-			UImage* indicator2 = Cast<UImage>(controller->GetHUD()->WidgetTree->FindWidget(TEXT("ComboImage2")));
+				if (indicator1) {
+					ComboImages.Add(indicator1);
+				}
 
-			if (indicator2) {
-				ComboImages.Add(indicator2);
-			}
+				UImage* indicator2 = Cast<UImage>(controller->GetHUD()->WidgetTree->FindWidget(TEXT("ComboImage2")));
 
-			UImage* indicator3 = Cast<UImage>(controller->GetHUD()->WidgetTree->FindWidget(TEXT("ComboImage3")));
+				if (indicator2) {
+					ComboImages.Add(indicator2);
+				}
 
-			if (indicator3) {
-				ComboImages.Add(indicator3);
-			}
+				UImage* indicator3 = Cast<UImage>(controller->GetHUD()->WidgetTree->FindWidget(TEXT("ComboImage3")));
 
-			UImage* indicator4 = Cast<UImage>(controller->GetHUD()->WidgetTree->FindWidget(TEXT("ComboImage4")));
+				if (indicator3) {
+					ComboImages.Add(indicator3);
+				}
 
-			if (indicator4) {
-				ComboImages.Add(indicator4);
-			}
+				UImage* indicator4 = Cast<UImage>(controller->GetHUD()->WidgetTree->FindWidget(TEXT("ComboImage4")));
+
+				if (indicator4) {
+					ComboImages.Add(indicator4);
+				}
+			}		
 		}
 	}
 

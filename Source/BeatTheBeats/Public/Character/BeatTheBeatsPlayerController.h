@@ -27,6 +27,8 @@ public:
 	FORCEINLINE UUserWidget* GetHUD() { return HUD; }
 
 	void GameOver();
+
+	void ForceInit();
 	
 protected:
 
@@ -65,4 +67,6 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AScoreManager> ScoreManagerClass;
+
+	bool bHasBeenInitialized = false;
 };
