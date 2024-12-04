@@ -92,7 +92,7 @@ void UQTEComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 
 	// ...
 
-	if (bIsActive) {
+	if (bIsActive && BeatManager) {
 		CurrentTimeStep += DeltaTime / UGameplayStatics::GetGlobalTimeDilation(this) * TimeStepMultiplier * SpeedIncrease;
 
 		if (CurrentTimeStep > BeatManager->TimeBetweenBeats() / (*CurrentQTE)[CurrentQTEStep].GetBeatTimeDivisor()) {
@@ -134,6 +134,10 @@ void UQTEComponent::StartQTE(TArray<FQTEDescription>* qte, ComboEffect effect)
 
 void UQTEComponent::AttemptAttack(Attacks Attack)
 {
+	if (BeatManager == nullptr) {
+		return;
+	}
+
 	FQTEDescription& desc = (*CurrentQTE)[CurrentQTEStep];
 
 	if (CurrentTimeStep / (BeatManager->TimeBetweenBeats() / (*CurrentQTE)[CurrentQTEStep].GetBeatTimeDivisor()) > MinClosenessToBeat) {
@@ -218,6 +222,10 @@ void UQTEComponent::AddSpeed(float speed)
 
 void UQTEComponent::UpdateWidgetIndicators(int index)
 {
+	if (MinClosenessIndicator == nullptr || AttackCircle == nullptr || AttackIndicator == nullptr) {
+		return;
+	}
+
 	FQTEDescription& desc = (*CurrentQTE)[index];
 
 	Attacks attack = desc.GetAttack();

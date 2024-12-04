@@ -69,7 +69,9 @@ APlayerCharacter::APlayerCharacter()
 
 APlayerCharacter::~APlayerCharacter()
 {
-	BeatManager->UnBindFuncFromOnBeat(BeatHandle);
+	if (BeatManager) {
+		BeatManager->UnBindFuncFromOnBeat(BeatHandle);
+	}
 }
 
 void APlayerCharacter::BeginPlay()
@@ -80,7 +82,9 @@ void APlayerCharacter::BeginPlay()
 	Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("RightHandSocket"));
 	Weapon->SetOwner(this);
 
-	ComboManager->SetWeapon(Weapon);
+	if (ComboManager) {
+		ComboManager->SetWeapon(Weapon);
+	}
 
 	CurrentHealth = MaxHealth;
 
@@ -194,7 +198,7 @@ void APlayerCharacter::SetWeaponCollisionEnabled(ECollisionEnabled::Type Collisi
 			bIsBlocking = false;
 			bIsDodging = false;
 
-			if (bSpecial2Active) {
+			if (bSpecial2Active && QTE) {
 				bSpecial2Active = false;
 				QTE->AddSpeed(Special2QTESpeedIncrease);
 				QTE->StartQTE(&Special2QTE, ComboEffect::ExtraSpecial2);
@@ -213,14 +217,11 @@ void APlayerCharacter::SetWeaponCollisionEnabled(ECollisionEnabled::Type Collisi
 
 				EnemyToAttack = Cast<AEnemyBase>(result.GetActor());
 
-				UE_LOG(LogTemp, Warning, TEXT("Found enemy to close distance to"));
-
 				if (EnemyToAttack) {
 					float dist = FVector::Dist(GetActorLocation(), EnemyToAttack->GetActorLocation());
 
 					if (dist > MinClosingDistance) {
 						bClosingDistance = true;
-						UE_LOG(LogTemp, Warning, TEXT("Closing Distance!"));
 					}
 					else {
 						EnemyToAttack = nullptr;
@@ -339,10 +340,12 @@ void APlayerCharacter::SetTargetLockCamera()
 void APlayerCharacter::AddNeutralAttack()
 {
 	if (bInQTE) {
-		QTE->AttemptAttack(Attacks::Attack_Neutral);
+		if (QTE) {
+			QTE->AttemptAttack(Attacks::Attack_Neutral);
+		}	
 	}
 	else {
-		if (!bIsDodging && !bIsBlocking) {
+		if (!bIsDodging && !bIsBlocking && BeatManager && ComboManager) {
 			bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
 			ComboManager->AddAttack(Attacks::Attack_Neutral, PlayerDamage, !AddedLastBeat);
 			bIsAttacking = true;
@@ -364,10 +367,12 @@ void APlayerCharacter::AddNeutralAttack()
 void APlayerCharacter::AddType1Attack()
 {
 	if (bInQTE) {
-		QTE->AttemptAttack(Attacks::Attack_Type1);
+		if (QTE) {
+			QTE->AttemptAttack(Attacks::Attack_Type1);
+		}
 	}
 	else {
-		if (!bIsDodging && !bIsBlocking) {
+		if (!bIsDodging && !bIsBlocking && BeatManager && ComboManager) {
 			bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
 			ComboManager->AddAttack(Attacks::Attack_Type1, PlayerDamage, !AddedLastBeat);
 			bIsAttacking = true;
@@ -389,10 +394,12 @@ void APlayerCharacter::AddType1Attack()
 void APlayerCharacter::AddType2Attack()
 {
 	if (bInQTE) {
-		QTE->AttemptAttack(Attacks::Attack_Type2);
+		if (QTE) {
+			QTE->AttemptAttack(Attacks::Attack_Type2);
+		}
 	}
 	else {
-		if (!bIsDodging && !bIsBlocking) {
+		if (!bIsDodging && !bIsBlocking && BeatManager && ComboManager) {
 			bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
 			ComboManager->AddAttack(Attacks::Attack_Type2, PlayerDamage, !AddedLastBeat);
 			bIsAttacking = true;
@@ -414,10 +421,12 @@ void APlayerCharacter::AddType2Attack()
 void APlayerCharacter::AddType3Attack()
 {
 	if (bInQTE) {
-		QTE->AttemptAttack(Attacks::Attack_Type3);
+		if (QTE) {
+			QTE->AttemptAttack(Attacks::Attack_Type3);
+		}	
 	}
 	else {
-		if (!bIsDodging && !bIsBlocking) {
+		if (!bIsDodging && !bIsBlocking && BeatManager && ComboManager) {
 			bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
 			ComboManager->AddAttack(Attacks::Attack_Type3, PlayerDamage, !AddedLastBeat);
 			bIsAttacking = true;
@@ -445,7 +454,9 @@ void APlayerCharacter::CameraShake()
 }
 void APlayerCharacter::SpawnParticle()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Particle!"));
+	if (GEngine) {
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Particle!"));
+	}	
 
 	if (TempParticleEffect != NULL)
 	{
@@ -456,7 +467,7 @@ void APlayerCharacter::SpawnParticle()
 
 void APlayerCharacter::AddNeutralBlock()
 {
-	if (!bIsBlocking && !bIsDodging) {
+	if (!bIsBlocking && !bIsDodging && BeatManager) {
 		CurrentBlockedType = Attacks::Attack_Neutral;
 		bIsBlocking = true;
 
@@ -473,7 +484,7 @@ void APlayerCharacter::AddNeutralBlock()
 
 void APlayerCharacter::AddType1Block()
 {
-	if (!bIsBlocking && !bIsDodging) {
+	if (!bIsBlocking && !bIsDodging && BeatManager) {
 		CurrentBlockedType = Attacks::Attack_Type1;
 		bIsBlocking = true;
 
@@ -490,7 +501,7 @@ void APlayerCharacter::AddType1Block()
 
 void APlayerCharacter::AddType2Block()
 {
-	if (!bIsBlocking && !bIsDodging) {
+	if (!bIsBlocking && !bIsDodging && BeatManager) {
 		CurrentBlockedType = Attacks::Attack_Type2;
 		bIsBlocking = true;
 
@@ -507,7 +518,7 @@ void APlayerCharacter::AddType2Block()
 
 void APlayerCharacter::AddType3Block()
 {
-	if (!bIsBlocking && !bIsDodging) {
+	if (!bIsBlocking && !bIsDodging && BeatManager) {
 		CurrentBlockedType = Attacks::Attack_Type3;
 		bIsBlocking = true;
 
@@ -524,7 +535,7 @@ void APlayerCharacter::AddType3Block()
 
 void APlayerCharacter::DodgeBack()
 {
-	if (!bIsDodging) {
+	if (!bIsDodging && BeatManager) {
 		bIsDodging = true;
 		TimeUntilInvincibilityEnds = InvincibilityDuration;
 
@@ -540,7 +551,7 @@ void APlayerCharacter::DodgeBack()
 
 void APlayerCharacter::DodgeLeft()
 {
-	if (!bIsDodging) {
+	if (!bIsDodging && BeatManager) {
 		bIsDodging = true;
 		TimeUntilInvincibilityEnds = InvincibilityDuration;
 
@@ -556,7 +567,7 @@ void APlayerCharacter::DodgeLeft()
 
 void APlayerCharacter::DodgeRight()
 {
-	if (!bIsDodging) {
+	if (!bIsDodging && BeatManager) {
 		bIsDodging = true;
 		TimeUntilInvincibilityEnds = InvincibilityDuration;
 
@@ -577,7 +588,9 @@ void APlayerCharacter::AttackCallback(TArray<FQTEDescription>* qte, ComboEffect 
 
 	FTimerHandle handle;
 
-	GetWorldTimerManager().SetTimer(handle, this, &APlayerCharacter::EnterQTE, BeatManager->TimeBetweenBeats(), false);
+	if (BeatManager) {
+		GetWorldTimerManager().SetTimer(handle, this, &APlayerCharacter::EnterQTE, BeatManager->TimeBetweenBeats(), false);
+	}
 }
 
 void APlayerCharacter::PlayAttackMontage(UAnimMontage* montage, FName SectionName, float TotalTime)
@@ -684,6 +697,10 @@ void APlayerCharacter::ExitQTE()
 
 void APlayerCharacter::FailedSpecial()
 {
+	if (Weapon == nullptr) {
+		return;
+	}
+
 	Weapon->SetAttackStatus(FailedSpecialDamage, Attacks::Attack_Guaranteed, true);
 	PlayAttackMontage(FailedSpecialAnim, TEXT("Default"), BeatManager->GetTimeUntilNextBeat() + BeatManager->TimeBetweenBeats());
 	bIsDodging = true;
@@ -691,6 +708,10 @@ void APlayerCharacter::FailedSpecial()
 
 void APlayerCharacter::Special1()
 {
+	if (Weapon == nullptr) {
+		return;
+	}
+
 	Weapon->SetAttackStatus(Special1Damage, Attacks::Attack_Guaranteed, true);
 	PlayAttackMontage(Special1Anim, TEXT("Default"), BeatManager->GetTimeUntilNextBeat() + BeatManager->TimeBetweenBeats() * 3);
 	bIsDodging = true;
@@ -698,6 +719,10 @@ void APlayerCharacter::Special1()
 
 void APlayerCharacter::Special2()
 {
+	if (Weapon == nullptr) {
+		return;
+	}
+
 	Weapon->SetAttackStatus(Special2Damage, Attacks::Attack_Guaranteed, true);
 	PlayAttackMontage(Special2Anim, TEXT("Default"), BeatManager->GetTimeUntilNextBeat() + BeatManager->TimeBetweenBeats() * 2);
 	bIsDodging = true;
@@ -706,6 +731,10 @@ void APlayerCharacter::Special2()
 
 void APlayerCharacter::Special3()
 {
+	if (Weapon == nullptr) {
+		return;
+	}
+
 	Weapon->SetAttackStatus(Special3Damage, Attacks::Attack_Guaranteed, true);
 	PlayAttackMontage(Special3Anim, TEXT("Default"), BeatManager->GetTimeUntilNextBeat() + BeatManager->TimeBetweenBeats());
 	bIsDodging = true;
@@ -715,8 +744,6 @@ void APlayerCharacter::ApplyDamage(float Damage)
 {
 	CurrentHealth = FMath::Clamp(CurrentHealth - Damage, 0, MaxHealth);
 
-	UE_LOG(LogTemp, Display, TEXT("Remaining health: %f"), CurrentHealth);
-
 	if (ScoreManager) {
 		ScoreManager->TookDamage();
 	}
@@ -725,7 +752,6 @@ void APlayerCharacter::ApplyDamage(float Damage)
 		if (!bHasDied) {
 			bHasDied = true;
 			OnDeath();
-			UE_LOG(LogTemp, Warning, TEXT("Player died!"));
 
 			ABeatTheBeatsPlayerController* controller = Cast<ABeatTheBeatsPlayerController>(GetController());
 
@@ -741,7 +767,9 @@ void APlayerCharacter::ApplyDamage(float Damage)
 				AttackTypeEffectComp->Deactivate();
 			}
 
-			BeatManager->UnBindFuncFromOnBeat(BeatHandle);
+			if (BeatManager) {
+				BeatManager->UnBindFuncFromOnBeat(BeatHandle);
+			}
 
 			controller->bShowMouseCursor = true;
 			controller->bEnableClickEvents = true;

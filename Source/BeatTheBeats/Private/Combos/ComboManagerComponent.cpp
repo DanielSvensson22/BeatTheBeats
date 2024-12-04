@@ -27,9 +27,11 @@ UComboManagerComponent::UComboManagerComponent()
 
 UComboManagerComponent::~UComboManagerComponent()
 {
-	for (auto& handle : Handles) {
-		BeatManager->UnBindFuncFromOnBeat(handle);
-	}
+	if (BeatManager) {
+		for (auto& handle : Handles) {
+			BeatManager->UnBindFuncFromOnBeat(handle);
+		}
+	}	
 }
 
 
@@ -225,14 +227,14 @@ void UComboManagerComponent::PerformAttack(Attacks AttackType)
 
 void UComboManagerComponent::PerformAnimation(Attacks AttackType, float ClosenessToBeat, bool AddTimeBetweenBeats, UAnimMontage* montage)
 {
-	if (ClosenessToBeat > ClosenessPercentForPerfectBeat) {
-		player->PlayAttackMontage(montage, TEXT("Perfect"), BeatManager->TimeBetweenBeats() * 0.9f);
+	if (player) {
+		if (ClosenessToBeat > ClosenessPercentForPerfectBeat) {
+			player->PlayAttackMontage(montage, TEXT("Perfect"), BeatManager->TimeBetweenBeats() * 0.9f);
+		}
+		else {
+			player->PlayAttackMontage(montage, TEXT("Default"), BeatManager->TimeBetweenBeats() * 0.9f);
+		}
 	}
-	else {
-		player->PlayAttackMontage(montage, TEXT("Default"), BeatManager->TimeBetweenBeats() * 0.9f);
-	}
-
-	UE_LOG(LogTemp, Display, TEXT("Animated on combo %i step %i"), CurrentCombo, FMath::Max(CurrentComboStep, 0));
 }
 
 void UComboManagerComponent::SetComboIndicators()
