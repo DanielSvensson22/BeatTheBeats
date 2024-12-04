@@ -206,7 +206,7 @@ void AEnemyBase::PlayHitReactMontage(const FName& SectionName)
 
 void AEnemyBase::GetHit(const FVector& ImpactPoint)
 {
-	if (GetWorld()) DrawDebugSphere(GetWorld(), ImpactPoint, 10.f, 12, FColor::Orange, false, 5.f);
+	/*if (GetWorld()) DrawDebugSphere(GetWorld(), ImpactPoint, 10.f, 12, FColor::Orange, false, 5.f);*/
 
 	DirectionalHitReact(ImpactPoint);
 
@@ -240,10 +240,10 @@ void AEnemyBase::DirectionalHitReact(const FVector& ImpactPoint)
 	/*
 	** Draw debug line for calculation vector
 	*/
-	if (GEngine != nullptr) { GEngine->AddOnScreenDebugMessage(1, 5.f, FColor::Green, FString::Printf(TEXT("Theta: %f"), Theta)); }
+	/*if (GEngine != nullptr) { GEngine->AddOnScreenDebugMessage(1, 5.f, FColor::Green, FString::Printf(TEXT("Theta: %f"), Theta)); }
 	UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + CrossProduct * 100.f, 5.f, FColor::Blue, 5.f);
 	UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + Forward * 100.f, 5.f, FColor::Red, 5.f);
-	UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + ToHit * 100.f, 5.f, FColor::Green, 5.f);
+	UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + ToHit * 100.f, 5.f, FColor::Green, 5.f);*/
 }
 
 void AEnemyBase::ApplyDamage(float InitialDamage, Attacks AttackType, bool OnBeat, FVector HitLocation)
