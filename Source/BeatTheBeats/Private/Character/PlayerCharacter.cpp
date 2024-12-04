@@ -289,7 +289,7 @@ void APlayerCharacter::TargetLock()
 
 		TArray<FHitResult> SphereHitMulti; // hit result
 
-		UKismetSystemLibrary::SphereTraceMultiForObjects(this, Start, End, TargetLockTraceRadius, ObjectTypesArray, false, IgnoreActors, EDrawDebugTrace::ForDuration, SphereHitMulti, true);
+		UKismetSystemLibrary::SphereTraceMultiForObjects(this, Start, End, TargetLockTraceRadius, ObjectTypesArray, false, IgnoreActors, EDrawDebugTrace::None, SphereHitMulti, true);
 
 		int n = 0;
 
