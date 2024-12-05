@@ -69,9 +69,11 @@ APlayerCharacter::APlayerCharacter()
 
 APlayerCharacter::~APlayerCharacter()
 {
+#if WITH_EDITOR
 	if (BeatManager) {
 		BeatManager->UnBindFuncFromOnBeat(BeatHandle);
 	}
+#endif
 }
 
 void APlayerCharacter::BeginPlay()

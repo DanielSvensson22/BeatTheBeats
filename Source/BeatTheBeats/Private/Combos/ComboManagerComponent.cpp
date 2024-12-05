@@ -27,11 +27,13 @@ UComboManagerComponent::UComboManagerComponent()
 
 UComboManagerComponent::~UComboManagerComponent()
 {
+#if WITH_EDITOR
 	if (BeatManager) {
 		for (auto& handle : Handles) {
 			BeatManager->UnBindFuncFromOnBeat(handle);
 		}
 	}	
+#endif
 }
 
 
