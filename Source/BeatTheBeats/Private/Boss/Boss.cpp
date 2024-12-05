@@ -8,6 +8,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "AIController.h"
+#include "Score/ScoreManager.h"
 
 ABoss::ABoss() : Super()
 {
@@ -178,6 +179,15 @@ void ABoss::SwapSceneOnDeath()
 void ABoss::ApplyBulletDamage()
 {
 	UGameplayStatics::ApplyDamage(Player, BulletDamage, GetController(), this, UDamageType::StaticClass());
+}
+
+void ABoss::SaveScoreOnDeath()
+{
+	AScoreManager* score = Cast<AScoreManager>(UGameplayStatics::GetActorOfClass(this, ScoreClass));
+
+	if (score) {
+		score->Save();
+	}
 }
 
 void ABoss::StartRayAttack()
@@ -370,6 +380,13 @@ bool ABoss::CheckIfNeedsToRotate()
 void ABoss::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	APawn* p = UGameplayStatics::GetPlayerPawn(this, 0);
+
+	if (p == nullptr) {
+		return;
+	}
+
 	FVector PlayerLocation = Player->GetActorLocation();
 	FVector BossLocation = GetActorLocation();
 	float Distance = FVector::Dist(PlayerLocation, BossLocation);

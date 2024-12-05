@@ -31,7 +31,10 @@ public:
 	void SetupScoreManager(UUserWidget* UserWidget);
 
 	UFUNCTION(BlueprintPure)
-	int GetPoints() const { return (int)Points; }
+	FORCEINLINE int GetPoints() const { return (int)Points; }
+
+	UFUNCTION(BlueprintCallable)
+	void SetPoints(int points);
 
 	//Get the file path for the .json save file
 	UFUNCTION(BlueprintPure)
@@ -42,6 +45,11 @@ public:
 	void TookDamage();
 
 	void UpdateUI();
+
+	void Save();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "SaveEvent")
+	void SaveEvent();
 
 private:
 

@@ -26,6 +26,7 @@ class AAIController;
 class UAnimMontage;
 class USkeletalMeshComponent;
 class ABullet;
+class AScoreManager;
 
 UCLASS()
 class BEATTHEBEATS_API ABoss : public AEnemyBase
@@ -42,6 +43,9 @@ public:
 	void SwapSceneOnDeath();
 
 	void ApplyBulletDamage();
+
+	UFUNCTION(BlueprintCallable, Category = "Boss")
+	void SaveScoreOnDeath();
 
 protected:
 	virtual void BeginPlay() override;
@@ -184,6 +188,9 @@ private:
 	float RotationDuration = 0.0f;  // Tracks how long boss has been rotating
 	const float MaxRotationTime = 2.0f;  // Maximum time to rotate before snapping
 	float RotationThreshold = 2.0f; // How much the boss needs to Rotate to count as facing towards the player
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AScoreManager> ScoreClass;
 
 public:
 	UFUNCTION(BlueprintCallable)

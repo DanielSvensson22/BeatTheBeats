@@ -70,7 +70,10 @@ void AScoreManager::SetupScoreManager(UUserWidget* UserWidget)
 
 void AScoreManager::AddPoints(float points)
 {
-	Points += FMath::Clamp(points, 0, INT32_MAX);
+	if (points > 0) {
+		Points = FMath::Clamp(Points + points, 0, INT32_MAX);
+	}
+	
 	CurrentStagePoints += points;
 
 	while (CurrentStagePoints >= ScoreStages[CurrentStage].GetPointsNeeded() && CurrentStage < ScoreStages.Num() - 1) {
@@ -110,6 +113,21 @@ void AScoreManager::UpdateUI()
 		CurrentTimeUntilPointsLoss = TimeUntilPointsLoss;
 		bHasLostPoints = false;
 	}
+}
+
+void AScoreManager::Save()
+{
+	SaveEvent();
+}
+
+void AScoreManager::SaveEvent_Implementation()
+{
+
+}
+
+void AScoreManager::SetPoints(int points)
+{
+	Points = (float)points;
 }
 
 /// <summary>
