@@ -292,6 +292,10 @@ void AEnemyBase::ApplyDamage(float InitialDamage, Attacks AttackType, bool OnBea
 		if (!bHasDied) {
 			bHasDied = true;
 
+			if (ScoreManager) {
+				ScoreManager->AddPoints(FinalDamage);
+			}
+
 			ExitQueue();
 
 			DetachFromControllerPendingDestroy();
