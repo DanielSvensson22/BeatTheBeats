@@ -57,6 +57,11 @@ public:
 		}
 	}
 
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE void SetBPM(float bpm) {
+		BPM = bpm;
+	}
+
 	template<typename Type>
 	FDelegateHandle BindFuncToOnBeat(Type* type, void (Type::* Func)(float)) {
 		return OnBeat.AddUObject(type, Func);
@@ -73,7 +78,7 @@ public:
 
 private:
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditAnywhere)
 	float BPM = 60;
 
 	UPROPERTY(VisibleAnywhere)

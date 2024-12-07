@@ -247,7 +247,7 @@ void APlayerCharacter::Move(const FInputActionValue& Value)
 	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
-	if (Controller != nullptr && !bIsAttacking && !bIsDodging)
+	if (Controller != nullptr && !bIsAttacking && !bIsDodging && !bIsBlocking)
 	{
 		AddMovementInput(ForwardDirection, MovementVector.Y);
 		AddMovementInput(RightDirection, MovementVector.X);
