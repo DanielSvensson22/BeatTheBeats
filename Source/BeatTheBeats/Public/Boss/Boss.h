@@ -164,6 +164,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Sounds")
 	USoundBase* RayStartSoundCue;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Sounds")
+	USoundBase* BulletShootCue;
+
 
 	APawn* Player;
 

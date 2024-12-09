@@ -140,6 +140,9 @@ void ABoss::SpawnBullet()
 	FVector SpawnLocation = GetMesh()->GetSocketLocation("MuzzleCenter");  // Assuming a socket on the boss's hand
 	FRotator SpawnRotation = (Player->GetActorLocation() - SpawnLocation).Rotation();
 
+	if (BulletShootCue)
+		UGameplayStatics::PlaySoundAtLocation(this, BulletShootCue, GetActorLocation());
+
 	// Spawn the bullet
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
@@ -149,7 +152,7 @@ void ABoss::SpawnBullet()
 	{
 		// Set velocity towards the player
 		FVector Direction = (Player->GetActorLocation() - SpawnLocation).GetSafeNormal();
-		SpawnedBullet->ProjectileMovement->Velocity = Direction * SpawnedBullet->ProjectileMovement->InitialSpeed; 
+		SpawnedBullet->ProjectileMovement->Velocity = Direction * SpawnedBullet->ProjectileMovement->InitialSpeed;
 		SpawnedBullet->Boss = this;
 		SpawnedBullet->Player = Player;
 	}
@@ -242,20 +245,20 @@ void ABoss::ParticleEffects()
 		{
 			if (bCanAttack)
 			{
-					UGameplayStatics::SpawnEmitterAttached( 
-						BulletSpawnEffect,         // The particle system to spawn 
-						GetMesh(),              // The mesh to attach to 
-						FName("MuzzleCenter"),             // The socket name 
-						FVector::ZeroVector,    // Location offset (relative to socket)
-						FRotator::ZeroRotator,  // Rotation offset (relative to socket) 
-						EAttachLocation::SnapToTarget, // Snap to the socket's transform 
-						true                    // Auto-destroy the particle system 
-					);
+				UGameplayStatics::SpawnEmitterAttached(
+					BulletSpawnEffect,         // The particle system to spawn 
+					GetMesh(),              // The mesh to attach to 
+					FName("MuzzleCenter"),             // The socket name 
+					FVector::ZeroVector,    // Location offset (relative to socket)
+					FRotator::ZeroRotator,  // Rotation offset (relative to socket) 
+					EAttachLocation::SnapToTarget, // Snap to the socket's transform 
+					true                    // Auto-destroy the particle system 
+				);
 			}
-			else 
+			else
 			{
-				FTransform Transform = SkeletalMeshComponent->GetSocketTransform(FName("MuzzleCenter")); 
-				SpawnAttackParticleEffect(PrimaryAttackMuzzle, Transform); 
+				FTransform Transform = SkeletalMeshComponent->GetSocketTransform(FName("MuzzleCenter"));
+				SpawnAttackParticleEffect(PrimaryAttackMuzzle, Transform);
 
 				SpawnBullet();
 			}
@@ -478,8 +481,8 @@ void ABoss::Tick(float DeltaTime)
 			bHasStartedRotationMontage = true;  // Set the flag to avoid re-triggering the montage
 		}
 
-			// Interpolate the rotation and set the new rotation
-			FRotator TargetRotation = Direction.Rotation();
+		// Interpolate the rotation and set the new rotation
+		FRotator TargetRotation = Direction.Rotation();
 		FRotator CurrentRotation = GetActorRotation();
 		FRotator NewRotation = FMath::RInterpTo(CurrentRotation, TargetRotation, GetWorld()->GetDeltaSeconds(), RotationSpeed * (1 + RotationDuration * 1.0f));
 		SetActorRotation(FRotator(0, NewRotation.Yaw, 0));
