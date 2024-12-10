@@ -11,6 +11,7 @@
 #include "../Combos/QTEDescription.h"
 #include "PlayerCharacter.generated.h"
 
+class UTutorialChecklist;
 class UInputAction;
 class USpringArmComponent;
 class UCameraComponent;
@@ -72,6 +73,9 @@ public:
 	void Special3();
 
 	FORCEINLINE AWeaponBase* GetWeapon() { return Weapon; }
+
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE UTutorialChecklist* GetTutorialChecklist() const { return Checklist; }
 
 protected:
 	virtual void BeginPlay() override;
@@ -177,6 +181,8 @@ private:
 
 private:
 	typedef std::tuple<AEnemyBase*, Attacks, float> IncomingAttack;
+
+	TObjectPtr<UTutorialChecklist> Checklist;
 
 	/**
 	* Weapon Components
