@@ -31,25 +31,5 @@ public:
     // SceneSwitcher to spawn in new levels
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Level Switching")
     TSubclassOf<ASceneSwitcher> SceneSwitcherClass;
-    UFUNCTION(BlueprintPure)
-    FORCEINLINE float GetMusicVolume() const { return MusicVolume; }
-    UFUNCTION(BlueprintPure)
-    FORCEINLINE float GetEffectsVolume() const { return EffectsVolume; }
-    UFUNCTION(BlueprintPure)
-    FORCEINLINE bool GetCameraShake() const { return CameraShake; }
-
-    UFUNCTION(BlueprintCallable)
-    FORCEINLINE void SetMusicVolume(float newMusic) { MusicVolume = newMusic; }
-    UFUNCTION(BlueprintCallable)
-    FORCEINLINE void SetEffectsVolume(float newEffects) { EffectsVolume = newEffects; }
-    UFUNCTION(BlueprintCallable)
-    FORCEINLINE void SetCameraShake(bool newShake) { CameraShake = newShake; }
-
-private:
-    UPROPERTY(VisibleAnywhere)
-    float MusicVolume;
-    UPROPERTY(VisibleAnywhere)
-    float EffectsVolume;
-    UPROPERTY(VisibleAnywhere)
-    bool CameraShake;
+    
 };
