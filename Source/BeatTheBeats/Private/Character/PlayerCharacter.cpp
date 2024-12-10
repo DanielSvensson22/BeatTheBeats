@@ -14,6 +14,7 @@
 #include "TimerManager.h"
 #include "Animation/AnimInstance.h"
 
+#include "Tutorial\TutorialChecklist.h"
 #include "Components/InputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
@@ -80,6 +81,8 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	Checklist = NewObject<UTutorialChecklist>(this);
+
 	Weapon = GetWorld()->SpawnActor<AWeaponBase>(WeaponClass);
 
 	if (Weapon) {
@@ -89,7 +92,7 @@ void APlayerCharacter::BeginPlay()
 		if (ComboManager) {
 			ComboManager->SetWeapon(Weapon);
 		}
-	}	
+	}
 
 	CurrentHealth = MaxHealth;
 
@@ -347,13 +350,16 @@ void APlayerCharacter::AddNeutralAttack()
 	if (bInQTE) {
 		if (QTE) {
 			QTE->AttemptAttack(Attacks::Attack_Neutral);
-		}	
+		}
 	}
 	else {
 		if (!bIsDodging && !bIsBlocking && BeatManager && ComboManager) {
 			bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
 			ComboManager->AddAttack(Attacks::Attack_Neutral, PlayerDamage, !AddedLastBeat);
 			bIsAttacking = true;
+
+			if (Checklist)
+				Checklist->bAttackNeutral = true;
 
 			if (AttackTypeEffectComp) {
 				AttackTypeEffectComp->SetVariableLinearColor(TEXT("Color"), NeutralColor);
@@ -382,6 +388,9 @@ void APlayerCharacter::AddType1Attack()
 			ComboManager->AddAttack(Attacks::Attack_Type1, PlayerDamage, !AddedLastBeat);
 			bIsAttacking = true;
 
+			if (Checklist)
+				Checklist->bAttack1 = true;
+
 			if (AttackTypeEffectComp) {
 				AttackTypeEffectComp->SetVariableLinearColor(TEXT("Color"), AttackOneColor);
 			}
@@ -409,6 +418,9 @@ void APlayerCharacter::AddType2Attack()
 			ComboManager->AddAttack(Attacks::Attack_Type2, PlayerDamage, !AddedLastBeat);
 			bIsAttacking = true;
 
+			if (Checklist)
+				Checklist->bAttack2 = true;
+
 			if (AttackTypeEffectComp) {
 				AttackTypeEffectComp->SetVariableLinearColor(TEXT("Color"), AttackTwoColor);
 			}
@@ -428,13 +440,16 @@ void APlayerCharacter::AddType3Attack()
 	if (bInQTE) {
 		if (QTE) {
 			QTE->AttemptAttack(Attacks::Attack_Type3);
-		}	
+		}
 	}
 	else {
 		if (!bIsDodging && !bIsBlocking && BeatManager && ComboManager) {
 			bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
 			ComboManager->AddAttack(Attacks::Attack_Type3, PlayerDamage, !AddedLastBeat);
 			bIsAttacking = true;
+
+			if (Checklist)
+				Checklist->bAttack3 = true;
 
 			if (AttackTypeEffectComp) {
 				AttackTypeEffectComp->SetVariableLinearColor(TEXT("Color"), AttackThreeColor);
@@ -461,7 +476,7 @@ void APlayerCharacter::SpawnParticle()
 {
 	if (GEngine) {
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Particle!"));
-	}	
+	}
 
 	if (TempParticleEffect != NULL)
 	{
@@ -475,6 +490,9 @@ void APlayerCharacter::AddNeutralBlock()
 	if (!bIsBlocking && !bIsDodging && BeatManager) {
 		CurrentBlockedType = Attacks::Attack_Neutral;
 		bIsBlocking = true;
+
+		if (Checklist)
+			Checklist->bBlockNeutral;
 
 		if (BeatManager->ClosenessToBeat() > ClosenessForPeffectBlock) {
 			bPerfectBlock = true;
@@ -493,6 +511,9 @@ void APlayerCharacter::AddType1Block()
 		CurrentBlockedType = Attacks::Attack_Type1;
 		bIsBlocking = true;
 
+		if (Checklist)
+			Checklist->bBlock1 = true;
+
 		if (BeatManager->ClosenessToBeat() > ClosenessForPeffectBlock) {
 			bPerfectBlock = true;
 		}
@@ -509,6 +530,9 @@ void APlayerCharacter::AddType2Block()
 	if (!bIsBlocking && !bIsDodging && BeatManager) {
 		CurrentBlockedType = Attacks::Attack_Type2;
 		bIsBlocking = true;
+
+		if (Checklist)
+			Checklist->bBlock2 = true;
 
 		if (BeatManager->ClosenessToBeat() > ClosenessForPeffectBlock) {
 			bPerfectBlock = true;
@@ -527,6 +551,9 @@ void APlayerCharacter::AddType3Block()
 		CurrentBlockedType = Attacks::Attack_Type3;
 		bIsBlocking = true;
 
+		if (Checklist)
+			Checklist->bBlock3 = true;
+
 		if (BeatManager->ClosenessToBeat() > ClosenessForPeffectBlock) {
 			bPerfectBlock = true;
 		}
@@ -543,6 +570,9 @@ void APlayerCharacter::DodgeBack()
 	if (!bIsDodging && BeatManager) {
 		bIsDodging = true;
 		TimeUntilInvincibilityEnds = InvincibilityDuration;
+
+		if (Checklist)
+			Checklist->bDodge = true;
 
 		FVector offset = UKismetMathLibrary::GetForwardVector(GetController()->GetControlRotation()) * -1 * DodgeDistance;
 
@@ -711,7 +741,7 @@ void APlayerCharacter::FailedSpecial()
 	bIsDodging = true;
 }
 
-void APlayerCharacter::Special1()
+void APlayerCharacter::Special1() // QTE 123
 {
 	if (Weapon == nullptr) {
 		return;
