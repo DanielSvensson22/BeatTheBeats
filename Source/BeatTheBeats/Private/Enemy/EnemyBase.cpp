@@ -206,8 +206,6 @@ void AEnemyBase::PlayHitReactMontage(const FName& SectionName)
 
 void AEnemyBase::GetHit(const FVector& ImpactPoint)
 {
-	/*if (GetWorld()) DrawDebugSphere(GetWorld(), ImpactPoint, 10.f, 12, FColor::Orange, false, 5.f);*/
-
 	DirectionalHitReact(ImpactPoint);
 
 	bIsStunned = true;
@@ -235,18 +233,10 @@ void AEnemyBase::DirectionalHitReact(const FVector& ImpactPoint)
 	else if (Theta >= -135.f && Theta < -45.f) { SectionName = FName("FromLeft"); }
 	else if (Theta >= 45.f && Theta < 135.f) { SectionName = FName("FromRight"); }
 
-	PlayHitReactMontage(FName(SectionName));
-
-	/*
-	** Draw debug line for calculation vector
-	*/
-	/*if (GEngine != nullptr) { GEngine->AddOnScreenDebugMessage(1, 5.f, FColor::Green, FString::Printf(TEXT("Theta: %f"), Theta)); }
-	UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + CrossProduct * 100.f, 5.f, FColor::Blue, 5.f);
-	UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + Forward * 100.f, 5.f, FColor::Red, 5.f);
-	UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + ToHit * 100.f, 5.f, FColor::Green, 5.f);*/
+	PlayEnemyMontage(HitReactMontage, SectionName, BeatManager->TimeBetweenBeats());
 }
 
-void AEnemyBase::ApplyDamage(float InitialDamage, Attacks AttackType, bool OnBeat, FVector HitLocation)
+float AEnemyBase::ApplyDamage(float InitialDamage, Attacks AttackType, bool OnBeat, FVector HitLocation)
 {
 	float FinalDamage = InitialDamage;
 
@@ -347,30 +337,10 @@ void AEnemyBase::ApplyDamage(float InitialDamage, Attacks AttackType, bool OnBea
 			}
 		}
 
-		//SpawnDamageIndicator
-
-		if (DamageIndicators.Num() > 0) {
-			UTextBlock* indicator = DamageIndicators[0];
-			FVector2D sp = StartPositions[0];
-			DamageIndicators.RemoveAt(0);
-			StartPositions.RemoveAt(0);
-			DamageTimers.Add(DamageIndicatorLifetime);
-
-			indicator->SetIsEnabled(true);
-			indicator->SetVisibility(ESlateVisibility::Visible);
-			indicator->SetRenderTranslation(sp);
-
-			std::stringstream stream;
-			stream << std::fixed << std::setprecision(2) << FinalDamage;
-			indicator->SetText(FText::FromString(FString(stream.str().c_str())));
-
-			UsedDamageIndicators.Add(indicator);
-			UsedStartPositions.Add(sp);
-		}
-		else {
-			UE_LOG(LogTemp, Error, TEXT("Not enough damage indicators!"));
-		}
+		SpawnDamageIndicator(FinalDamage);
 	}
+
+	return FinalDamage;
 }
 
 void AEnemyBase::ApplyPushBack(float Force)
@@ -450,6 +420,23 @@ void AEnemyBase::Parry()
 	}
 }
 
+void AEnemyBase::PlayEnemyMontage(UAnimMontage* montage, FName SectionName, float TotalTime)
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
+	if (AnimInstance != nullptr && montage != nullptr)
+	{
+		int32 Section = montage->GetSectionIndex(SectionName);
+
+		float Length = montage->GetSectionLength(Section);
+
+		float PlayRate = Length / TotalTime;
+
+		AnimInstance->Montage_Play(montage, PlayRate);
+		AnimInstance->Montage_JumpToSection(SectionName, montage);
+	}
+}
+
 void AEnemyBase::DoDamage()
 {
 
@@ -496,6 +483,36 @@ void AEnemyBase::SetEffectsColor(Attacks Type)
 		}
 
 		GetMesh()->SetMaterial(AttackTypeMaterialIndex, AttackTypeMaterial);
+	}
+}
+
+void AEnemyBase::SpawnDamageIndicator(float damage)
+{
+	if (DamageIndicators.Num() > 0) {
+		UTextBlock* indicator = DamageIndicators[0];
+		FVector2D sp = StartPositions[0];
+		DamageIndicators.RemoveAt(0);
+		StartPositions.RemoveAt(0);
+		DamageTimers.Add(DamageIndicatorLifetime);
+
+		indicator->SetIsEnabled(true);
+		indicator->SetVisibility(ESlateVisibility::Visible);
+		indicator->SetRenderTranslation(sp);
+
+		if (damage > 0) {
+			std::stringstream stream;
+			stream << std::fixed << std::setprecision(2) << damage;
+			indicator->SetText(FText::FromString(FString(stream.str().c_str())));
+		}
+		else {
+			indicator->SetText(FText::FromString("Dodged!"));
+		}
+
+		UsedDamageIndicators.Add(indicator);
+		UsedStartPositions.Add(sp);
+	}
+	else {
+		UE_LOG(LogTemp, Error, TEXT("Not enough damage indicators!"));
 	}
 }
 

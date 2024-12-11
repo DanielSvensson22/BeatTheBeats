@@ -20,8 +20,11 @@ ARangedEnemy::ARangedEnemy() : Super()
 
 bool ARangedEnemy::GetCanAttack()
 {
-	if (FVector::Dist(ShootPoint->GetComponentLocation(), UGameplayStatics::GetPlayerPawn(this, 0)->GetActorLocation())
-		< CloseQuarterDistance) {
+	if (!(GetController()->LineOfSightTo(UGameplayStatics::GetPlayerPawn(this, 0)))) {
+		return false;
+	}
+
+	if (FVector::Dist(ShootPoint->GetComponentLocation(), UGameplayStatics::GetPlayerPawn(this, 0)->GetActorLocation()) < CloseQuarterDistance) {
 		return true;
 	}
 

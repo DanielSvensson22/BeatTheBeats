@@ -32,6 +32,7 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Interfaces/LockOnInterface.h"
 #include "Components/AudioComponent.h"
+#include "Engine/DamageEvents.h"
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -185,7 +186,10 @@ float APlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damag
 	AEnemyBase* enemy = Cast<AEnemyBase>(DamageCauser);
 
 	if (enemy) {
-		IncomingAttacks.Emplace(enemy, enemy->GetEnemyType(), DamageAmount);
+		FHitResult hit;
+		FVector dir;
+		DamageEvent.GetBestHitInfo(this, DamageCauser, hit, dir);
+		IncomingAttacks.Emplace(enemy, enemy->GetEnemyType(), DamageAmount, hit.ImpactPoint);
 	}
 
 	return DamageAmount;
@@ -467,9 +471,6 @@ void APlayerCharacter::AddType3Attack()
 
 void APlayerCharacter::CameraShake()
 {
-	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Shake!"));
-
-	//UGameplayStatics::PlayWorldCameraShake(this, <ULegacyCameraShake>(CameraShakeClass, )
 	UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->StartCameraShake(UBBCameraShake::StaticClass());
 }
 void APlayerCharacter::SpawnParticle()
@@ -480,7 +481,6 @@ void APlayerCharacter::SpawnParticle()
 
 	if (TempParticleEffect != NULL)
 	{
-		//UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), TempParticleEffect, GetActorLocation(), true);
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), TempParticleEffect, GetActorLocation(), FRotator(1), FVector(1), true, true, ENCPoolMethod::AutoRelease, true);
 	}
 }
@@ -677,7 +677,11 @@ void APlayerCharacter::ProcessIncomingAttacks()
 		return;
 	}
 
-	for (auto& [Enemy, EnemyType, Damage] : IncomingAttacks) {
+	for (auto& [Enemy, EnemyType, Damage, HitPoint] : IncomingAttacks) {
+
+		FVector enemyForward = Enemy->GetActorForwardVector();
+		FRotator hitRotation = (-enemyForward).Rotation();
+
 		if (bIsBlocking && CurrentBlockedType == EnemyType) {
 			float dot = GetActorForwardVector().Dot(Enemy->GetActorForwardVector());
 
@@ -693,7 +697,7 @@ void APlayerCharacter::ProcessIncomingAttacks()
 					FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::KeepRelativeOffset, true);
 
 				if (!bPerfectBlock) {
-					ApplyDamage(Damage / 2);
+					ApplyDamage(Damage / 2, HitPoint, hitRotation);
 					NiagaraComp->SetVariableLinearColor(TEXT("Color"), FLinearColor::Blue);
 				}
 				else {
@@ -701,11 +705,11 @@ void APlayerCharacter::ProcessIncomingAttacks()
 				}
 			}
 			else {
-				ApplyDamage(Damage);
+				ApplyDamage(Damage, HitPoint, hitRotation);
 			}
 		}
 		else {
-			ApplyDamage(Damage);
+			ApplyDamage(Damage, HitPoint, hitRotation);
 		}
 
 	}
@@ -775,7 +779,7 @@ void APlayerCharacter::Special3()
 	bIsDodging = true;
 }
 
-void APlayerCharacter::ApplyDamage(float Damage)
+void APlayerCharacter::ApplyDamage(float Damage, FVector HitLocation, FRotator HitRotation)
 {
 	CurrentHealth = FMath::Clamp(CurrentHealth - Damage, 0, MaxHealth);
 
@@ -822,6 +826,11 @@ void APlayerCharacter::ApplyDamage(float Damage)
 		if (HitSound && (!AudioComponent->IsPlaying() || AudioComponent->GetSound() != BlockSound)) {
 			AudioComponent->SetSound(HitSound);
 			AudioComponent->Play();
+		}
+
+		if (TookDamageEffect) {
+			UNiagaraComponent* NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, TookDamageEffect, HitLocation, HitRotation);
+			NiagaraComp->SetVariableLinearColor(TEXT("Color"), FLinearColor::Red);
 		}
 	}
 

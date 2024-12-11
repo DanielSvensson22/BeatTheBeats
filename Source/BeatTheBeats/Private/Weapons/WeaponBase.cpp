@@ -98,8 +98,11 @@ void AWeaponBase::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 		IHitInterface* HitInterface = Cast<IHitInterface>(BoxHit.GetActor());
 		if (HitInterface != nullptr)
 		{
-			HitInterface->GetHit(BoxHit.ImpactPoint);
-			HitInterface->ApplyDamage(CurrentDamage, CurrentAttackType, CurrentlyOnBeat, BoxHit.ImpactPoint);
+			float finalDamage = HitInterface->ApplyDamage(CurrentDamage, CurrentAttackType, CurrentlyOnBeat, BoxHit.ImpactPoint);
+
+			if (finalDamage > CurrentDamage || CurrentAttackType == Attacks::Attack_Guaranteed) {
+				HitInterface->GetHit(BoxHit.ImpactPoint);
+			}
 		}
 		IgnoreActors.AddUnique(BoxHit.GetActor());
 	}

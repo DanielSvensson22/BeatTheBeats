@@ -25,7 +25,7 @@ class BEATTHEBEATS_API IHitInterface
 public:
 	virtual void GetHit(const FVector& ImpactPoint) = 0;
 
-	virtual void ApplyDamage(float Damage, Attacks AttackType, bool OnBeat, FVector HitLocation) = 0;
+	virtual float ApplyDamage(float Damage, Attacks AttackType, bool OnBeat, FVector HitLocation) = 0;
 
 	virtual void ApplyPushBack(float Force) = 0;
 };

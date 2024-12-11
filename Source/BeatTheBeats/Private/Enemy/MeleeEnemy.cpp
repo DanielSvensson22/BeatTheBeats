@@ -2,7 +2,7 @@
 
 
 #include "Enemy/MeleeEnemy.h"
-
+#include "Beats/BeatManager.h"
 #include "Components/CapsuleComponent.h"
 #include "Engine/DamageEvents.h"
 #include "Kismet/GameplayStatics.h"
@@ -23,6 +23,20 @@ bool AMeleeEnemy::GetCanAttack()
 	}
 
 	return bCanAttack;
+}
+
+float AMeleeEnemy::ApplyDamage(float InitialDamage, Attacks AttackType, bool OnBeat, FVector HitLocation)
+{
+	float finalDamage = Super::ApplyDamage(InitialDamage, AttackType, OnBeat, HitLocation);
+
+	if (!bHasEscapedCombat && IsAlive() && CurrentHealth < MaxHealth / 2) {
+		ExitQueue();
+		SetAttackState(false, false);
+
+		bHasEscapedCombat = true;
+	}
+
+	return finalDamage;
 }
 
 void AMeleeEnemy::BeginPlay()
@@ -71,6 +85,17 @@ void AMeleeEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 }
 
+void AMeleeEnemy::PerformAttackAnimation()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
+	if (AnimInstance) {
+		AnimInstance->StopAllMontages(true);
+	}
+
+	PlayEnemyMontage(AttackAnim, TEXT("Atk"), BeatManager->TimeBetweenBeats());
+}
+
 void AMeleeEnemy::OnBeat(float CurrentTimeSinceLastBeat)
 {
 	if (bIsStunned) {
@@ -93,16 +118,13 @@ void AMeleeEnemy::OnBeat(float CurrentTimeSinceLastBeat)
 
 void AMeleeEnemy::Attack()
 {
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	if (CurrentAttack == 1)
+	if (CurrentAttack == StandardCombo.AttackCount() - 2)
 	{
-		//AnimInstance->Montage_Play(AttackAnim);
-		//AnimInstance->Montage_JumpToSection("ReadyAttack", AttackAnim);
-	}
-	else if (CurrentAttack == 2)
-	{
-		AnimInstance->Montage_Play(AttackAnim);
-		AnimInstance->Montage_JumpToSection("Atk", AttackAnim);
+		PlayEnemyMontage(AttackAnim, TEXT("ReadyAttack"), BeatManager->TimeBetweenBeats());
+
+		FTimerHandle handle;
+
+		GetWorldTimerManager().SetTimer(handle, this, &AMeleeEnemy::PerformAttackAnimation, BeatManager->TimeBetweenBeats() * 0.5f, false);
 	}
 
 	DoDamage();

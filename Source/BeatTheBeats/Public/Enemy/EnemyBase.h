@@ -60,7 +60,7 @@ public:
 	virtual void GetHit(const FVector& ImpactPoint) override;
 	void DirectionalHitReact(const FVector& ImpactPoint);
 
-	virtual void ApplyDamage(float Damage, Attacks AttackType, bool OnBeat, FVector HitLocation) override;
+	virtual float ApplyDamage(float Damage, Attacks AttackType, bool OnBeat, FVector HitLocation) override;
 
 	virtual void ApplyPushBack(float Force) override;
 
@@ -91,6 +91,10 @@ public:
 	FORCEINLINE bool GetIsStunned() { return bIsStunned; }
 
 	FORCEINLINE float GetMaxViewDistance() { return MaxViewDistance; }
+
+protected:
+
+	void PlayEnemyMontage(UAnimMontage* montage, FName SectionName, float TotalTime);
 
 protected:
 
@@ -136,7 +140,7 @@ protected:
 	* Sounds
 	*/
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		UAudioComponent* AudioComponent;
 
 	UPROPERTY(EditAnywhere, Category = "Sounds")
@@ -162,6 +166,10 @@ protected:
 	virtual void DoDamage();
 
 	void SetEffectsColor(Attacks Type);
+
+private:
+
+	void SpawnDamageIndicator(float damage);
 
 private:
 

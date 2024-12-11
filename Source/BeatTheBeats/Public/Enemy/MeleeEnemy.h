@@ -20,6 +20,8 @@ public:
 
 	virtual bool GetCanAttack() override;
 
+	virtual float ApplyDamage(float Damage, Attacks AttackType, bool OnBeat, FVector HitLocation) override;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -40,6 +42,8 @@ public:
 	FORCEINLINE float GetMinStalkDistance() { return MinStalkDistance; }
 	FORCEINLINE float GetMaxStalkDistance() { return MaxStalkDistance; }
 	FORCEINLINE float GetStalkSpeed() { return StalkSpeed; }
+
+	void PerformAttackAnimation();
 
 private:
 
@@ -65,4 +69,6 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Montages")
 		UAnimMontage* AttackAnim;
+
+	bool bHasEscapedCombat = false;
 };

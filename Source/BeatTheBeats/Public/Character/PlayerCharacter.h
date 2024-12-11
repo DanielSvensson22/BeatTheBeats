@@ -173,14 +173,14 @@ private:
 
 	void ProcessIncomingAttacks();
 
-	void ApplyDamage(float Damage);
+	void ApplyDamage(float Damage, FVector HitLocation, FRotator HitRotation);
 
 	void RotatePlayerToAttack(float DeltaTime);
 	void MovePlayerToAttack(float DeltaTime);
 	void PerformDodge(float DeltaTime);
 
 private:
-	typedef std::tuple<AEnemyBase*, Attacks, float> IncomingAttack;
+	typedef std::tuple<AEnemyBase*, Attacks, float, FVector> IncomingAttack;
 
 	TObjectPtr<UTutorialChecklist> Checklist;
 
@@ -391,6 +391,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "VFX")
 		FLinearColor AttackThreeColor;
+
+	UPROPERTY(EditDefaultsOnly, Category = "VFX")
+		UNiagaraSystem* TookDamageEffect;
 
 	//Material VFX
 
