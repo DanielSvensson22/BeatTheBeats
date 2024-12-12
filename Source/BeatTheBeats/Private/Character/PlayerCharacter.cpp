@@ -83,7 +83,7 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	Checklist = NewObject<UTutorialChecklist>(this);
+	if (!Checklist) Checklist = NewObject<UTutorialChecklist>(this);
 
 	Weapon = GetWorld()->SpawnActor<AWeaponBase>(WeaponClass);
 
@@ -374,7 +374,7 @@ void APlayerCharacter::AddNeutralAttack()
 			bIsAttacking = true;
 
 			if (Checklist)
-				Checklist->bAttackNeutral = true;
+				Checklist->MarkStepCompleted(ETutorialStep::AttackNeutral);
 
 			if (AttackTypeEffectComp) {
 				AttackTypeEffectComp->SetVariableLinearColor(TEXT("Color"), NeutralColor);
@@ -404,7 +404,7 @@ void APlayerCharacter::AddType1Attack()
 			bIsAttacking = true;
 
 			if (Checklist)
-				Checklist->bAttack1 = true;
+				Checklist->MarkStepCompleted(ETutorialStep::Attack1);
 
 			if (AttackTypeEffectComp) {
 				AttackTypeEffectComp->SetVariableLinearColor(TEXT("Color"), AttackOneColor);
@@ -434,7 +434,7 @@ void APlayerCharacter::AddType2Attack()
 			bIsAttacking = true;
 
 			if (Checklist)
-				Checklist->bAttack2 = true;
+				Checklist->MarkStepCompleted(ETutorialStep::Attack2);
 
 			if (AttackTypeEffectComp) {
 				AttackTypeEffectComp->SetVariableLinearColor(TEXT("Color"), AttackTwoColor);
@@ -464,7 +464,7 @@ void APlayerCharacter::AddType3Attack()
 			bIsAttacking = true;
 
 			if (Checklist)
-				Checklist->bAttack3 = true;
+				Checklist->MarkStepCompleted(ETutorialStep::Attack3);
 
 			if (AttackTypeEffectComp) {
 				AttackTypeEffectComp->SetVariableLinearColor(TEXT("Color"), AttackThreeColor);
@@ -503,7 +503,7 @@ void APlayerCharacter::AddNeutralBlock()
 		bIsBlocking = true;
 
 		if (Checklist)
-			Checklist->bBlockNeutral;
+			Checklist->MarkStepCompleted(ETutorialStep::BlockNeutral);
 
 		if (BeatManager->ClosenessToBeat() > ClosenessForPeffectBlock) {
 			bPerfectBlock = true;
@@ -523,7 +523,7 @@ void APlayerCharacter::AddType1Block()
 		bIsBlocking = true;
 
 		if (Checklist)
-			Checklist->bBlock1 = true;
+			Checklist->MarkStepCompleted(ETutorialStep::Block1);
 
 		if (BeatManager->ClosenessToBeat() > ClosenessForPeffectBlock) {
 			bPerfectBlock = true;
@@ -543,7 +543,7 @@ void APlayerCharacter::AddType2Block()
 		bIsBlocking = true;
 
 		if (Checklist)
-			Checklist->bBlock2 = true;
+			Checklist->MarkStepCompleted(ETutorialStep::Block2);
 
 		if (BeatManager->ClosenessToBeat() > ClosenessForPeffectBlock) {
 			bPerfectBlock = true;
@@ -563,7 +563,7 @@ void APlayerCharacter::AddType3Block()
 		bIsBlocking = true;
 
 		if (Checklist)
-			Checklist->bBlock3 = true;
+			Checklist->MarkStepCompleted(ETutorialStep::Block3);
 
 		if (BeatManager->ClosenessToBeat() > ClosenessForPeffectBlock) {
 			bPerfectBlock = true;
@@ -583,7 +583,7 @@ void APlayerCharacter::DodgeBack()
 		TimeUntilInvincibilityEnds = InvincibilityDuration;
 
 		if (Checklist)
-			Checklist->bDodge = true;
+			Checklist->MarkStepCompleted(ETutorialStep::Dodge);
 
 		FVector offset = UKismetMathLibrary::GetForwardVector(GetController()->GetControlRotation()) * -1 * DodgeDistance;
 
@@ -601,6 +601,9 @@ void APlayerCharacter::DodgeLeft()
 		bIsDodging = true;
 		TimeUntilInvincibilityEnds = InvincibilityDuration;
 
+		if (Checklist)
+			Checklist->MarkStepCompleted(ETutorialStep::Dodge);
+
 		FVector offset = UKismetMathLibrary::GetRightVector(GetController()->GetControlRotation()) * -1 * DodgeDistance;
 
 		DodgeLocation = GetActorLocation() + offset;
@@ -616,6 +619,9 @@ void APlayerCharacter::DodgeRight()
 	if (!bIsDodging && BeatManager) {
 		bIsDodging = true;
 		TimeUntilInvincibilityEnds = InvincibilityDuration;
+
+		if (Checklist)
+			Checklist->MarkStepCompleted(ETutorialStep::Dodge);
 
 		FVector offset = UKismetMathLibrary::GetRightVector(GetController()->GetControlRotation()) * DodgeDistance;
 
@@ -773,6 +779,9 @@ void APlayerCharacter::Special1() // QTE 123
 		return;
 	}
 
+	if (Checklist)
+		Checklist->MarkStepCompleted(ETutorialStep::Combo1230);
+
 	Weapon->SetAttackStatus(Special1Damage, Attacks::Attack_Guaranteed, true);
 	PlayAttackMontage(Special1Anim, TEXT("Default"), BeatManager->GetTimeUntilNextBeat() + BeatManager->TimeBetweenBeats() * 3);
 	bIsDodging = true;
@@ -783,6 +792,9 @@ void APlayerCharacter::Special2()
 	if (Weapon == nullptr) {
 		return;
 	}
+
+	if (Checklist)
+		Checklist->MarkStepCompleted(ETutorialStep::Combo1323);
 
 	Weapon->SetAttackStatus(Special2Damage, Attacks::Attack_Guaranteed, true);
 	PlayAttackMontage(Special2Anim, TEXT("Default"), BeatManager->GetTimeUntilNextBeat() + BeatManager->TimeBetweenBeats() * 2);

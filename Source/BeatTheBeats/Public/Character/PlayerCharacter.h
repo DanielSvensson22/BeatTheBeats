@@ -74,6 +74,9 @@ public:
 
 	FORCEINLINE AWeaponBase* GetWeapon() { return Weapon; }
 
+	UPROPERTY(BlueprintReadOnly)
+	TObjectPtr<UTutorialChecklist> Checklist;
+
 	UFUNCTION(BlueprintPure)
 	FORCEINLINE UTutorialChecklist* GetTutorialChecklist() const { return Checklist; }
 
@@ -181,8 +184,6 @@ private:
 
 private:
 	typedef std::tuple<AEnemyBase*, Attacks, float, FVector> IncomingAttack;
-
-	TObjectPtr<UTutorialChecklist> Checklist;
 
 	/**
 	* Weapon Components
