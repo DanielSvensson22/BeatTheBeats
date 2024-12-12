@@ -259,6 +259,9 @@ void APlayerCharacter::Move(const FInputActionValue& Value)
 {
 	const FVector2D MovementVector = Value.Get<FVector2D>();
 
+	if (Checklist)
+		Checklist->MarkStepCompleted(ETutorialStep::Move);
+
 	// Character moving toward where camera is looking
 	const FRotator Rotation = Controller->GetControlRotation();
 	const FRotator YawRotation(0.f, Rotation.Yaw, 0.f);

@@ -13,6 +13,7 @@ UENUM(BlueprintType)
 enum class ETutorialStep : uint8
 {
 	Dodge UMETA(DisplayName = "Dodge"),
+	Move UMETA(DisplayName = "Move"),
 	Attack1 UMETA(DisplayName = "Attack1"),
 	Attack2 UMETA(DisplayName = "Attack2"),
 	Attack3 UMETA(DisplayName = "Attack3"),
