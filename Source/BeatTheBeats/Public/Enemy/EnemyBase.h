@@ -94,10 +94,6 @@ public:
 
 protected:
 
-	void PlayEnemyMontage(UAnimMontage* montage, FName SectionName, float TotalTime);
-
-protected:
-
 	class ABeatManager* BeatManager;
 
 	UPROPERTY(EditDefaultsOnly)
@@ -163,9 +159,15 @@ protected:
 
 protected:
 
+	void PlayEnemyMontage(UAnimMontage* montage, FName SectionName, float TotalTime);
+
 	virtual void DoDamage();
 
 	void SetEffectsColor(Attacks Type);
+
+	virtual void ApplyDamageEffects(float FinalDamage, bool OnBeat);
+
+	void SpawnDamageIndicator(FName Message);
 
 private:
 

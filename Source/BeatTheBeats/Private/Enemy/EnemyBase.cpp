@@ -314,30 +314,7 @@ float AEnemyBase::ApplyDamage(float InitialDamage, Attacks AttackType, bool OnBe
 		}
 	}
 	else {
-		if (ScoreManager) {
-			ScoreManager->AddPoints(FinalDamage);
-		}
-
-		if (OnBeat)
-		{
-			PerfectHit();
-
-			if (PerfectHitSound) {
-				AudioComponent->SetSound(PerfectHitSound);
-				AudioComponent->Play();
-			}
-		}
-		else
-		{
-			Hit();
-
-			if (HitSound) {
-				AudioComponent->SetSound(HitSound);
-				AudioComponent->Play();
-			}
-		}
-
-		SpawnDamageIndicator(FinalDamage);
+		ApplyDamageEffects(FinalDamage, OnBeat);
 	}
 
 	return FinalDamage;
@@ -483,6 +460,57 @@ void AEnemyBase::SetEffectsColor(Attacks Type)
 		}
 
 		GetMesh()->SetMaterial(AttackTypeMaterialIndex, AttackTypeMaterial);
+	}
+}
+
+void AEnemyBase::ApplyDamageEffects(float FinalDamage, bool OnBeat)
+{
+	if (ScoreManager) {
+		ScoreManager->AddPoints(FinalDamage);
+	}
+
+	if (OnBeat)
+	{
+		PerfectHit();
+
+		if (PerfectHitSound) {
+			AudioComponent->SetSound(PerfectHitSound);
+			AudioComponent->Play();
+		}
+	}
+	else
+	{
+		Hit();
+
+		if (HitSound) {
+			AudioComponent->SetSound(HitSound);
+			AudioComponent->Play();
+		}
+	}
+
+	SpawnDamageIndicator(FinalDamage);
+}
+
+void AEnemyBase::SpawnDamageIndicator(FName Message)
+{
+	if (DamageIndicators.Num() > 0) {
+		UTextBlock* indicator = DamageIndicators[0];
+		FVector2D sp = StartPositions[0];
+		DamageIndicators.RemoveAt(0);
+		StartPositions.RemoveAt(0);
+		DamageTimers.Add(DamageIndicatorLifetime);
+
+		indicator->SetIsEnabled(true);
+		indicator->SetVisibility(ESlateVisibility::Visible);
+		indicator->SetRenderTranslation(sp);
+
+		indicator->SetText(FText::FromName(Message));
+
+		UsedDamageIndicators.Add(indicator);
+		UsedStartPositions.Add(sp);
+	}
+	else {
+		UE_LOG(LogTemp, Error, TEXT("Not enough damage indicators!"));
 	}
 }
 

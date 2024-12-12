@@ -33,6 +33,7 @@
 #include "Interfaces/LockOnInterface.h"
 #include "Components/AudioComponent.h"
 #include "Engine/DamageEvents.h"
+#include "Enemy/EnemyProjectile.h"
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -190,6 +191,16 @@ float APlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damag
 		FVector dir;
 		DamageEvent.GetBestHitInfo(this, DamageCauser, hit, dir);
 		IncomingAttacks.Emplace(enemy, enemy->GetEnemyType(), DamageAmount, hit.ImpactPoint);
+	}
+	else {
+		AEnemyProjectile* projectile = Cast<AEnemyProjectile>(DamageCauser);
+		FHitResult hit;
+		FVector dir;
+		DamageEvent.GetBestHitInfo(this, DamageCauser, hit, dir);
+
+		if (projectile) {
+			IncomingAttacks.Emplace(nullptr, projectile->GetAttackType(), DamageAmount, hit.ImpactPoint);
+		}
 	}
 
 	return DamageAmount;
@@ -679,14 +690,25 @@ void APlayerCharacter::ProcessIncomingAttacks()
 
 	for (auto& [Enemy, EnemyType, Damage, HitPoint] : IncomingAttacks) {
 
-		FVector enemyForward = Enemy->GetActorForwardVector();
-		FRotator hitRotation = (-enemyForward).Rotation();
+		FVector enemyForward;
+		FRotator hitRotation = GetActorRotation();
+
+		if (Enemy) {
+			enemyForward = Enemy->GetActorForwardVector();
+			hitRotation = (-enemyForward).Rotation();
+		}
 
 		if (bIsBlocking && CurrentBlockedType == EnemyType) {
-			float dot = GetActorForwardVector().Dot(Enemy->GetActorForwardVector());
+			float dot = -1;
+
+			if (Enemy) {
+				dot = GetActorForwardVector().Dot(Enemy->GetActorForwardVector());
+			}
 
 			if (dot < 0) {
-				Enemy->Parry();
+				if (Enemy) {
+					Enemy->Parry();
+				}
 
 				if (BlockSound) {
 					AudioComponent->SetSound(BlockSound);

@@ -45,7 +45,7 @@ private:
 
 	void AddLaserBeam(const FVector& end);
 
-private:
+protected:
 
 	UPROPERTY(VisibleAnywhere)
 		USceneComponent* ShootPoint;
