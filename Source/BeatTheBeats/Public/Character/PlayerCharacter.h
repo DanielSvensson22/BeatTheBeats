@@ -215,6 +215,9 @@ private:
 	float ClosestDistance = 100000.f;
 
 	UPROPERTY(VisibleAnywhere, Category = "Target Lock")
+	TObjectPtr<AEnemyBase> EnemyToLock;
+
+	UPROPERTY(VisibleAnywhere, Category = "Target Lock")
 		TObjectPtr<AActor> TargetLockHitTarget;
 
 	UPROPERTY(VisibleAnywhere, Category = "Target Lock")

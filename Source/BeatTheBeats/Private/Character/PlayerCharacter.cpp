@@ -314,8 +314,6 @@ void APlayerCharacter::TargetLock()
 
 		UKismetSystemLibrary::SphereTraceMultiForObjects(this, Start, End, TargetLockTraceRadius, ObjectTypesArray, false, IgnoreActors, EDrawDebugTrace::None, SphereHitMulti, true);
 
-		int n = 0;
-
 		for (const FHitResult& HitResult : SphereHitMulti)
 		{
 			ILockOnInterface* LockOnInterface = Cast<ILockOnInterface>(HitResult.GetActor());
@@ -330,20 +328,24 @@ void APlayerCharacter::TargetLock()
 		{
 			float Distance = GetDistanceTo(Target);
 			if (Distance <= ClosestDistance)
-			{
-				ClosestDistance = Distance;
-				TargetLockHitTarget = Target;
-				bIsLockingTarget = true;
+			{		
+				AEnemyBase* LockEnemy = Cast<AEnemyBase>(Target);
+				if (LockEnemy != nullptr)
+				{
+					ClosestDistance = Distance;
+					TargetLockHitTarget = Target;
+					EnemyToLock = LockEnemy;
+					EnemyToLock->SetIsGettingTargeted(true);
+					bIsLockingTarget = true;
+				}
 			}
 		}
-		n = HitArray.Num();
-		UE_LOG(LogTemp, Warning, TEXT("%d"), n)
 	}
 }
 
 void APlayerCharacter::SetTargetLockCamera()
-{
-	if (TargetLockHitTarget != nullptr)
+{	
+	if (TargetLockHitTarget != nullptr && EnemyToLock->GetIsGettingTargeted() == true)
 	{
 		ClosestDistance = 100000.f;
 		float Distance = GetDistanceTo(TargetLockHitTarget);
@@ -360,6 +362,15 @@ void APlayerCharacter::SetTargetLockCamera()
 			ECameraState::ECS_FreeCamera;
 			HitArray.Empty();
 		}
+	}
+	else
+	{
+		TargetLockHitTarget = nullptr;
+		bIsLockingTarget = false;
+		bUseControllerRotationYaw = false;
+		GetCharacterMovement()->bOrientRotationToMovement = true;
+		ECameraState::ECS_FreeCamera;
+		HitArray.Empty();
 	}
 }
 

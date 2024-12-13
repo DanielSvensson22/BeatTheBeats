@@ -91,6 +91,12 @@ public:
 	FORCEINLINE bool GetIsStunned() { return bIsStunned; }
 
 	FORCEINLINE float GetMaxViewDistance() { return MaxViewDistance; }
+	
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE bool GetIsGettingTargeted() { return bIsGettingTargeted; }
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE void SetIsGettingTargeted(bool value) { bIsGettingTargeted = value; }
 
 protected:
 
@@ -168,6 +174,9 @@ protected:
 	virtual void ApplyDamageEffects(float FinalDamage, bool OnBeat);
 
 	void SpawnDamageIndicator(FName Message);
+
+	UPROPERTY(BlueprintReadWrite)
+	bool bIsGettingTargeted = false;
 
 private:
 
