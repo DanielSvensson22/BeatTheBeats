@@ -115,7 +115,7 @@ void APlayerCharacter::BeginPlay()
 		UE_LOG(LogTemp, Error, TEXT("No Score Manager was found in the scene!"));
 	}
 
-	if (AttackTypeEffect) {
+	/*if (AttackTypeEffect) {
 		AttackTypeEffectComp = UNiagaraFunctionLibrary::SpawnSystemAttached(AttackTypeEffect, GetMesh(), TEXT("pelvis"),
 			FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::KeepRelativeOffset, false);
 
@@ -124,7 +124,7 @@ void APlayerCharacter::BeginPlay()
 			AttackTypeEffectComp->SetVariableFloat(TEXT("SpawnRate"), SpawnRate);
 			AttackTypeEffectComp->SetVariableLinearColor(TEXT("Color"), NeutralColor);
 		}
-	}
+	}*/
 
 	AttackTypeMaterial = GetMesh()->CreateDynamicMaterialInstance(AttackTypeMaterialIndex, GetMesh()->GetMaterial(AttackTypeMaterialIndex));
 
@@ -390,9 +390,9 @@ void APlayerCharacter::AddNeutralAttack()
 			if (Checklist)
 				Checklist->MarkStepCompleted(ETutorialStep::AttackNeutral);
 
-			if (AttackTypeEffectComp) {
+			/*if (AttackTypeEffectComp) {
 				AttackTypeEffectComp->SetVariableLinearColor(TEXT("Color"), NeutralColor);
-			}
+			}*/
 
 			if (AttackTypeMaterial) {
 				AttackTypeMaterial->SetVectorParameterValue(LowColorName, LowNeutralColor);
@@ -420,9 +420,9 @@ void APlayerCharacter::AddType1Attack()
 			if (Checklist)
 				Checklist->MarkStepCompleted(ETutorialStep::Attack1);
 
-			if (AttackTypeEffectComp) {
+			/*if (AttackTypeEffectComp) {
 				AttackTypeEffectComp->SetVariableLinearColor(TEXT("Color"), AttackOneColor);
-			}
+			}*/
 
 			if (AttackTypeMaterial) {
 				AttackTypeMaterial->SetVectorParameterValue(LowColorName, LowAttack1Color);
@@ -450,9 +450,9 @@ void APlayerCharacter::AddType2Attack()
 			if (Checklist)
 				Checklist->MarkStepCompleted(ETutorialStep::Attack2);
 
-			if (AttackTypeEffectComp) {
+			/*if (AttackTypeEffectComp) {
 				AttackTypeEffectComp->SetVariableLinearColor(TEXT("Color"), AttackTwoColor);
-			}
+			}*/
 
 			if (AttackTypeMaterial) {
 				AttackTypeMaterial->SetVectorParameterValue(LowColorName, LowAttack2Color);
@@ -480,9 +480,9 @@ void APlayerCharacter::AddType3Attack()
 			if (Checklist)
 				Checklist->MarkStepCompleted(ETutorialStep::Attack3);
 
-			if (AttackTypeEffectComp) {
+			/*if (AttackTypeEffectComp) {
 				AttackTypeEffectComp->SetVariableLinearColor(TEXT("Color"), AttackThreeColor);
-			}
+			}*/
 
 			if (AttackTypeMaterial) {
 				AttackTypeMaterial->SetVectorParameterValue(LowColorName, LowAttack3Color);
@@ -850,9 +850,9 @@ void APlayerCharacter::ApplyDamage(float Damage, FVector HitLocation, FRotator H
 			GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 			SetActorTickEnabled(false);
 
-			if (AttackTypeEffectComp) {
+			/*if (AttackTypeEffectComp) {
 				AttackTypeEffectComp->Deactivate();
-			}
+			}*/
 
 			if (BeatManager) {
 				BeatManager->UnBindFuncFromOnBeat(BeatHandle);

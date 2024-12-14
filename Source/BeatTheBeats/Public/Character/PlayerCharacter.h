@@ -467,4 +467,26 @@ public:
 
 	UFUNCTION(BlueprintPure)
 		FORCEINLINE bool GetIsLockingTarget() const { return bIsLockingTarget; }
+		
+	
+	//Color getters
+	UFUNCTION(BlueprintPure)
+		FORCEINLINE FLinearColor GetVFXLowNeutral() const { return LowNeutralColor; }
+	UFUNCTION(BlueprintPure)
+		FORCEINLINE FLinearColor GetVFXHighNeutral() const { return HighNeutralColor; }
+		
+	UFUNCTION(BlueprintPure)
+		FORCEINLINE FLinearColor GetVFXLowAttack1() const { return LowAttack1Color; }
+	UFUNCTION(BlueprintPure)
+		FORCEINLINE FLinearColor GetVFXHighAttack1() const { return HighAttack1Color; }
+		
+	UFUNCTION(BlueprintPure)
+		FORCEINLINE FLinearColor GetVFXLowAttack2() const { return LowAttack2Color; }
+	UFUNCTION(BlueprintPure)
+		FORCEINLINE FLinearColor GetVFXHighAttack2() const { return HighAttack2Color; }
+		
+	UFUNCTION(BlueprintPure)
+		FORCEINLINE FLinearColor GetVFXLowAttack3() const { return LowAttack3Color; }
+	UFUNCTION(BlueprintPure)
+		FORCEINLINE FLinearColor GetVFXHighAttack3() const { return HighAttack3Color; }
 };
