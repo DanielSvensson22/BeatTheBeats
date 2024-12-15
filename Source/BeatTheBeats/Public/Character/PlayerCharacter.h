@@ -167,6 +167,8 @@ protected:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "OnDeath")
 		void OnDeath();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "OnHit")
+		void OnHit();
 
 private:
 	void AttackCallback(TArray<FQTEDescription>* qte, ComboEffect effect);

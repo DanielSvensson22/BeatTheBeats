@@ -885,9 +885,11 @@ void APlayerCharacter::ApplyDamage(float Damage, FVector HitLocation, FRotator H
 			UNiagaraComponent* NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, TookDamageEffect, HitLocation, HitRotation);
 			NiagaraComp->SetVariableLinearColor(TEXT("Color"), FLinearColor::Red);
 		}
+
+		OnHit();
 	}
 
-	UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->StartCameraShake(UBBCameraShake::StaticClass());
+	//UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->StartCameraShake(UBBCameraShake::StaticClass());
 }
 
 void APlayerCharacter::RotatePlayerToAttack(float DeltaTime)
@@ -922,6 +924,10 @@ void APlayerCharacter::PerformDodge(float DeltaTime)
 }
 
 void APlayerCharacter::OnDeath_Implementation()
+{
+
+}
+void APlayerCharacter::OnHit_Implementation()
 {
 
 }
