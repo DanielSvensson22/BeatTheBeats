@@ -20,6 +20,7 @@ void ASettingsManager::BeginPlay()
 {
 	Super::BeginPlay();
 	GetSaveFilePath();
+	UpdateSettings();
 }
 
 // Called every frame
@@ -132,5 +133,10 @@ void ASettingsManager::ReadFromFile()
 			UE_LOG(LogTemp, Warning, TEXT("Did not load text from file"));
 		}
 	}
-	else UE_LOG(LogTemp, Warning, TEXT("Settings file not found"));
+	else 
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Settings file not found"));
+		GetSaveFilePath();
+		ReadFromFile();
+	}
 }
