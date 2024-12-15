@@ -255,23 +255,23 @@ void UComboManagerComponent::SetComboIndicators()
 
 			switch (Combos[CurrentCombo].GetAttackType(i)) {
 			case Attacks::Attack_Neutral:
-				ComboImages[i]->SetBrushTintColor(ActiveNeutral);
+				ComboImages[i]->SetColorAndOpacity(ActiveNeutral);
 				break;
 
 			case Attacks::Attack_Type1:
-				ComboImages[i]->SetBrushTintColor(ActiveOne);
+				ComboImages[i]->SetColorAndOpacity(ActiveOne);
 				break;
 
 			case Attacks::Attack_Type2:
-				ComboImages[i]->SetBrushTintColor(ActiveTwo);
+				ComboImages[i]->SetColorAndOpacity(ActiveTwo);
 				break;
 
 			case Attacks::Attack_Type3:
-				ComboImages[i]->SetBrushTintColor(ActiveThree);
+				ComboImages[i]->SetColorAndOpacity(ActiveThree);
 				break;
 
 			default:
-				ComboImages[i]->SetBrushTintColor(ActiveNeutral);
+				ComboImages[i]->SetColorAndOpacity(ActiveNeutral);
 				break;
 			}
 		}
@@ -280,23 +280,23 @@ void UComboManagerComponent::SetComboIndicators()
 
 			switch (Combos[CurrentCombo].GetAttackType(i)) {
 			case Attacks::Attack_Neutral:
-				ComboImages[i]->SetBrushTintColor(DeactivatedNeutral);
+				ComboImages[i]->SetColorAndOpacity(DeactivatedNeutral);
 				break;
 
 			case Attacks::Attack_Type1:
-				ComboImages[i]->SetBrushTintColor(DeactivatedOne);
+				ComboImages[i]->SetColorAndOpacity(DeactivatedOne);
 				break;
 
 			case Attacks::Attack_Type2:
-				ComboImages[i]->SetBrushTintColor(DeactivatedTwo);
+				ComboImages[i]->SetColorAndOpacity(DeactivatedTwo);
 				break;
 
 			case Attacks::Attack_Type3:
-				ComboImages[i]->SetBrushTintColor(DeactivatedThree);
+				ComboImages[i]->SetColorAndOpacity(DeactivatedThree);
 				break;
 
 			default:
-				ComboImages[i]->SetBrushTintColor(DeactivatedNeutral);
+				ComboImages[i]->SetColorAndOpacity(DeactivatedNeutral);
 				break;
 			}
 		}
