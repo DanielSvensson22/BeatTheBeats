@@ -428,6 +428,8 @@ void AEnemyBase::SetEffectsColor(Attacks Type)
 
 			AttackTypeMaterial->SetVectorParameterValue(LowColorName, LowNeutralColor);
 			AttackTypeMaterial->SetVectorParameterValue(HighColorName, HighNeutralColor);
+
+			AttackTypeMaterial->SetVectorParameterValue(TEXT("MainColor"), NeutralColor);
 			break;
 
 		case Attacks::Attack_Type1:
@@ -435,6 +437,8 @@ void AEnemyBase::SetEffectsColor(Attacks Type)
 
 			AttackTypeMaterial->SetVectorParameterValue(LowColorName, LowAttack1Color);
 			AttackTypeMaterial->SetVectorParameterValue(HighColorName, HighAttack1Color);
+
+			AttackTypeMaterial->SetVectorParameterValue(TEXT("MainColor"), AttackOneColor);
 			break;
 
 		case Attacks::Attack_Type2:
@@ -442,6 +446,8 @@ void AEnemyBase::SetEffectsColor(Attacks Type)
 
 			AttackTypeMaterial->SetVectorParameterValue(LowColorName, LowAttack2Color);
 			AttackTypeMaterial->SetVectorParameterValue(HighColorName, HighAttack2Color);
+
+			AttackTypeMaterial->SetVectorParameterValue(TEXT("MainColor"), AttackTwoColor);
 			break;
 
 		case Attacks::Attack_Type3:
@@ -449,6 +455,8 @@ void AEnemyBase::SetEffectsColor(Attacks Type)
 
 			AttackTypeMaterial->SetVectorParameterValue(LowColorName, LowAttack3Color);
 			AttackTypeMaterial->SetVectorParameterValue(HighColorName, HighAttack3Color);
+
+			AttackTypeMaterial->SetVectorParameterValue(TEXT("MainColor"), AttackThreeColor);
 			break;
 
 		default:
@@ -456,6 +464,8 @@ void AEnemyBase::SetEffectsColor(Attacks Type)
 
 			AttackTypeMaterial->SetVectorParameterValue(LowColorName, LowNeutralColor);
 			AttackTypeMaterial->SetVectorParameterValue(HighColorName, HighNeutralColor);
+
+			AttackTypeMaterial->SetVectorParameterValue(TEXT("MainColor"), NeutralColor);
 			break;
 		}
 

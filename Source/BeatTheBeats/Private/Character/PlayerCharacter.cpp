@@ -705,7 +705,12 @@ void APlayerCharacter::ProcessIncomingAttacks()
 	if (bIsDodging) {
 		IncomingAttacks.Empty();
 		bIsBlocking = false;
+		bIsAttacking = false;
 		return;
+	}
+
+	if (bIsBlocking) {
+		bIsAttacking = false;
 	}
 
 	for (auto& [Enemy, EnemyType, Damage, HitPoint] : IncomingAttacks) {
