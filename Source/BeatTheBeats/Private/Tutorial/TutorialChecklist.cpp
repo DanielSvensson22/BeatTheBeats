@@ -8,17 +8,20 @@ void UTutorialChecklist::MarkStepCompleted(ETutorialStep Step)
     int32 Index = static_cast<int32>(Step);
     if (TutorialProgress.IsValidIndex(Index) && !TutorialProgress[Index])
     {
-        TutorialProgress[Index] = true;
-
-        // Broadcast the updated step
-        if (OnTutorialStepCompleted.IsBound())
+        if (!TutorialProgress[Index]) 
         {
-            OnTutorialStepCompleted.Broadcast(Step);
+            // Broadcast the updated step
+            if (OnTutorialStepCompleted.IsBound()) 
+            {
+                OnTutorialStepCompleted.Broadcast(Step); 
+                //UE_LOG(LogTemp, Warning, TEXT("BroadCasting"));
+            }
+            else
+            {
+                UE_LOG(LogTemp, Warning, TEXT("OnTutorialStepCompleted delegate is not bound!")); 
+            }
         }
-        else
-        {
-            UE_LOG(LogTemp, Warning, TEXT("OnTutorialStepCompleted delegate is not bound!"));
-        }
+        TutorialProgress[Index] = true; 
     }
 }
 
