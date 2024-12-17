@@ -5,7 +5,7 @@
 
 float ATricksterMelee::ApplyDamage(float InitialDamage, Attacks AttackType, bool OnBeat, FVector HitLocation)
 {
-    float health = CurrentHealth;
+    float health = CurrentHealth * 0.75f;
 
 	if (AttackType == Attacks::Attack_Guaranteed || AttackType == EnemyType) {
 		bHitByOwnType = true;
