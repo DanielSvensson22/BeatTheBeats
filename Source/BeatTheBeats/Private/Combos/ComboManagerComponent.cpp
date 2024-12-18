@@ -311,5 +311,7 @@ void UComboManagerComponent::SetComboIndicators()
 				break;
 			}
 		}
+
+		ComboImages[i]->SynchronizeProperties();
 	}
 }

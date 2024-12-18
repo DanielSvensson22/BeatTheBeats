@@ -64,6 +64,9 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 		float StalkSpeed = 10;
 
+	UPROPERTY(EditAnywhere)
+	bool bRandomizeType = true;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Montages")
 		UAnimMontage* ReadyAttackAnim;
 

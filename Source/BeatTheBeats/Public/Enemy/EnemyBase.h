@@ -131,7 +131,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 		FCombo StandardCombo;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditAnywhere)
 		Attacks EnemyType;
 
 	int CurrentAttack;
