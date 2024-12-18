@@ -745,11 +745,9 @@ void APlayerCharacter::ProcessIncomingAttacks()
 
 				if (!bPerfectBlock) {
 					ApplyDamage(Damage / 2, HitPoint, hitRotation);
-					NiagaraComp->SetVariableLinearColor(TEXT("Color"), FLinearColor::Blue);
 				}
-				else {
-					NiagaraComp->SetVariableLinearColor(TEXT("Color"), FLinearColor::Red);
-				}
+
+				NiagaraComp->SetVariableLinearColor(TEXT("Color"), AEnemyBase::GetColorOfType(EnemyType));
 			}
 			else {
 				ApplyDamage(Damage, HitPoint, hitRotation);

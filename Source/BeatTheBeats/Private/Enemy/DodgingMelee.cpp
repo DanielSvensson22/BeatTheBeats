@@ -17,12 +17,23 @@ float ADodgingMelee::ApplyDamage(float InitialDamage, Attacks AttackType, bool O
 	float finalDamage = Super::ApplyDamage(InitialDamage, AttackType, OnBeat, HitLocation);
 
 	if (bGotHitOnBeat) {
+		if (!IsAlive()) {
+			Die(finalDamage);
+		}
+
 		return finalDamage;
 	}
 
 	CurrentHealth = health;
 
 	return InitialDamage * 10;
+}
+
+void ADodgingMelee::BeginPlay()
+{
+	Super::BeginPlay();
+
+	bManualDeath = true;
 }
 
 void ADodgingMelee::ApplyDamageEffects(float FinalDamage, bool OnBeat)

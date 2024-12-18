@@ -124,7 +124,7 @@ void AEnemyBase::OnBeat(float CurrentTimeSinceLastBeat)
 
 void AEnemyBase::Attack()
 {
-	FString attack;
+	/*FString attack;
 
 	switch (StandardCombo.GetAttackType(CurrentAttack)) {
 	case Attacks::Attack_Neutral:
@@ -148,7 +148,44 @@ void AEnemyBase::Attack()
 		break;
 	}
 
-	UE_LOG(LogTemp, Display, TEXT("Enemy performed %s attack on combo step %i"), *attack, CurrentAttack);
+	UE_LOG(LogTemp, Display, TEXT("Enemy performed %s attack on combo step %i"), *attack, CurrentAttack);*/
+}
+
+void AEnemyBase::Die(float FinalDamage)
+{
+	if (!bHasDied) {
+		bHasDied = true;
+
+		if (ScoreManager) {
+			ScoreManager->AddPoints(FinalDamage);
+		}
+
+		ExitQueue();
+
+		DetachFromControllerPendingDestroy();
+
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		SetActorTickEnabled(false);
+
+		if (BeatManager) {
+			BeatManager->UnBindFuncFromOnBeat(BeatHandle);
+		}
+
+		CurrentAttack = StandardCombo.ResetCombo();
+
+		EnemyWidget->SetVisibility(false);
+
+		if (AttackTypeEffectComp) {
+			AttackTypeEffectComp->Deactivate();
+		}
+
+		if (DeathSound) {
+			AudioComponent->SetSound(DeathSound);
+			AudioComponent->Play();
+		}
+
+		Death();
+	}
 }
 
 // Called every frame
@@ -239,6 +276,8 @@ void AEnemyBase::DirectionalHitReact(const FVector& ImpactPoint)
 float AEnemyBase::ApplyDamage(float InitialDamage, Attacks AttackType, bool OnBeat, FVector HitLocation)
 {
 	float FinalDamage = InitialDamage;
+	LastAttack = AttackType;
+	LastHitLocation = HitLocation;
 
 	if (AttackType == Attacks::Attack_Guaranteed) {
 		CurrentHealth = FMath::Clamp(CurrentHealth - FinalDamage, 0, MaxHealth);
@@ -264,54 +303,8 @@ float AEnemyBase::ApplyDamage(float InitialDamage, Attacks AttackType, bool OnBe
 		CurrentHealth = FMath::Clamp(CurrentHealth - FinalDamage, 0, MaxHealth);
 	}
 
-	if (GetHitEffect) {
-		UNiagaraComponent* NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, GetHitEffect, HitLocation, GetActorRotation(), FVector::OneVector, true);
-
-		if ((OnBeat && AttackType == EnemyType) || AttackType == Attacks::Attack_Guaranteed) {
-			NiagaraComp->SetVariableLinearColor(TEXT("Color"), FLinearColor::Red);
-		}
-		else if (OnBeat || AttackType == EnemyType) {
-			NiagaraComp->SetVariableLinearColor(TEXT("Color"), FLinearColor::Yellow);
-		}
-		else {
-			NiagaraComp->SetVariableLinearColor(TEXT("Color"), FLinearColor::Blue);
-		}
-	}
-
-	if (!IsAlive()) {
-		if (!bHasDied) {
-			bHasDied = true;
-
-			if (ScoreManager) {
-				ScoreManager->AddPoints(FinalDamage);
-			}
-
-			ExitQueue();
-
-			DetachFromControllerPendingDestroy();
-
-			GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-			SetActorTickEnabled(false);
-
-			if (BeatManager) {
-				BeatManager->UnBindFuncFromOnBeat(BeatHandle);
-			}
-
-			CurrentAttack = StandardCombo.ResetCombo();
-
-			EnemyWidget->SetVisibility(false);
-
-			if (AttackTypeEffectComp) {
-				AttackTypeEffectComp->Deactivate();
-			}
-
-			if (DeathSound) {
-				AudioComponent->SetSound(DeathSound);
-				AudioComponent->Play();
-			}
-
-			Death();
-		}
+	if (!IsAlive() && !bManualDeath) {
+		Die(FinalDamage);
 	}
 	else {
 		ApplyDamageEffects(FinalDamage, OnBeat);
@@ -496,6 +489,12 @@ void AEnemyBase::ApplyDamageEffects(float FinalDamage, bool OnBeat)
 			AudioComponent->SetSound(HitSound);
 			AudioComponent->Play();
 		}
+	}
+
+	if (GetHitEffect) {
+		UNiagaraComponent* NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, GetHitEffect, LastHitLocation, GetActorRotation(), FVector::OneVector, true);
+
+		NiagaraComp->SetVariableLinearColor(TEXT("Color"), GetColorOfType(LastAttack));
 	}
 
 	SpawnDamageIndicator(FinalDamage);

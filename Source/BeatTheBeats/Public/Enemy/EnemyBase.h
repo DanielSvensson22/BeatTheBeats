@@ -50,6 +50,8 @@ protected:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PerfectHitEvent")
 		void PerfectHit();
 
+	void Die(float FinalDamage);
+
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -98,6 +100,30 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE void SetIsGettingTargeted(bool value) { bIsGettingTargeted = value; }
 
+	static FLinearColor GetColorOfType(Attacks Type) {
+		switch (Type) {
+		case Attacks::Attack_Neutral:
+			return FLinearColor::White;
+			break;
+
+		case Attacks::Attack_Type1:
+			return FLinearColor::Green;
+			break;
+
+		case Attacks::Attack_Type2:
+			return FLinearColor::Yellow;
+			break;
+
+		case Attacks::Attack_Type3:
+			return FLinearColor::Red;
+			break;
+
+		default:
+			return FLinearColor::White;
+			break;
+		}
+	}
+
 protected:
 
 	class ABeatManager* BeatManager;
@@ -131,6 +157,8 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 		bool bIsStunned = false;
+
+	bool bManualDeath = false;
 
 	/**
 	* Animation Montages
@@ -216,6 +244,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 		UNiagaraSystem* GetHitEffect;
+
+	Attacks LastAttack;
+	FVector LastHitLocation;
 
 	//VFX
 

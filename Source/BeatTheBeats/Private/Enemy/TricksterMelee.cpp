@@ -17,12 +17,23 @@ float ATricksterMelee::ApplyDamage(float InitialDamage, Attacks AttackType, bool
     float finalDamage = Super::ApplyDamage(InitialDamage, AttackType, OnBeat, HitLocation);
 
 	if (bHitByOwnType) {
+		if (!IsAlive()) {
+			Die(finalDamage);
+		}
+
 		return finalDamage;
 	}
 
 	CurrentHealth = health;
 
 	return 0;
+}
+
+void ATricksterMelee::BeginPlay()
+{
+	Super::BeginPlay();
+
+	bManualDeath = true;
 }
 
 void ATricksterMelee::ApplyDamageEffects(float FinalDamage, bool OnBeat)

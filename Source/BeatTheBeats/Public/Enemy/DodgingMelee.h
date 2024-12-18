@@ -20,6 +20,8 @@ public:
 
 protected:
 
+	virtual void BeginPlay() override;
+
 	virtual void ApplyDamageEffects(float FinalDamage, bool OnBeat) override;
 
 private:
