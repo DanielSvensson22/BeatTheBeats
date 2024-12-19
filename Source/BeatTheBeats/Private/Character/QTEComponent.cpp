@@ -9,6 +9,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Blueprint/WidgetTree.h"
 #include "Components/Image.h"
+#include "Components/TextBlock.h"
 
 // Sets default values for this component's properties
 UQTEComponent::UQTEComponent()
@@ -49,6 +50,14 @@ void UQTEComponent::BeginPlay()
 		AttackCircle = Cast<UImage>(Widget->WidgetTree->FindWidget(TEXT("QTECircle")));
 
 		MinClosenessIndicator = Cast<UImage>(Widget->WidgetTree->FindWidget(TEXT("QTELeewayCircle")));
+
+		FailText = Cast<UTextBlock>(Widget->WidgetTree->FindWidget(TEXT("QTEFailText")));
+		SuccessText = Cast<UTextBlock>(Widget->WidgetTree->FindWidget(TEXT("QTESuccessText")));
+
+		if (FailText && SuccessText) {
+			FailText->SetVisibility(ESlateVisibility::Hidden);
+			SuccessText->SetVisibility(ESlateVisibility::Hidden);
+		}
 
 		if (AttackIndicator == nullptr) {
 			UE_LOG(LogTemp, Error, TEXT("QTEImage was not found on widget!"));
@@ -101,6 +110,22 @@ void UQTEComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 
 		if (AttackCircle && CurrentQTE) {
 			AttackCircle->SetRenderScale(FVector2D(BeatManager->GetIndicatorScale(MaxCircleScale, MinCircleScale, CurrentTimeStep * (*CurrentQTE)[CurrentQTEStep].GetBeatTimeDivisor())));
+		}
+	}
+
+	if (QTEStateTextTime > 0) {
+		QTEStateTextTime -= DeltaTime;
+
+		if (FailText && SuccessText) {
+			FailText->SetOpacity(QTEStateTextTime / QTEStateTextLifeTime);
+			SuccessText->SetOpacity(QTEStateTextTime / QTEStateTextLifeTime);
+		}
+
+		if (QTEStateTextTime <= 0) {
+			if (FailText && SuccessText) {
+				FailText->SetVisibility(ESlateVisibility::Hidden);
+				SuccessText->SetVisibility(ESlateVisibility::Hidden);
+			}
 		}
 	}
 }
@@ -173,6 +198,13 @@ void UQTEComponent::AttemptAttack(Attacks Attack)
 						player->Special1();
 						break;
 					}
+
+					if (SuccessText) {
+						SuccessText->SetVisibility(ESlateVisibility::Visible);
+						SuccessText->SetOpacity(1);
+
+						QTEStateTextTime = QTEStateTextLifeTime;
+					}
 				}
 
 				CurrentQTE = nullptr;
@@ -196,6 +228,13 @@ void UQTEComponent::EndQTE()
 
 	if (CurrentQTE && CurrentComboEffect != ComboEffect::ExtraSpecial2) {
 		player->FailedSpecial();
+
+		if (FailText) {
+			FailText->SetVisibility(ESlateVisibility::Visible);
+			FailText->SetOpacity(1);
+
+			QTEStateTextTime = QTEStateTextLifeTime;
+		}
 	}
 
 	AttackIndicator->SetIsEnabled(false);

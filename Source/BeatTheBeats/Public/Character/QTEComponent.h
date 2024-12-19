@@ -12,6 +12,7 @@
 
 class UImage;
 class APlayerCharacter;
+class UTextBlock;
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class BEATTHEBEATS_API UQTEComponent : public UActorComponent
@@ -98,4 +99,12 @@ private:
 		float MinClosenessToBeat = 0.85f;
 
 	float SpeedIncrease = 1;
+
+	UTextBlock* FailText;
+	UTextBlock* SuccessText;
+
+	UPROPERTY(EditDefaultsOnly)
+	float QTEStateTextLifeTime = 2;
+
+	float QTEStateTextTime;
 };

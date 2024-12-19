@@ -226,4 +226,11 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Combo indicator")
 		FLinearColor DeactivatedThree;
+
+	UTextBlock* OnBeatText;
+
+	UPROPERTY(EditDefaultsOnly)
+	float BeatTextLifeTime = 1;
+
+	float BeatTextTime;
 };

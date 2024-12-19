@@ -20,7 +20,7 @@ UComboManagerComponent::UComboManagerComponent()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = false;
+	PrimaryComponentTick.bCanEverTick = true;
 
 	// ...
 }
@@ -70,6 +70,11 @@ void UComboManagerComponent::BeginPlay()
 			controller->ForceInit();
 			if (controller->GetHUD()) {
 				ComboText = Cast<UTextBlock>(controller->GetHUD()->WidgetTree->FindWidget(TEXT("ComboText")));
+				OnBeatText = Cast<UTextBlock>(controller->GetHUD()->WidgetTree->FindWidget(TEXT("OnBeatText")));
+
+				if (OnBeatText) {
+					OnBeatText->SetVisibility(ESlateVisibility::Hidden);
+				}
 
 				/*UImage* indicator1 = Cast<UImage>(controller->GetHUD()->WidgetTree->FindWidget(TEXT("ComboImage1")));
 
@@ -195,7 +200,17 @@ void UComboManagerComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// ...
+	if (BeatTextTime > 0) {
+		BeatTextTime -= DeltaTime;
+
+		if (OnBeatText) {
+			OnBeatText->SetOpacity(BeatTextTime / BeatTextLifeTime);
+		}
+
+		if (OnBeatText && BeatTextTime <= 0) {
+			OnBeatText->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}
 }
 
 void UComboManagerComponent::AddAttack(Attacks AttackType, float Damage, bool PlayerAddedThisBeat)
@@ -255,7 +270,24 @@ void UComboManagerComponent::ProcessNextAttack(float CurrentTimeSinceLastBeat)
 						}
 
 						if (Weapon) {
-							Weapon->SetAttackStatus(Damage, AttackType, ClosenessToBeat > ClosenessPercentForPerfectBeat);
+							bool OnBeat = ClosenessToBeat > ClosenessPercentForPerfectBeat;
+							Weapon->SetAttackStatus(Damage, AttackType, OnBeat);
+
+							if (OnBeatText) {
+								if (OnBeat) {
+									OnBeatText->SetText(FText::FromString(FString("On Beat!")));
+									OnBeatText->SetColorAndOpacity(FLinearColor::Blue);
+								}
+								else {
+									OnBeatText->SetText(FText::FromString(FString("Off Beat...")));
+									OnBeatText->SetColorAndOpacity(FLinearColor::White);
+								}
+
+								OnBeatText->SetVisibility(ESlateVisibility::Visible);
+								OnBeatText->SetOpacity(1);
+
+								BeatTextTime = BeatTextLifeTime;
+							}
 						}
 					}
 					else {
