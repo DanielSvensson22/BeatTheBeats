@@ -71,7 +71,7 @@ void UComboManagerComponent::BeginPlay()
 			if (controller->GetHUD()) {
 				ComboText = Cast<UTextBlock>(controller->GetHUD()->WidgetTree->FindWidget(TEXT("ComboText")));
 
-				UImage* indicator1 = Cast<UImage>(controller->GetHUD()->WidgetTree->FindWidget(TEXT("ComboImage1")));
+				/*UImage* indicator1 = Cast<UImage>(controller->GetHUD()->WidgetTree->FindWidget(TEXT("ComboImage1")));
 
 				if (indicator1) {
 					ComboImages.Add(indicator1);
@@ -93,6 +93,94 @@ void UComboManagerComponent::BeginPlay()
 
 				if (indicator4) {
 					ComboImages.Add(indicator4);
+				}*/
+
+				for (int i = 0; i < 4; i++) {
+					FString name("ND_");
+					name.AppendInt(i);
+
+					UImage* indicator = Cast<UImage>(controller->GetHUD()->WidgetTree->FindWidget(FName(name)));
+
+					if (indicator) {
+						ComboImages.Add(indicator);
+					}
+				}
+
+				for (int i = 0; i < 4; i++) {
+					FString name("NA_");
+					name.AppendInt(i);
+
+					UImage* indicator = Cast<UImage>(controller->GetHUD()->WidgetTree->FindWidget(FName(name)));
+
+					if (indicator) {
+						ComboImages.Add(indicator);
+					}
+				}
+
+				for (int i = 0; i < 4; i++) {
+					FString name("1D_");
+					name.AppendInt(i);
+
+					UImage* indicator = Cast<UImage>(controller->GetHUD()->WidgetTree->FindWidget(FName(name)));
+
+					if (indicator) {
+						ComboImages.Add(indicator);
+					}
+				}
+
+				for (int i = 0; i < 4; i++) {
+					FString name("1A_");
+					name.AppendInt(i);
+
+					UImage* indicator = Cast<UImage>(controller->GetHUD()->WidgetTree->FindWidget(FName(name)));
+
+					if (indicator) {
+						ComboImages.Add(indicator);
+					}
+				}
+
+				for (int i = 0; i < 4; i++) {
+					FString name("2D_");
+					name.AppendInt(i);
+
+					UImage* indicator = Cast<UImage>(controller->GetHUD()->WidgetTree->FindWidget(FName(name)));
+
+					if (indicator) {
+						ComboImages.Add(indicator);
+					}
+				}
+
+				for (int i = 0; i < 4; i++) {
+					FString name("2A_");
+					name.AppendInt(i);
+
+					UImage* indicator = Cast<UImage>(controller->GetHUD()->WidgetTree->FindWidget(FName(name)));
+
+					if (indicator) {
+						ComboImages.Add(indicator);
+					}
+				}
+
+				for (int i = 0; i < 4; i++) {
+					FString name("3D_");
+					name.AppendInt(i);
+
+					UImage* indicator = Cast<UImage>(controller->GetHUD()->WidgetTree->FindWidget(FName(name)));
+
+					if (indicator) {
+						ComboImages.Add(indicator);
+					}
+				}
+
+				for (int i = 0; i < 4; i++) {
+					FString name("3A_");
+					name.AppendInt(i);
+
+					UImage* indicator = Cast<UImage>(controller->GetHUD()->WidgetTree->FindWidget(FName(name)));
+
+					if (indicator) {
+						ComboImages.Add(indicator);
+					}
 				}
 			}		
 		}
@@ -249,11 +337,32 @@ void UComboManagerComponent::SetComboIndicators()
 		ComboText->SetText(Combos[CurrentCombo].GetName());
 	}
 
+	if (ComboImages.Num() < 32) {
+		UE_LOG(LogTemp, Error, TEXT("Not enough combo images!"));
+		return;
+	}
+
+	DeactivateComboImages(0, ComboImages.Num() - 1);
+
 	for (int i = 0; i < ComboImages.Num(); i++) {
-		if (i <= CurrentComboStep) {
+		if ((i % 4) <= CurrentComboStep) {
 			ComboImages[i]->SetRenderScale(FVector2D(1, 1));
 
-			switch (Combos[CurrentCombo].GetAttackType(i)) {
+			if (AttackByIndex(i) == Combos[CurrentCombo].GetAttackType(i % 4)) {
+				FString name;
+				ComboImages[i]->GetName(name);
+
+				if (name[1] == 'A') {
+					ActivateComboImage(i);
+				}
+			}
+			else {
+				if (AttackByIndex(i) == Attacks::Attack_NONE) {
+					UE_LOG(LogTemp, Error, TEXT("Combo image index %i was not in acceptable range"), i);
+				}
+			}
+
+			/*switch (Combos[CurrentCombo].GetAttackType(i)) {
 			case Attacks::Attack_Neutral:
 				ComboImages[i]->SetBrushTintColor(ActiveNeutral);
 				ComboImages[i]->SetColorAndOpacity(ActiveNeutral);
@@ -279,12 +388,26 @@ void UComboManagerComponent::SetComboIndicators()
 				ComboImages[i]->SetBrushTintColor(ActiveNeutral);
 				ComboImages[i]->SetColorAndOpacity(ActiveNeutral);
 				break;
-			}
+			}*/
 		}
 		else {
 			ComboImages[i]->SetRenderScale(FVector2D(0.5f, 0.5f));
 
-			switch (Combos[CurrentCombo].GetAttackType(i)) {
+			if (AttackByIndex(i) == Combos[CurrentCombo].GetAttackType(i % 4)) {
+				FString name;
+				ComboImages[i]->GetName(name);
+
+				if (name[1] == 'D') {
+					ActivateComboImage(i);
+				}
+			}
+			else {
+				if (AttackByIndex(i) == Attacks::Attack_NONE) {
+					UE_LOG(LogTemp, Error, TEXT("Combo image index %i was not in acceptable range"), i);
+				}
+			}
+
+			/*switch (Combos[CurrentCombo].GetAttackType(i)) {
 			case Attacks::Attack_Neutral:
 				ComboImages[i]->SetBrushTintColor(DeactivatedNeutral);
 				ComboImages[i]->SetColorAndOpacity(DeactivatedNeutral);
@@ -310,8 +433,41 @@ void UComboManagerComponent::SetComboIndicators()
 				ComboImages[i]->SetColorAndOpacity(DeactivatedNeutral);
 				break;
 			}
+		}*/
 		}
 
 		ComboImages[i]->SynchronizeProperties();
 	}
+}
+
+void UComboManagerComponent::DeactivateComboImages(int start, int end)
+{
+	for (int i = start; i <= end; i++) {
+		ComboImages[i]->SetVisibility(ESlateVisibility::Hidden);
+		ComboImages[i]->SetIsEnabled(false);
+	}
+}
+
+void UComboManagerComponent::ActivateComboImage(int index)
+{
+	ComboImages[index]->SetVisibility(ESlateVisibility::Visible);
+	ComboImages[index]->SetIsEnabled(true);
+}
+
+Attacks UComboManagerComponent::AttackByIndex(int index)
+{
+	if (index >= 0 && index < 8) {
+		return Attacks::Attack_Neutral;
+	}
+	else if (index >= 8 && index < 16) {
+		return Attacks::Attack_Type1;
+	}
+	else if (index >= 16 && index < 24) {
+		return Attacks::Attack_Type2;
+	}
+	else if (index >= 24 && index < 32) {
+		return Attacks::Attack_Type3;
+	}
+
+	return Attacks::Attack_NONE;
 }

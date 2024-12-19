@@ -137,6 +137,11 @@ private:
 
 	void SetComboIndicators();
 
+	void DeactivateComboImages(int start, int end);
+	void ActivateComboImage(int index);
+
+	Attacks AttackByIndex(int index);
+
 private:
 
 	typedef std::tuple<Attacks, float, bool> StoredAttack;
