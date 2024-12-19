@@ -49,4 +49,6 @@ public:
 	void MarkStepCompleted(ETutorialStep Step);
 	UFUNCTION(BlueprintCallable, Category = "Tutorial")
 	bool IsStepCompleted(ETutorialStep Step) const;
+	UFUNCTION(BlueprintCallable, Category = "Tutorial")
+	void ResetChecklist();
 };
