@@ -30,3 +30,11 @@ bool UTutorialChecklist::IsStepCompleted(ETutorialStep Step) const
     int32 Index = static_cast<int32>(Step);
     return TutorialProgress.IsValidIndex(Index) ? TutorialProgress[Index] : false;
 }
+
+void UTutorialChecklist::ResetChecklist()
+{
+    for (int i = 0; i < static_cast<int32>(ETutorialStep::Combo1323); i++)
+    {
+        if (TutorialProgress.IsValidIndex(i)) TutorialProgress[i] = false;
+    }
+}
