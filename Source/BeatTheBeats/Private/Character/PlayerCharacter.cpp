@@ -735,6 +735,8 @@ void APlayerCharacter::ProcessIncomingAttacks()
 					Enemy->Parry();
 				}
 
+				OnBlock();
+
 				if (BlockSound) {
 					AudioComponent->SetSound(BlockSound);
 					AudioComponent->Play();
@@ -926,6 +928,10 @@ void APlayerCharacter::OnDeath_Implementation()
 
 }
 void APlayerCharacter::OnHit_Implementation()
+{
+
+}
+void APlayerCharacter::OnBlock_Implementation()
 {
 
 }

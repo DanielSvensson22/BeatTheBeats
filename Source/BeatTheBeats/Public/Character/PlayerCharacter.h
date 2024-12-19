@@ -169,6 +169,8 @@ protected:
 		void OnDeath();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "OnHit")
 		void OnHit();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "OnBlock")
+		void OnBlock();
 
 private:
 	void AttackCallback(TArray<FQTEDescription>* qte, ComboEffect effect);
@@ -440,8 +442,10 @@ private:
 
 	//Sound
 
-	UPROPERTY(VisibleAnywhere)
-		UAudioComponent* AudioComponent;
+	/*UPROPERTY(EditAnywhere, Category = "Audio")
+	UPROPERTY(VisibleAnywhere)*/
+	/*UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+		UAudioComponent* AudioComponent;*/
 
 	UPROPERTY(EditDefaultsOnly, Category = "Sound")
 		USoundBase* HitSound;
@@ -491,4 +495,8 @@ public:
 		FORCEINLINE FLinearColor GetVFXLowAttack3() const { return LowAttack3Color; }
 	UFUNCTION(BlueprintPure)
 		FORCEINLINE FLinearColor GetVFXHighAttack3() const { return HighAttack3Color; }
+
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+		UAudioComponent* AudioComponent;
 };
