@@ -100,6 +100,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE void SetIsGettingTargeted(bool value) { bIsGettingTargeted = value; }
 
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE bool GetIsDead() { return bIsDead; }
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE void SetIsDead(bool value) { bIsDead = value; }
+
 	static FLinearColor GetColorOfType(Attacks Type) {
 		switch (Type) {
 		case Attacks::Attack_Neutral:
@@ -205,6 +211,9 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite)
 	bool bIsGettingTargeted = false;
+
+	UPROPERTY(BlueprintReadWrite)
+	bool bIsDead = false;
 
 private:
 

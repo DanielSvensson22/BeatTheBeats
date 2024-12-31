@@ -330,7 +330,7 @@ void APlayerCharacter::TargetLock()
 			if (Distance <= ClosestDistance)
 			{		
 				AEnemyBase* LockEnemy = Cast<AEnemyBase>(Target);
-				if (LockEnemy != nullptr)
+				if (LockEnemy != nullptr && LockEnemy->GetIsDead() == false)
 				{
 					ClosestDistance = Distance;
 					TargetLockHitTarget = Target;
