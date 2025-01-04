@@ -33,8 +33,13 @@ AEnemyBase::AEnemyBase()
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel3, ECollisionResponse::ECR_Block);
 	GetMesh()->SetGenerateOverlapEvents(true);
+	GetMesh()->BodyInstance.bLockXRotation = true;
+	GetMesh()->BodyInstance.bLockYRotation = true;
+
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel3, ECollisionResponse::ECR_Block);
+	GetCapsuleComponent()->BodyInstance.bLockXRotation = true;
+	GetCapsuleComponent()->BodyInstance.bLockYRotation = true;
 
 	EnemyWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Enemy Widget"));
 	EnemyWidget->SetWidgetSpace(EWidgetSpace::World);

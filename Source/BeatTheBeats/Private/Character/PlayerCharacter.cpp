@@ -79,6 +79,41 @@ APlayerCharacter::~APlayerCharacter()
 #endif
 }
 
+void APlayerCharacter::SetBodyMaterialColor(Attacks AttackType)
+{
+	if (AttackTypeMaterial) {
+
+		switch (AttackType) {
+		case Attacks::Attack_Neutral:
+			AttackTypeMaterial->SetVectorParameterValue(LowColorName, LowNeutralColor);
+			AttackTypeMaterial->SetVectorParameterValue(HighColorName, HighNeutralColor);
+			break;
+
+		case Attacks::Attack_Type1:
+			AttackTypeMaterial->SetVectorParameterValue(LowColorName, LowAttack1Color);
+			AttackTypeMaterial->SetVectorParameterValue(HighColorName, HighAttack1Color);
+			break;
+
+		case Attacks::Attack_Type2:
+			AttackTypeMaterial->SetVectorParameterValue(LowColorName, LowAttack2Color);
+			AttackTypeMaterial->SetVectorParameterValue(HighColorName, HighAttack2Color);
+			break;
+
+		case Attacks::Attack_Type3:
+			AttackTypeMaterial->SetVectorParameterValue(LowColorName, LowAttack3Color);
+			AttackTypeMaterial->SetVectorParameterValue(HighColorName, HighAttack3Color);
+			break;
+
+		default:
+			AttackTypeMaterial->SetVectorParameterValue(LowColorName, LowNeutralColor);
+			AttackTypeMaterial->SetVectorParameterValue(HighColorName, HighNeutralColor);
+			break;
+		}
+
+		GetMesh()->SetMaterial(AttackTypeMaterialIndex, AttackTypeMaterial);
+	}
+}
+
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -115,25 +150,9 @@ void APlayerCharacter::BeginPlay()
 		UE_LOG(LogTemp, Error, TEXT("No Score Manager was found in the scene!"));
 	}
 
-	/*if (AttackTypeEffect) {
-		AttackTypeEffectComp = UNiagaraFunctionLibrary::SpawnSystemAttached(AttackTypeEffect, GetMesh(), TEXT("pelvis"),
-			FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::KeepRelativeOffset, false);
-
-		if (AttackTypeEffectComp) {
-			UNiagaraFunctionLibrary::OverrideSystemUserVariableSkeletalMeshComponent(AttackTypeEffectComp, TEXT("Skeletal Mesh"), GetMesh());
-			AttackTypeEffectComp->SetVariableFloat(TEXT("SpawnRate"), SpawnRate);
-			AttackTypeEffectComp->SetVariableLinearColor(TEXT("Color"), NeutralColor);
-		}
-	}*/
-
 	AttackTypeMaterial = GetMesh()->CreateDynamicMaterialInstance(AttackTypeMaterialIndex, GetMesh()->GetMaterial(AttackTypeMaterialIndex));
 
-	if (AttackTypeMaterial) {
-		AttackTypeMaterial->SetVectorParameterValue(LowColorName, LowNeutralColor);
-		AttackTypeMaterial->SetVectorParameterValue(HighColorName, HighNeutralColor);
-
-		GetMesh()->SetMaterial(AttackTypeMaterialIndex, AttackTypeMaterial);
-	}
+	SetBodyMaterialColor(Attacks::Attack_Neutral);
 
 	SetNotifyName("Attack Window");
 }
@@ -389,17 +408,6 @@ void APlayerCharacter::AddNeutralAttack()
 
 			if (Checklist)
 				Checklist->MarkStepCompleted(ETutorialStep::AttackNeutral);
-
-			/*if (AttackTypeEffectComp) {
-				AttackTypeEffectComp->SetVariableLinearColor(TEXT("Color"), NeutralColor);
-			}*/
-
-			if (AttackTypeMaterial) {
-				AttackTypeMaterial->SetVectorParameterValue(LowColorName, LowNeutralColor);
-				AttackTypeMaterial->SetVectorParameterValue(HighColorName, HighNeutralColor);
-
-				GetMesh()->SetMaterial(AttackTypeMaterialIndex, AttackTypeMaterial);
-			}
 		}
 	}
 }
@@ -419,17 +427,6 @@ void APlayerCharacter::AddType1Attack()
 
 			if (Checklist)
 				Checklist->MarkStepCompleted(ETutorialStep::Attack1);
-
-			/*if (AttackTypeEffectComp) {
-				AttackTypeEffectComp->SetVariableLinearColor(TEXT("Color"), AttackOneColor);
-			}*/
-
-			if (AttackTypeMaterial) {
-				AttackTypeMaterial->SetVectorParameterValue(LowColorName, LowAttack1Color);
-				AttackTypeMaterial->SetVectorParameterValue(HighColorName, HighAttack1Color);
-
-				GetMesh()->SetMaterial(AttackTypeMaterialIndex, AttackTypeMaterial);
-			}
 		}
 	}
 }
@@ -449,17 +446,6 @@ void APlayerCharacter::AddType2Attack()
 
 			if (Checklist)
 				Checklist->MarkStepCompleted(ETutorialStep::Attack2);
-
-			/*if (AttackTypeEffectComp) {
-				AttackTypeEffectComp->SetVariableLinearColor(TEXT("Color"), AttackTwoColor);
-			}*/
-
-			if (AttackTypeMaterial) {
-				AttackTypeMaterial->SetVectorParameterValue(LowColorName, LowAttack2Color);
-				AttackTypeMaterial->SetVectorParameterValue(HighColorName, HighAttack2Color);
-
-				GetMesh()->SetMaterial(AttackTypeMaterialIndex, AttackTypeMaterial);
-			}
 		}
 	}
 }
@@ -479,17 +465,6 @@ void APlayerCharacter::AddType3Attack()
 
 			if (Checklist)
 				Checklist->MarkStepCompleted(ETutorialStep::Attack3);
-
-			/*if (AttackTypeEffectComp) {
-				AttackTypeEffectComp->SetVariableLinearColor(TEXT("Color"), AttackThreeColor);
-			}*/
-
-			if (AttackTypeMaterial) {
-				AttackTypeMaterial->SetVectorParameterValue(LowColorName, LowAttack3Color);
-				AttackTypeMaterial->SetVectorParameterValue(HighColorName, HighAttack3Color);
-
-				GetMesh()->SetMaterial(AttackTypeMaterialIndex, AttackTypeMaterial);
-			}
 		}
 	}
 }
@@ -895,7 +870,7 @@ void APlayerCharacter::ApplyDamage(float Damage, FVector HitLocation, FRotator H
 void APlayerCharacter::RotatePlayerToAttack(float DeltaTime)
 {
 	if (!bMovedThisTick && !bIsLockingTarget && !bIsDodging) {
-		SetActorRotation(FMath::RInterpTo(GetActorRotation(), GetController()->GetControlRotation(), DeltaTime, RotationSpeed));
+		SetActorRotation(FMath::RInterpTo(GetActorRotation(), FRotator(GetActorRotation().Pitch, GetController()->GetControlRotation().Yaw, GetActorRotation().Roll), DeltaTime, RotationSpeed));
 	}
 }
 

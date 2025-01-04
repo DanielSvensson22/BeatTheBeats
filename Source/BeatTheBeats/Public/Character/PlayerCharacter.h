@@ -80,6 +80,9 @@ public:
 	UFUNCTION(BlueprintPure)
 	FORCEINLINE UTutorialChecklist* GetTutorialChecklist() const { return Checklist; }
 
+	UFUNCTION(BlueprintCallable)
+		void SetBodyMaterialColor(Attacks AttackType);
+
 protected:
 	virtual void BeginPlay() override;
 
