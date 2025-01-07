@@ -34,6 +34,9 @@
 #include "Components/AudioComponent.h"
 #include "Engine/DamageEvents.h"
 #include "Enemy/EnemyProjectile.h"
+#include "Blueprint/UserWidget.h"
+#include "Blueprint/WidgetTree.h"
+#include "Components/TextBlock.h"
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -114,6 +117,20 @@ void APlayerCharacter::SetBodyMaterialColor(Attacks AttackType)
 	}
 }
 
+void APlayerCharacter::AddHealth(float health)
+{
+	CurrentHealth = FMath::Clamp(CurrentHealth + health, 0, MaxHealth);
+
+	if (HealthUpText && health > 0) {
+		HealthUpText->SetIsEnabled(true);
+		HealthUpText->SetVisibility(ESlateVisibility::Visible);
+		HealthUpTimeLeft = HealthUpTextLifeTime;
+		HealthUpText->SetRenderTranslation(HealthUpTextStartPosition);
+
+		HealthUpText->SetText(FText::FromString(FString("+") + FString::FromInt((int)health)));
+	}
+}
+
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -155,6 +172,24 @@ void APlayerCharacter::BeginPlay()
 	SetBodyMaterialColor(Attacks::Attack_Neutral);
 
 	SetNotifyName("Attack Window");
+
+	if (ABeatTheBeatsPlayerController* controller = Cast<ABeatTheBeatsPlayerController>(GetController())) {
+		controller->ForceInit();
+
+		HealthUpText = Cast<UTextBlock>(controller->GetHUD()->WidgetTree->FindWidget(TEXT("HealthUpText")));
+
+		if (HealthUpText) {
+			HealthUpTextStartPosition = HealthUpText->GetRenderTransform().Translation;
+			HealthUpText->SetIsEnabled(false);
+			HealthUpText->SetVisibility(ESlateVisibility::Hidden);
+		}
+		else {
+			UE_LOG(LogTemp, Error, TEXT("Could not find health up text!"));
+		}
+	}
+	else {
+		UE_LOG(LogTemp, Error, TEXT("Could not find ABeatTheBeatsPlayerController!"));
+	}
 }
 
 void APlayerCharacter::Tick(float DeltaTime)
@@ -168,6 +203,19 @@ void APlayerCharacter::Tick(float DeltaTime)
 	PerformDodge(DeltaTime);
 
 	SetTargetLockCamera();
+
+	if (HealthUpText) {
+		if (HealthUpTimeLeft > 0) {
+			HealthUpTimeLeft -= DeltaTime;
+
+			HealthUpText->SetRenderTranslation(HealthUpText->GetRenderTransform().Translation + HealthUpTextForce * DeltaTime);
+
+			if (HealthUpTimeLeft <= 0) {
+				HealthUpText->SetIsEnabled(false);
+				HealthUpText->SetVisibility(ESlateVisibility::Hidden);
+			}
+		}	
+	}
 
 	bMovedThisTick = false;
 }
@@ -688,6 +736,8 @@ void APlayerCharacter::ProcessIncomingAttacks()
 		bIsAttacking = false;
 	}
 
+	float totalHealthAdded = 0;
+
 	for (auto& [Enemy, EnemyType, Damage, HitPoint] : IncomingAttacks) {
 
 		FVector enemyForward;
@@ -722,19 +772,38 @@ void APlayerCharacter::ProcessIncomingAttacks()
 
 				if (!bPerfectBlock) {
 					ApplyDamage(Damage / 2, HitPoint, hitRotation);
+
+					if (ComboManager) {
+						ComboManager->SetBeatText("Failed Block! (Off Beat)", FLinearColor::Yellow);
+					}
+				}
+				else {
+					if (ComboManager) {
+						ComboManager->SetBeatText("Successful Block!", FLinearColor::Blue);
+					}
+
+					totalHealthAdded += HealthRegainOnBlock;
 				}
 
 				NiagaraComp->SetVariableLinearColor(TEXT("Color"), AEnemyBase::GetColorOfType(EnemyType));
 			}
 			else {
 				ApplyDamage(Damage, HitPoint, hitRotation);
+				if (ComboManager) {
+					ComboManager->SetBeatText("Failed Block! (Not facing enemy)", FLinearColor::Red);
+				}
 			}
 		}
 		else {
 			ApplyDamage(Damage, HitPoint, hitRotation);
+			if (ComboManager) {
+				ComboManager->SetBeatText("Failed Block! (Wrong mode)", FLinearColor::Red);
+			}
 		}
 
 	}
+
+	AddHealth(totalHealthAdded);
 
 	IncomingAttacks.Empty();
 	bIsBlocking = false;

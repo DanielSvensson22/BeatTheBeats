@@ -273,20 +273,11 @@ void UComboManagerComponent::ProcessNextAttack(float CurrentTimeSinceLastBeat)
 							bool OnBeat = ClosenessToBeat > ClosenessPercentForPerfectBeat;
 							Weapon->SetAttackStatus(Damage, AttackType, OnBeat);
 
-							if (OnBeatText) {
-								if (OnBeat) {
-									OnBeatText->SetText(FText::FromString(FString("On Beat!")));
-									OnBeatText->SetColorAndOpacity(FLinearColor::Blue);
-								}
-								else {
-									OnBeatText->SetText(FText::FromString(FString("Off Beat...")));
-									OnBeatText->SetColorAndOpacity(FLinearColor::White);
-								}
-
-								OnBeatText->SetVisibility(ESlateVisibility::Visible);
-								OnBeatText->SetOpacity(1);
-
-								BeatTextTime = BeatTextLifeTime;
+							if (OnBeat) {
+								SetBeatText("On Beat!", FLinearColor::Blue);
+							}
+							else {
+								SetBeatText("Off Beat...", FLinearColor::Red);
 							}
 						}
 					}
@@ -324,6 +315,19 @@ void UComboManagerComponent::BindAttackCallbackFunc(APlayerCharacter* playerChar
 void UComboManagerComponent::SetWeapon(AWeaponBase* PlayerWeapon)
 {
 	Weapon = PlayerWeapon;
+}
+
+void UComboManagerComponent::SetBeatText(const char* text, FLinearColor color)
+{
+	if (OnBeatText) {
+		OnBeatText->SetText(FText::FromString(FString(text)));
+		OnBeatText->SetColorAndOpacity(color);
+
+		OnBeatText->SetVisibility(ESlateVisibility::Visible);
+		OnBeatText->SetOpacity(1);
+
+		BeatTextTime = BeatTextLifeTime;
+	}
 }
 
 void UComboManagerComponent::PerformAttack(Attacks AttackType)
