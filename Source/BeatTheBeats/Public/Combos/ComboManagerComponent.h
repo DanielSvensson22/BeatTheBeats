@@ -45,6 +45,8 @@ public:
 
 	void SetWeapon(AWeaponBase* PlayerWeapon);
 
+	void SetBeatText(const char* text, FLinearColor color);
+
 private:
 
 	FORCEINLINE int GetNextCombo(Attacks AttackType, bool ResetComboStep = true) {

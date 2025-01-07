@@ -27,6 +27,7 @@ class UNiagaraComponent;
 class UMaterialInstanceDynamic;
 class AScoreManager;
 class UAudioComponent;
+class UTextBlock;
 
 UCLASS()
 class BEATTHEBEATS_API APlayerCharacter : public ACharacter
@@ -82,6 +83,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 		void SetBodyMaterialColor(Attacks AttackType);
+
+	void AddHealth(float health);
 
 protected:
 	virtual void BeginPlay() override;
@@ -273,6 +276,9 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 		float MaxHealth = 100;
 
+	UPROPERTY(EditDefaultsOnly)
+		float HealthRegainOnBlock = 10;
+
 	bool bHasDied = false;
 
 	UPROPERTY(EditDefaultsOnly)
@@ -405,6 +411,19 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "VFX")
 		UNiagaraSystem* TookDamageEffect;
+
+	UPROPERTY(VisibleAnywhere, Category = "VFX")
+		UTextBlock* HealthUpText;
+
+	FVector2D HealthUpTextStartPosition;
+
+	UPROPERTY(EditDefaultsOnly, Category = "VFX")
+		float HealthUpTextLifeTime;
+
+	float HealthUpTimeLeft = 0;
+
+	UPROPERTY(EditDefaultsOnly, Category = "VFX")
+		FVector2D HealthUpTextForce;
 
 	//Material VFX
 
