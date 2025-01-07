@@ -567,7 +567,7 @@ void APlayerCharacter::AddType3Block()
 
 void APlayerCharacter::DodgeBack()
 {
-	if (!bIsDodging && BeatManager) {
+	if (!bIsDodging && BeatManager && DodgeTimer()) {
 		bIsDodging = true;
 		TimeUntilInvincibilityEnds = InvincibilityDuration;
 
@@ -586,7 +586,7 @@ void APlayerCharacter::DodgeBack()
 
 void APlayerCharacter::DodgeLeft()
 {
-	if (!bIsDodging && BeatManager) {
+	if (!bIsDodging && BeatManager && DodgeTimer()) {
 		bIsDodging = true;
 		TimeUntilInvincibilityEnds = InvincibilityDuration;
 
@@ -605,7 +605,7 @@ void APlayerCharacter::DodgeLeft()
 
 void APlayerCharacter::DodgeRight()
 {
-	if (!bIsDodging && BeatManager) {
+	if (!bIsDodging && BeatManager && DodgeTimer()) {
 		bIsDodging = true;
 		TimeUntilInvincibilityEnds = InvincibilityDuration;
 
@@ -886,6 +886,8 @@ void APlayerCharacter::MovePlayerToAttack(float DeltaTime)
 
 void APlayerCharacter::PerformDodge(float DeltaTime)
 {
+
+	DodgeTimerInSeconds -= DeltaTime;
 	if (bIsDodging) {
 		TimeUntilInvincibilityEnds -= DeltaTime;
 
@@ -896,6 +898,15 @@ void APlayerCharacter::PerformDodge(float DeltaTime)
 		FHitResult result;
 		SetActorLocation(FMath::VInterpConstantTo(GetActorLocation(), DodgeLocation, DeltaTime, DodgeSpeed), true, &result, ETeleportType::TeleportPhysics);
 	}
+}
+
+bool APlayerCharacter::DodgeTimer()
+{
+	if (DodgeTimerInSeconds <= 0) {
+		DodgeTimerInSeconds = DodgeTimerLimit;
+		return true;
+	}
+	else return false;
 }
 
 void APlayerCharacter::OnDeath_Implementation()

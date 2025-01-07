@@ -164,6 +164,7 @@ protected:
 	void DodgeBack();
 	void DodgeLeft();
 	void DodgeRight();
+	bool DodgeTimer();
 
 	void CameraShake();
 	void SpawnParticle();
@@ -343,11 +344,15 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 		float DodgeSpeed = 100;
+	
 
 	UPROPERTY(EditDefaultsOnly)
 		float InvincibilityDuration = 0.2f;
 
 	float TimeUntilInvincibilityEnds;
+
+	float DodgeTimerLimit = 0.5f;
+	float DodgeTimerInSeconds = DodgeTimerLimit;
 
 	//Montages
 
