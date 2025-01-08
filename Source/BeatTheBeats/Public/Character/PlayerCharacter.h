@@ -404,6 +404,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Montages")
 		UAnimMontage* CounterAnim;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Montages")
+		UAnimMontage* GotHitAnim;
+
 	//VFX
 
 	UNiagaraComponent* AttackTypeEffectComp;

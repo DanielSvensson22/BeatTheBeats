@@ -949,10 +949,11 @@ void APlayerCharacter::ApplyDamage(float Damage, FVector HitLocation, FRotator H
 			NiagaraComp->SetVariableLinearColor(TEXT("Color"), FLinearColor::Red);
 		}
 
+		PlayAttackMontage(GotHitAnim, TEXT("Default"), BeatManager->TimeBetweenBeats());
+		bIsBlocking = true;
+
 		OnHit();
 	}
-
-	//UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->StartCameraShake(UBBCameraShake::StaticClass());
 }
 
 void APlayerCharacter::RotatePlayerToAttack(float DeltaTime)
