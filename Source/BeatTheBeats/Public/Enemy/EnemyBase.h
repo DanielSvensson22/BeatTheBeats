@@ -50,6 +50,9 @@ protected:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PerfectHitEvent")
 		void PerfectHit();
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CheckVolumeEvent")
+		void CheckVolume();
+
 	void Die(float FinalDamage);
 
 public:

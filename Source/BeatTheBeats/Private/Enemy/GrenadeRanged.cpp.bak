@@ -19,7 +19,6 @@ void AGrenadeRanged::Attack()
 		DoDamage();
 
 		if (ShootSound) {
-			CheckVolume();
 			AudioComponent->SetSound(ShootSound);
 			AudioComponent->Play();
 		}

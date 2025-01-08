@@ -9,6 +9,7 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "AIController.h"
 #include "Score/ScoreManager.h"
+#include "Components/AudioComponent.h"
 
 ABoss::ABoss() : Super()
 {
@@ -74,7 +75,10 @@ void ABoss::SlamAttack()
 	if (SlamSoundCue)  // Check if the sound cue is set
 	{
 		// Play the death sound at the boss's location
-		UGameplayStatics::PlaySoundAtLocation(this, SlamSoundCue, GetActorLocation());
+		//UGameplayStatics::PlaySoundAtLocation(this, SlamSoundCue, GetActorLocation());
+		CheckVolume();
+		AudioComponent->SetSound(SlamSoundCue);
+		AudioComponent->Play();
 	}
 	PlayMontage(AttackMontage, "Attack3");
 
@@ -116,7 +120,10 @@ void ABoss::RayAttack()
 	if (RaySoundCue)  // Check if the sound cue is set
 	{
 		// Play the death sound at the boss's location
-		UGameplayStatics::PlaySoundAtLocation(this, RaySoundCue, GetActorLocation());
+		//UGameplayStatics::PlaySoundAtLocation(this, RaySoundCue, GetActorLocation());
+		CheckVolume();
+		AudioComponent->SetSound(RaySoundCue);
+		AudioComponent->Play();
 	}
 	PlayMontage(AttackMontage, "AttackRanged");
 	bCanAttack = false;
@@ -141,7 +148,10 @@ void ABoss::SpawnBullet()
 	FRotator SpawnRotation = (Player->GetActorLocation() - SpawnLocation).Rotation();
 
 	if (BulletShootCue)
-		UGameplayStatics::PlaySoundAtLocation(this, BulletShootCue, GetActorLocation());
+		//UGameplayStatics::PlaySoundAtLocation(this, BulletShootCue, GetActorLocation());
+		CheckVolume();
+		AudioComponent->SetSound(BulletShootCue);
+		AudioComponent->Play();
 
 	// Spawn the bullet
 	FActorSpawnParameters SpawnParams;
@@ -200,7 +210,10 @@ void ABoss::StartRayAttack()
 	if (RayStartSoundCue)  // Check if the sound cue is set
 	{
 		// Play the death sound at the boss's location
-		UGameplayStatics::PlaySoundAtLocation(this, RayStartSoundCue, GetActorLocation());
+		//UGameplayStatics::PlaySoundAtLocation(this, RayStartSoundCue, GetActorLocation());
+		CheckVolume();
+		AudioComponent->SetSound(RayStartSoundCue);
+		AudioComponent->Play();
 	}
 
 	AIController->StopMovement();
@@ -270,7 +283,10 @@ void ABoss::ParticleEffects()
 		if (SlamSoundHitCue)  // Check if the sound cue is set
 		{
 			// Play the death sound at the boss's location
-			UGameplayStatics::PlaySoundAtLocation(this, SlamSoundHitCue, GetActorLocation());
+			//UGameplayStatics::PlaySoundAtLocation(this, SlamSoundHitCue, GetActorLocation());
+			CheckVolume();
+			AudioComponent->SetSound(SlamSoundHitCue);
+			AudioComponent->Play();
 		}
 		break;
 	case EBossState::EBS_RayAttacking:
@@ -343,7 +359,10 @@ void ABoss::DeathSound()
 	if (DeathSoundCue)  // Check if the sound cue is set
 	{
 		// Play the death sound at the boss's location
-		UGameplayStatics::PlaySoundAtLocation(this, DeathSoundCue, GetActorLocation());
+		//UGameplayStatics::PlaySoundAtLocation(this, DeathSoundCue, GetActorLocation());
+		CheckVolume();
+		AudioComponent->SetSound(DeathSoundCue);
+		AudioComponent->Play();
 	}
 	else
 	{
