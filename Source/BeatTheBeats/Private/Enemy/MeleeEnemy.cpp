@@ -98,6 +98,15 @@ void AMeleeEnemy::PerformAttackAnimation()
 	PlayEnemyMontage(AttackAnim, TEXT("Atk"), BeatManager->TimeBetweenBeats());
 }
 
+void AMeleeEnemy::Parry()
+{
+	Super::Parry();
+
+	FVector hit = GetActorLocation() + GetActorForwardVector() * 10;
+
+	GetHit(hit);
+}
+
 void AMeleeEnemy::OnBeat(float CurrentTimeSinceLastBeat)
 {
 	if (bIsStunned) {
@@ -115,6 +124,10 @@ void AMeleeEnemy::OnBeat(float CurrentTimeSinceLastBeat)
 		if (CurrentAttack > -1) {
 			Attack();
 		}
+	}
+
+	if (Blocked > 0) {
+		Blocked--;
 	}
 }
 

@@ -21,6 +21,7 @@
 #include <iomanip>
 #include <sstream>
 #include "Components/AudioComponent.h"
+#include "Character/PlayerCharacter.h"
 
 // Sets default values
 AEnemyBase::AEnemyBase()
@@ -125,6 +126,10 @@ void AEnemyBase::OnBeat(float CurrentTimeSinceLastBeat)
 	else {
 		CurrentAttack = StandardCombo.ResetCombo();
 	}
+
+	if (Blocked > 0) {
+		Blocked--;
+	}
 }
 
 void AEnemyBase::Attack()
@@ -226,6 +231,8 @@ void AEnemyBase::Tick(float DeltaTime)
 		FHitResult result;
 		SetActorLocation(GetActorLocation() + PushbackSpeed * DeltaTime * (-GetActorForwardVector()), true, &result, ETeleportType::TeleportPhysics);
 	}
+
+	SetActorRotation(FRotator(0, GetActorRotation().Yaw, 0));
 }
 
 // Called to bind functionality to input
@@ -313,6 +320,15 @@ float AEnemyBase::ApplyDamage(float InitialDamage, Attacks AttackType, bool OnBe
 	}
 	else {
 		ApplyDamageEffects(FinalDamage, OnBeat);
+
+		if (WasBlocked()) {
+			APlayerCharacter* player = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerPawn(this, 0));
+
+			if (player) {
+				player->StartCounter();
+				Blocked = 0;
+			}
+		}
 	}
 
 	return FinalDamage;
@@ -364,35 +380,11 @@ void AEnemyBase::ExitQueue()
 
 void AEnemyBase::Parry()
 {
-	FString attack;
-
-	switch (EnemyType) {
-	case Attacks::Attack_Neutral:
-		attack = "Neutral";
-		break;
-
-	case Attacks::Attack_Type1:
-		attack = "Type 1";
-		break;
-
-	case Attacks::Attack_Type2:
-		attack = "Type 2";
-		break;
-
-	case Attacks::Attack_Type3:
-		attack = "Type 3";
-		break;
-
-	default:
-		attack = "Not Implemented";
-		break;
-	}
-
-	UE_LOG(LogTemp, Warning, TEXT("%s attack was parried!"), *attack);
-
 	if (ScoreManager) {
 		ScoreManager->UpdateUI();
 	}
+
+	Blocked = 2;
 }
 
 void AEnemyBase::PlayEnemyMontage(UAnimMontage* montage, FName SectionName, float TotalTime)

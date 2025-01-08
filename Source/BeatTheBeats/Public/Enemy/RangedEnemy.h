@@ -41,6 +41,8 @@ public:
 
 	FORCEINLINE float GetFleeDistance() { return FleeDistance; }
 
+	virtual void Parry() override;
+
 private:
 
 	void AddLaserBeam(const FVector& end);

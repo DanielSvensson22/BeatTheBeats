@@ -15,6 +15,7 @@ enum class ComboEffect : uint8 {
 	Special2 = 2,
 	Special3 = 3,
 	ExtraSpecial2 = 4,
+	Counter = 5
 };
 
 /**

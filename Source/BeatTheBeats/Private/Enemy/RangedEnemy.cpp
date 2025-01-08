@@ -83,6 +83,10 @@ void ARangedEnemy::OnBeat(float CurrentTimeSinceLastBeat)
 			Attack();
 		}
 	}
+
+	if (Blocked > 0) {
+		Blocked--;
+	}
 }
 
 void ARangedEnemy::Attack()
@@ -171,6 +175,17 @@ void ARangedEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+}
+
+void ARangedEnemy::Parry()
+{
+	Super::Parry();
+
+	FVector hit = GetActorLocation() + GetActorForwardVector() * 10;
+
+	GetHit(hit);
+
+	ApplyDamage(Damage, EnemyType, true, hit);
 }
 
 void ARangedEnemy::AddLaserBeam(const FVector& end)

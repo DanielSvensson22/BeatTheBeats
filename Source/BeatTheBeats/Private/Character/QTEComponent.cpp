@@ -194,6 +194,10 @@ void UQTEComponent::AttemptAttack(Attacks Attack)
 						player->Special2();
 						break;
 
+					case ComboEffect::Counter:
+						player->Counter();
+						break;
+
 					default:
 						player->Special1();
 						break;

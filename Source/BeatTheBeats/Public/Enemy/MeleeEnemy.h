@@ -45,6 +45,8 @@ public:
 
 	void PerformAttackAnimation();
 
+	virtual void Parry() override;
+
 private:
 
 	UPROPERTY(VisibleAnywhere)

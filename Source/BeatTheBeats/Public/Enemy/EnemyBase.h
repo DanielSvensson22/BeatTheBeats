@@ -215,9 +215,15 @@ protected:
 	UPROPERTY(BlueprintReadWrite)
 	bool bIsDead = false;
 
+	int Blocked = 0;
+
 private:
 
 	void SpawnDamageIndicator(float damage);
+
+	FORCEINLINE bool WasBlocked() {
+		return Blocked > 0;
+	}
 
 private:
 

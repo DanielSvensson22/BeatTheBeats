@@ -73,6 +73,9 @@ public:
 	void Special2();
 	void Special3();
 
+	void StartCounter();
+	void Counter();
+
 	FORCEINLINE AWeaponBase* GetWeapon() { return Weapon; }
 
 	UPROPERTY(BlueprintReadOnly)
@@ -337,6 +340,12 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Specials")
 		TArray<FQTEDescription> Special2QTE;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Specials")
+		float CounterDamage = 50;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Specials")
+		TArray<FQTEDescription> CounterQTE;
+
 	bool bSpecial2Active = false;
 
 	//Dodging
@@ -391,6 +400,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Montages")
 		UAnimMontage* Special3Anim;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Montages")
+		UAnimMontage* CounterAnim;
 
 	//VFX
 

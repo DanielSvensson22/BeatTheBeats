@@ -876,6 +876,25 @@ void APlayerCharacter::Special3()
 	bIsDodging = true;
 }
 
+void APlayerCharacter::StartCounter()
+{
+	if (QTE) {
+		QTE->StartQTE(&CounterQTE, ComboEffect::Counter);
+		bInQTE = true;
+	}
+}
+
+void APlayerCharacter::Counter()
+{
+	if (Weapon == nullptr) {
+		return;
+	}
+
+	Weapon->SetAttackStatus(CounterDamage, Attacks::Attack_Guaranteed, true);
+	PlayAttackMontage(CounterAnim, TEXT("Default"), BeatManager->GetTimeUntilNextBeat() + BeatManager->TimeBetweenBeats());
+	bIsDodging = true;
+}
+
 void APlayerCharacter::ApplyDamage(float Damage, FVector HitLocation, FRotator HitRotation)
 {
 	CurrentHealth = FMath::Clamp(CurrentHealth - Damage, 0, MaxHealth);
