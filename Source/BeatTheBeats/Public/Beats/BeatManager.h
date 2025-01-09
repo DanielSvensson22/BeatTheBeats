@@ -76,6 +76,11 @@ public:
 		}
 	}
 
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE void ResetBeat() {
+		CurrentTimeSinceLastBeat = 0;
+	}
+
 private:
 
 	UPROPERTY(EditAnywhere)
