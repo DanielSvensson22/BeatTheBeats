@@ -449,7 +449,7 @@ void APlayerCharacter::AddNeutralAttack()
 		}
 	}
 	else {
-		if (!bIsDodging && !bIsBlocking && BeatManager && ComboManager) {
+		if (!bIsDodging && !bIsBlocking && !bInAttackAnimation && BeatManager && ComboManager) {
 			bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
 			ComboManager->AddAttack(Attacks::Attack_Neutral, PlayerDamage, !AddedLastBeat);
 			bIsAttacking = true;
@@ -468,7 +468,7 @@ void APlayerCharacter::AddType1Attack()
 		}
 	}
 	else {
-		if (!bIsDodging && !bIsBlocking && BeatManager && ComboManager) {
+		if (!bIsDodging && !bIsBlocking && !bInAttackAnimation && BeatManager && ComboManager) {
 			bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
 			ComboManager->AddAttack(Attacks::Attack_Type1, PlayerDamage, !AddedLastBeat);
 			bIsAttacking = true;
@@ -487,7 +487,7 @@ void APlayerCharacter::AddType2Attack()
 		}
 	}
 	else {
-		if (!bIsDodging && !bIsBlocking && BeatManager && ComboManager) {
+		if (!bIsDodging && !bIsBlocking && !bInAttackAnimation && BeatManager && ComboManager) {
 			bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
 			ComboManager->AddAttack(Attacks::Attack_Type2, PlayerDamage, !AddedLastBeat);
 			bIsAttacking = true;
@@ -506,7 +506,7 @@ void APlayerCharacter::AddType3Attack()
 		}
 	}
 	else {
-		if (!bIsDodging && !bIsBlocking && BeatManager && ComboManager) {
+		if (!bIsDodging && !bIsBlocking && !bInAttackAnimation && BeatManager && ComboManager) {
 			bool AddedLastBeat = BeatManager->GetCurrentTimeSinceLastBeat() < BeatManager->AfterBeatGrace();
 			ComboManager->AddAttack(Attacks::Attack_Type3, PlayerDamage, !AddedLastBeat);
 			bIsAttacking = true;
@@ -535,7 +535,7 @@ void APlayerCharacter::SpawnParticle()
 
 void APlayerCharacter::AddNeutralBlock()
 {
-	if (!bIsBlocking && !bIsDodging && BeatManager) {
+	if (!bIsBlocking && !bIsDodging && !bInAttackAnimation && BeatManager) {
 		CurrentBlockedType = Attacks::Attack_Neutral;
 		bIsBlocking = true;
 
@@ -555,7 +555,7 @@ void APlayerCharacter::AddNeutralBlock()
 
 void APlayerCharacter::AddType1Block()
 {
-	if (!bIsBlocking && !bIsDodging && BeatManager) {
+	if (!bIsBlocking && !bIsDodging && !bInAttackAnimation && BeatManager) {
 		CurrentBlockedType = Attacks::Attack_Type1;
 		bIsBlocking = true;
 
@@ -575,7 +575,7 @@ void APlayerCharacter::AddType1Block()
 
 void APlayerCharacter::AddType2Block()
 {
-	if (!bIsBlocking && !bIsDodging && BeatManager) {
+	if (!bIsBlocking && !bIsDodging && !bInAttackAnimation && BeatManager) {
 		CurrentBlockedType = Attacks::Attack_Type2;
 		bIsBlocking = true;
 
@@ -595,7 +595,7 @@ void APlayerCharacter::AddType2Block()
 
 void APlayerCharacter::AddType3Block()
 {
-	if (!bIsBlocking && !bIsDodging && BeatManager) {
+	if (!bIsBlocking && !bIsDodging && !bInAttackAnimation && BeatManager) {
 		CurrentBlockedType = Attacks::Attack_Type3;
 		bIsBlocking = true;
 
