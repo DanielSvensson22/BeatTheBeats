@@ -10,6 +10,7 @@
 #include "AIController.h"
 #include "Score/ScoreManager.h"
 #include "Components/AudioComponent.h"
+#include "Beats/BeatManager.h"
 
 ABoss::ABoss() : Super()
 {
@@ -26,6 +27,7 @@ ABoss::ABoss() : Super()
 
 void ABoss::BeginPlay()
 {
+	EnemyType = Attacks::Attack_Neutral;
 	Super::BeginPlay();
 
 	Player = UGameplayStatics::GetPlayerPawn(this, 0);
@@ -42,29 +44,33 @@ void ABoss::BeginPlay()
 	}
 
 	IsFalling = true;
-
-
 }
 
 void ABoss::OnBeat(float CurrentTimeSinceLastBeat)
 {
-	BeatCounter++;
-	if (BeatCounter > 7) BeatCounter = 1;
-	switch (BossState)
-	{
-	case EBossState::EBS_SlamAttacking:
-		SlamAttack();
-		break;
-	case EBossState::EBS_BulletAttacking:
-		BUlletAttack();
-		break;
-	case EBossState::EBS_StartRayAttacking:
-		StartRayAttack();
-		break;
-	case EBossState::EBS_RayAttacking:
-		RayAttack();
-		break;
-	}
+	CurrentAttack = StandardCombo.NextAttack();
+
+	if (bCanAttack) {
+		if (CurrentAttack == StandardCombo.AttackCount() - 1) {
+			switch (BossState)
+			{
+			case EBossState::EBS_SlamAttacking:
+				SlamAttack();
+				break;
+			case EBossState::EBS_BulletAttacking:
+				BUlletAttack();
+				break;
+
+			case EBossState::EBS_RayAttacking:
+				RayAttack();
+				break;
+			}
+		}
+
+		if (CurrentAttack == StandardCombo.AttackCount() - 2 && BossState == EBossState::EBS_StartRayAttacking) {
+			StartRayAttack();
+		}
+	}	
 }
 
 void ABoss::SlamAttack()
@@ -80,9 +86,8 @@ void ABoss::SlamAttack()
 		AudioComponent->SetSound(SlamSoundCue);
 		AudioComponent->Play();
 	}
-	PlayMontage(AttackMontage, "Attack3");
 
-
+	PlayEnemyMontage(AttackMontage, "Attack3", BeatManager->TimeBetweenBeats() + BeatManager->TimeBetweenBeats() * 1.5f);
 
 	bCanAttack = false;
 }
@@ -125,14 +130,15 @@ void ABoss::RayAttack()
 		AudioComponent->SetSound(RaySoundCue);
 		AudioComponent->Play();
 	}
-	PlayMontage(AttackMontage, "AttackRanged");
+	PlayEnemyMontage(AttackMontage, "AttackRanged", BeatManager->TimeBetweenBeats() * 2.95f);
 	bCanAttack = false;
 }
 
 void ABoss::BUlletAttack()
 {
 	if (!bCanAttack) return;
-	PlayMontage(AttackMontage, "Attack1");
+
+	PlayEnemyMontage(AttackMontage, "Attack1", BeatManager->TimeBetweenBeats() + BeatManager->TimeBetweenBeats() * 1.5f);
 
 	AIController->StopMovement();
 	ParticleEffects();
@@ -561,12 +567,12 @@ void ABoss::Tick(float DeltaTime)
 			bCanAttack = true;
 			BossState = EBossState::EBS_SlamAttacking;
 		}
-		else if (Distance > AttackRange * 1.5f && Distance < AttackRange * 3.5 && BeatCounter == 2 && CanShoot)
+		else if (Distance > AttackRange * 1.5f && Distance < AttackRange * 3.5 && CurrentAttack == StandardCombo.AttackCount() - 3 && CanShoot)
 		{
 			bCanAttack = true;
 			BossState = EBossState::EBS_BulletAttacking;
 		}
-		else if (Distance > AttackRange * 3.5 && BeatCounter == 1 && CanShoot)
+		else if (Distance > AttackRange * 3.5 && CurrentAttack == StandardCombo.AttackCount() - 3 && CanShoot)
 		{
 			bCanAttack = true;
 			BossState = EBossState::EBS_StartRayAttacking;
