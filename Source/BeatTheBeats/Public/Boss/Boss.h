@@ -47,6 +47,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Boss")
 	void SaveScoreOnDeath();
 
+	virtual void Parry() override;
+
 protected:
 	virtual void BeginPlay() override;
 

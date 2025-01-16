@@ -70,7 +70,11 @@ void ABoss::OnBeat(float CurrentTimeSinceLastBeat)
 		if (CurrentAttack == StandardCombo.AttackCount() - 2 && BossState == EBossState::EBS_StartRayAttacking) {
 			StartRayAttack();
 		}
-	}	
+	}
+
+	if (Blocked > 0) {
+		Blocked--;
+	}
 }
 
 void ABoss::SlamAttack()
@@ -207,6 +211,17 @@ void ABoss::SaveScoreOnDeath()
 	if (score) {
 		score->Save();
 	}
+}
+
+void ABoss::Parry()
+{
+	Super::Parry();
+
+	FVector hit = GetActorLocation() + GetActorForwardVector() * 10;
+
+	GetHit(hit);
+
+	ApplyDamage(Damage, EnemyType, true, hit);
 }
 
 void ABoss::StartRayAttack()
